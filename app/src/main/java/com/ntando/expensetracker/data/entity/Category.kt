@@ -1,0 +1,12 @@
+package com.ntando.expensetracker.data.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "categories")
+data class Category(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val userId: Long = -1, // -1 for global/default categories
+    val name: String
+)

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.IVU" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/accent</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_background</item>
+
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/accent</item>
+
+        <!-- Global Text Colors -->
+        <item name="android:textColor">@color/on_background</item>
+        <item name="android:textColorPrimary">@color/on_background</item>
+        <item name="android:textColorHint">#9E9E9E</item>
+
+        <!-- Fix White Spaces: Use the theme background for the window -->
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_background</item>
+
+        <!-- UI Element Colors -->
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorControlHighlight">#20E8743B</item>
+
+        <item name="android:editTextStyle">@style/IVUEditText</item>
+    </style>
+
+    <style name="IVUEditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/on_background</item>
+        <item name="android:textColorHint">#CCCCCC</item>
+        <item name="android:backgroundTint">@color/primary</item>
+    </style>
+
+    <style name="CustomBottomSheetDialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
+    </style>
+
+    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+</resources>

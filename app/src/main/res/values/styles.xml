@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Calendar Styles -->
+    <style name="CalendarDayLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#9E9E9E</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:paddingVertical">12dp</item>
+    </style>
+
+    <style name="CalendarDay">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#3D2B1F</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="CalendarDayText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">#3D2B1F</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="CalendarDayToday">
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/circle_red</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CalendarDayContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="CalendarDot">
+        <item name="android:layout_width">6dp</item>
+        <item name="android:layout_height">6dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+    </style>
+
+    <style name="CalendarDotRed" parent="CalendarDot">
+        <item name="android:background">@drawable/circle_red</item>
+    </style>
+
+    <style name="CalendarDotGold" parent="CalendarDot">
+        <item name="android:background">@drawable/circle_gold</item>
+    </style>
+</resources>

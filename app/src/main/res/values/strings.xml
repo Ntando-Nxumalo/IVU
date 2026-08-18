@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">IVU</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_expense">Expense</string>
+    <string name="nav_goals">Goals</string>
+    <string name="nav_report">Report</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_achievements">Badges</string>
+    <string name="currency_format">R%d</string>
+    <string name="currency_format_decimal">R%.2f</string>
+    <string name="xp_progress_format">%d / 100 XP</string>
+    <string name="level_format">Level %d</string>
+    <string name="default_amount">1.00</string>
+    <string name="pdf_title">IVU Study Report</string>
+    <string name="total_expenses_label">Total Study Time: %s</string>
+    <string name="export_success">PDF Exported to: %s</string>
+    <string name="export_failed">Export Failed: %s</string>
+    <string name="all_categories">All Subjects</string>
+    <string name="category_food">Zulu</string>
+    <string name="category_shopping">Afrikaans</string>
+    <string name="category_bills">English</string>
+    <string name="category_transport">Math</string>
+    <string name="category_other">Other</string>
+    <string name="error_fill_fields">Please fill in all required fields</string>
+    <string name="expense_saved">Progress saved!</string>
+    <string name="goal_updated">Study goal updated!</string>
+    <string name="goal_added">Study goal added!</string>
+    <string name="update_goal">Update Goal</string>
+    <string name="add_goal">Add Goal</string>
+    <string name="error_invalid_goal">Please enter a valid goal name and target</string>
+    <string name="edit_goals">Edit Goals</string>
+    <string name="savings_goals">Learning Goals</string>
+    <string name="achievements_unlocked_format">%1$d/%2$d Badges Unlocked</string>
+    <string name="no_category_goal">No Subject Selected</string>
+
+    <!-- Splash/Landing Screen -->
+    <string name="tagline">Learn a little, every day.</string>
+    <string name="features_list">Flashcards • Journal • AI study buddy</string>
+    <string name="get_started">Get Started</string>
+    <string name="already_have_account">I already have an account</string>
+
+    <!-- Review Screen -->
+    <string name="tap_to_reveal">Tap card to reveal answer</string>
+    <string name="review_progress_format">%1$d/%2$d</string>
+    <string name="rating_again">Again</string>
+    <string name="rating_hard">Hard</string>
+    <string name="rating_good">Good</string>
+    <string name="rating_easy">Easy</string>
+    <string name="time_1m">1m</string>
+    <string name="time_6m">6m</string>
+    <string name="time_1d">1d</string>
+    <string name="time_4d">4d</string>
+
+    <!-- Auth Screens -->
+    <string name="welcome_back">Welcome back</string>
+    <string name="welcome_subtitle">Sawubona! Good to see you.</string>
+    <string name="label_email">Email</string>
+    <string name="hint_email">you@example.com</string>
+    <string name="label_password">Password</string>
+    <string name="hint_password">••••••••</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="log_in">Log in</string>
+    <string name="or_divider">or</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="new_here_register">New here? Create an account</string>
+    <string name="back">Back</string>
+
+    <!-- Chat -->
+    <string name="quiz_me_confirm">Yes, quiz me please!</string>
+</resources>

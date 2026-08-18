@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#C1652F</color>
+    <color name="primary_container">#FFDBC4</color>
+    <color name="secondary">#B8860B</color>
+    <color name="background">#FFF8F0</color>
+    <color name="surface">#FFFDF9</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_background">#3D2B1F</color>
+    <color name="accent">#E8743B</color>
+    <color name="error">#B3261E</color>
+
+    <!-- App Icon Background - Darker Terracotta to cover edges fully -->
+    <color name="ic_launcher_background">#E88A68</color>
+
+    <!-- Legacy/Compatible names for layouts using old colors -->
+    <color name="primary_green">#C1652F</color>
+    <color name="dark_green">#E8743B</color>
+    <color name="premium_dark">#3D2B1F</color>
+    <color name="dark_blue">#1E1712</color>
+    <color name="primary_blue">#5C8AA6</color>
+    <color name="background_white">#FFF8F0</color>
+    <color name="accent_yellow">#B8860B</color>
+    <color name="warning_red">#B3261E</color>
+    <color name="surface_variant">#FFFDF9</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="hint_black">#3D2B1F</color>
+</resources>
