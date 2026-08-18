@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "34465820973",
+    "project_id": "ivu-7fd6a",
+    "storage_bucket": "ivu-7fd6a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:34465820973:android:4bd58c6b2266dd1e1c63a4",
+        "android_client_info": {
+          "package_name": "com.ntando.ivu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "34465820973-filarmjmjme7rm7agii95mi6stq8r2hr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ntando.ivu",
+            "certificate_hash": "5f0c9e0d94d7021e853c60f74f89320e6e812051"
+          }
+        },
+        {
+          "client_id": "34465820973-avb1jfir18fi7qi5eoatv9anri6qus7e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2lCD33SLIT_YRNUbW8x0F7B90WJ8JsMs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "34465820973-avb1jfir18fi7qi5eoatv9anri6qus7e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
