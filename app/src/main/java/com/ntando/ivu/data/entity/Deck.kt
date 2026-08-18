@@ -8,6 +8,7 @@ enum class Language { EN, ZU, AF }
 @Entity(tableName = "decks")
 data class Deck(
     @PrimaryKey(autoGenerate = true) val deckId: Long = 0,
+    val remoteId: String? = null,
     val ownerId: Long,
     val title: String,
     val language: Language,

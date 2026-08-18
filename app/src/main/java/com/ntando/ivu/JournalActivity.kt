@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,6 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.JournalEntry
 import com.ntando.ivu.data.entity.Mood
+import com.ntando.ivu.data.repository.JournalRepository
+import com.ntando.ivu.viewmodel.JournalViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -20,7 +24,10 @@ import java.util.*
 class JournalActivity : AppCompatActivity() {
 
     private var currentUserId: Long = -1
-    private lateinit var adapter: JournalAdapter
+    private val viewModel: JournalViewModel by viewModels {
+        val db = DatabaseProvider.getDatabase(this)
+        ViewModelFactory(JournalRepository(db.journalDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,17 +44,18 @@ class JournalActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupNavigation()
+        
+        // Refresh entries from backend
+        viewModel.refreshJournalEntries(currentUserId)
     }
 
     private fun setupRecyclerView() {
         val rvJournal = findViewById<RecyclerView>(R.id.rvJournalEntries)
         rvJournal.layoutManager = LinearLayoutManager(this)
         
-        val db = DatabaseProvider.getDatabase(this)
         lifecycleScope.launch {
-            db.journalDao().getEntriesByUser(currentUserId).collect { entries ->
-                adapter = JournalAdapter(entries)
-                rvJournal.adapter = adapter
+            viewModel.getJournalEntries(currentUserId).collect { entries ->
+                rvJournal.adapter = JournalAdapter(entries)
             }
         }
     }
@@ -89,9 +97,8 @@ class JournalActivity : AppCompatActivity() {
             val dateStr = sdf.format(Date(entry.date))
             
             holder.tvEntryTitle.text = "$dateStr — ${entry.text}"
-            holder.tvEntrySubtitle.text = "Linked to a study session"
+            holder.tvEntrySubtitle.text = "Synced from server"
 
-            // Set icon color based on mood
             val colorRes = when (entry.mood) {
                 Mood.GREAT -> R.drawable.circle_teal
                 Mood.OKAY -> R.drawable.circle_gold

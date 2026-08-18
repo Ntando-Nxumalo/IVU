@@ -14,7 +14,7 @@ import com.ntando.ivu.data.entity.*
         Flashcard::class,
         JournalEntry::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

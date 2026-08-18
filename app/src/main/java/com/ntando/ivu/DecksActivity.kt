@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,12 +15,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.Deck
 import com.ntando.ivu.data.entity.Language
-import kotlinx.coroutines.flow.first
+import com.ntando.ivu.data.repository.DeckRepository
+import com.ntando.ivu.viewmodel.DeckViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
 
 class DecksActivity : AppCompatActivity() {
 
     private var currentUserId: Long = -1
+    private val viewModel: DeckViewModel by viewModels {
+        val db = DatabaseProvider.getDatabase(this)
+        ViewModelFactory(DeckRepository(db.deckDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,15 +43,17 @@ class DecksActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupNavigation()
+        
+        // Refresh data from network
+        viewModel.refreshDecks(currentUserId)
     }
 
     private fun setupRecyclerView() {
         val rvDecks = findViewById<RecyclerView>(R.id.rvDecks)
         rvDecks.layoutManager = LinearLayoutManager(this)
         
-        val db = DatabaseProvider.getDatabase(this)
         lifecycleScope.launch {
-            db.deckDao().getDecksByUser(currentUserId).collect { decks ->
+            viewModel.getDecks(currentUserId).collect { decks ->
                 rvDecks.adapter = DecksAdapter(decks)
             }
         }
@@ -67,7 +76,7 @@ class DecksActivity : AppCompatActivity() {
         }
         
         findViewById<View>(R.id.fabAddDeck).setOnClickListener {
-            // Logic to add a new deck
+            // TODO: Show dialog to add deck and call viewModel.createDeck
         }
     }
 
@@ -116,24 +125,10 @@ class DecksActivity : AppCompatActivity() {
                 }
             }
             
-            // Apply mock data matching the user's provided image
-            val progress = when (position) {
-                0 -> 72 // Everyday isiZulu
-                1 -> 35 // Afrikaans Basics
-                2 -> 90 // Exam Vocabulary
-                3 -> 15 // Travel Phrases
-                else -> 0
-            }
-            val masteredCount = when (position) {
-                0 -> 29
-                1 -> 14
-                2 -> 36
-                3 -> 6
-                else -> 0
-            }
-            
-            holder.pbMastery.progress = progress
-            holder.tvMasteryCount.text = "$masteredCount / 40 cards mastered"
+            // Note: Mastery logic should ideally come from the server or local flashcard data
+            // For now, keeping a simplified version based on cardCount
+            holder.pbMastery.progress = if (deck.cardCount > 0) 25 else 0 
+            holder.tvMasteryCount.text = "0 / ${deck.cardCount} cards mastered"
         }
 
         override fun getItemCount() = decks.size

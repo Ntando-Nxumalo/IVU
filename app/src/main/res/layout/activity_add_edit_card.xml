@@ -34,6 +34,19 @@
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete"
+            android:src="@android:drawable/ic_menu_delete"
+            android:visibility="gone"
+            app:tint="@android:color/white" />
     </RelativeLayout>
 
     <LinearLayout
@@ -47,44 +60,44 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Front Text (Question)"
             android:textColor="#9E9E9E"
-            android:textSize="14sp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="14sp" />
 
         <EditText
             android:id="@+id/etFrontText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="100dp"
+            android:layout_marginBottom="24dp"
             android:background="@drawable/rounded_edittext"
             android:gravity="top"
             android:hint="Enter the question or word..."
+            android:minHeight="100dp"
             android:padding="16dp"
             android:textColor="#3D2B1F"
-            android:textColorHint="#CCCCCC"
-            android:layout_marginBottom="24dp" />
+            android:textColorHint="#CCCCCC" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Back Text (Answer)"
             android:textColor="#9E9E9E"
-            android:textSize="14sp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="14sp" />
 
         <EditText
             android:id="@+id/etBackText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="100dp"
+            android:layout_marginBottom="32dp"
             android:background="@drawable/rounded_edittext"
             android:gravity="top"
             android:hint="Enter the answer or translation..."
+            android:minHeight="100dp"
             android:padding="16dp"
             android:textColor="#3D2B1F"
-            android:textColorHint="#CCCCCC"
-            android:layout_marginBottom="32dp" />
+            android:textColorHint="#CCCCCC" />
 
         <Button
             android:id="@+id/btnSaveCard"

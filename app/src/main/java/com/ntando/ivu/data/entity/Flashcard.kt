@@ -19,11 +19,13 @@ import androidx.room.PrimaryKey
 )
 data class Flashcard(
     @PrimaryKey(autoGenerate = true) val cardId: Long = 0,
+    val remoteId: String? = null,
     val deckId: Long,
     val frontText: String,
     val backText: String,
     val imageUrl: String? = null,
     val easeFactor: Float = 2.5f,
     val intervalDays: Int = 0,
+    val repetitions: Int = 0,
     val dueDate: Long = System.currentTimeMillis()
 )

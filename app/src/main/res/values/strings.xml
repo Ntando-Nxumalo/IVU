@@ -67,4 +67,12 @@
 
     <!-- Chat -->
     <string name="quiz_me_confirm">Yes, quiz me please!</string>
+
+    <!-- Add/Edit Card -->
+    <string name="add_card_title">Add New Card</string>
+    <string name="edit_card_title">Edit Card</string>
+    <string name="delete_card_title">Delete Card</string>
+    <string name="delete_card_confirm_msg">Are you sure you want to delete this flashcard?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -7,12 +7,13 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.database.DatabaseProvider
-import com.ntando.ivu.data.entity.JournalEntry
 import com.ntando.ivu.data.entity.Mood
-import kotlinx.coroutines.launch
+import com.ntando.ivu.data.repository.JournalRepository
+import com.ntando.ivu.viewmodel.JournalViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,6 +21,11 @@ class NewEntryActivity : AppCompatActivity() {
 
     private var currentUserId: Long = -1
     private var selectedMood: Mood = Mood.OKAY
+
+    private val viewModel: JournalViewModel by viewModels {
+        val db = DatabaseProvider.getDatabase(this)
+        ViewModelFactory(JournalRepository(db.journalDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +50,9 @@ class NewEntryActivity : AppCompatActivity() {
 
         // Set Current Date
         val sdf = SimpleDateFormat("EEEE, d MMMM", Locale.getDefault())
-        tvDate.text = sdf.format(Date())
+        val isoSdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()) // Example ISO format
+        val currentDate = Date()
+        tvDate.text = sdf.format(currentDate)
 
         btnBack.setOnClickListener { finish() }
 
@@ -68,18 +76,22 @@ class NewEntryActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            lifecycleScope.launch {
-                val db = DatabaseProvider.getDatabase(this@NewEntryActivity)
-                db.journalDao().insertEntry(
-                    JournalEntry(
-                        userId = currentUserId,
-                        mood = selectedMood,
-                        text = notes,
-                        date = System.currentTimeMillis()
-                    )
-                )
-                Toast.makeText(this@NewEntryActivity, "Entry saved!", Toast.LENGTH_SHORT).show()
-                finish()
+            btnSave.isEnabled = false // Prevent double clicks
+            
+            viewModel.createJournalEntry(
+                userId = currentUserId,
+                date = isoSdf.format(currentDate),
+                mood = selectedMood.name.lowercase(),
+                text = notes,
+                deckId = null // Can be linked to a specific deck later
+            ) { success ->
+                if (success) {
+                    Toast.makeText(this, "Entry saved and synced!", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    btnSave.isEnabled = true
+                    Toast.makeText(this, "Failed to sync with server. Please try again.", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

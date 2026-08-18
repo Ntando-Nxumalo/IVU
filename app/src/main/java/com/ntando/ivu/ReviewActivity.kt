@@ -7,17 +7,23 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.Flashcard
-import kotlinx.coroutines.flow.first
+import com.ntando.ivu.data.repository.DeckRepository
+import com.ntando.ivu.data.repository.FlashcardRepository
+import com.ntando.ivu.viewmodel.FlashcardViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
 
 class ReviewActivity : AppCompatActivity() {
 
     private var currentUserId: Long = -1
-    private var deckId: Long = -1
+    private var localDeckId: Long = -1
+    private var remoteDeckId: String? = null
     private var flashcards: List<Flashcard> = emptyList()
     private var currentIndex = 0
     private var isShowingAnswer = false
@@ -31,21 +37,26 @@ class ReviewActivity : AppCompatActivity() {
     private lateinit var cvFlashcard: View
     private lateinit var btnEdit: ImageButton
 
+    private val viewModel: FlashcardViewModel by viewModels {
+        val db = DatabaseProvider.getDatabase(this)
+        ViewModelFactory(FlashcardRepository(db.flashcardDao()))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_review)
 
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
         currentUserId = sharedPref.getLong("current_user_id", -1)
-        deckId = intent.getLongExtra("deck_id", -1)
+        localDeckId = intent.getLongExtra("deck_id", -1)
 
-        if (currentUserId == -1L || deckId == -1L) {
+        if (currentUserId == -1L || localDeckId == -1L) {
             finish()
             return
         }
 
         initViews()
-        loadFlashcards()
+        loadDeckAndFlashcards()
     }
 
     private fun initViews() {
@@ -70,34 +81,43 @@ class ReviewActivity : AppCompatActivity() {
             val card = flashcards[currentIndex]
             val intent = Intent(this, AddEditCardActivity::class.java).apply {
                 putExtra("card_id", card.cardId)
-                putExtra("deck_id", deckId)
+                putExtra("deck_id", localDeckId)
+                putExtra("remote_deck_id", remoteDeckId)
             }
             startActivity(intent)
         }
 
         ratingBar.visibility = View.INVISIBLE
 
-        findViewById<Button>(R.id.btnAgain).setOnClickListener { nextCard() }
-        findViewById<Button>(R.id.btnHard).setOnClickListener { nextCard() }
-        findViewById<Button>(R.id.btnGood).setOnClickListener { nextCard() }
-        findViewById<Button>(R.id.btnEasy).setOnClickListener { nextCard() }
+        findViewById<Button>(R.id.btnAgain).setOnClickListener { submitReview("again") }
+        findViewById<Button>(R.id.btnHard).setOnClickListener { submitReview("hard") }
+        findViewById<Button>(R.id.btnGood).setOnClickListener { submitReview("good") }
+        findViewById<Button>(R.id.btnEasy).setOnClickListener { submitReview("easy") }
     }
 
-    private fun loadFlashcards() {
+    private fun loadDeckAndFlashcards() {
         val db = DatabaseProvider.getDatabase(this)
         lifecycleScope.launch {
-            db.flashcardDao().getFlashcardsByDeck(deckId).collect { list ->
+            val deck = db.deckDao().getDeckById(localDeckId)
+            remoteDeckId = deck?.remoteId
+            
+            // Refresh from server if we have a remote ID
+            remoteDeckId?.let { 
+                viewModel.refreshFlashcards(it, localDeckId)
+            }
+
+            viewModel.getFlashcards(localDeckId).collect { list ->
                 flashcards = list
-                if (flashcards.isNotEmpty() && currentIndex < flashcards.size) {
+                if (flashcards.isNotEmpty()) {
+                    if (currentIndex >= flashcards.size) currentIndex = 0
                     updateUI()
-                } else if (flashcards.isEmpty()) {
+                } else {
                     // Offer to add a card if empty
                     val intent = Intent(this@ReviewActivity, AddEditCardActivity::class.java).apply {
-                        putExtra("deck_id", deckId)
+                        putExtra("deck_id", localDeckId)
+                        putExtra("remote_deck_id", remoteDeckId)
                     }
                     startActivity(intent)
-                    finish()
-                } else {
                     finish()
                 }
             }
@@ -107,7 +127,7 @@ class ReviewActivity : AppCompatActivity() {
     private fun updateUI() {
         val card = flashcards[currentIndex]
         tvMainText.text = card.frontText
-        tvSubText.text = "(isiZulu)" 
+        tvSubText.text = "" // Could show language here
         tvHint.text = "Tap card to reveal answer"
         tvHint.visibility = View.VISIBLE
         ratingBar.visibility = View.INVISIBLE
@@ -126,11 +146,29 @@ class ReviewActivity : AppCompatActivity() {
         isShowingAnswer = true
     }
 
+    private fun submitReview(rating: String) {
+        val card = flashcards[currentIndex]
+        val remoteCardId = card.remoteId
+
+        if (remoteDeckId != null && remoteCardId != null) {
+            viewModel.reviewCard(remoteDeckId!!, remoteCardId, card, rating) { success ->
+                if (!success) {
+                    Toast.makeText(this, "Failed to sync review with server", Toast.LENGTH_SHORT).show()
+                }
+                nextCard()
+            }
+        } else {
+            // Local only fallback or error
+            nextCard()
+        }
+    }
+
     private fun nextCard() {
         currentIndex++
         if (currentIndex < flashcards.size) {
             updateUI()
         } else {
+            Toast.makeText(this, "Review session finished!", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
