@@ -9,11 +9,15 @@ import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.Deck
 import com.ntando.ivu.data.entity.Language
 import com.ntando.ivu.data.entity.Flashcard
+import com.ntando.ivu.data.prefs.PreferenceManager
+import com.ntando.ivu.data.repository.AuthRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -22,9 +26,19 @@ import kotlinx.coroutines.launch
 class SplashActivity : AppCompatActivity() {
 
     private val TAG = "SplashActivity"
+    private val authRepository = AuthRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Apply saved language preference
+        val preferenceManager = PreferenceManager(this)
+        lifecycleScope.launch {
+            val savedLanguage = preferenceManager.appLanguage.first()
+            val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(savedLanguage)
+            AppCompatDelegate.setApplicationLocales(appLocale)
+        }
+
         setContentView(R.layout.activity_splash)
 
         val ivLogoContainer = findViewById<View>(R.id.ivLogoContainer)
@@ -64,8 +78,9 @@ class SplashActivity : AppCompatActivity() {
 
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
         val currentUserId = sharedPref.getLong("current_user_id", -1L)
+        val firebaseUser = authRepository.getCurrentUser()
 
-        if (currentUserId != -1L) {
+        if (currentUserId != -1L || firebaseUser != null) {
             lifecycleScope.launch {
                 delay(1500)
                 startActivity(Intent(this@SplashActivity, IVU::class.java))

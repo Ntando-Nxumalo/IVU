@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_home">Tuis</string>
+    <string name="nav_expense">Uitgawe</string>
+    <string name="nav_goals">Doelwitte</string>
+    <string name="nav_decks">Dekke</string>
+    <string name="nav_journal">Joernaal</string>
+    <string name="nav_achievements">Kentekens</string>
+    <string name="welcome_back">Welkom terug</string>
+    <string name="welcome_subtitle">Sawubona! Goed om jou te sien.</string>
+    <string name="log_in">Teken in</string>
+    <string name="register">Registreer</string>
+    <string name="sign_out">Teken uit</string>
+    <string name="settings">Instellings</string>
+    <string name="my_decks">My Dekke</string>
+    <string name="your_progress">Jou Vordering</string>
+    <string name="journal_calendar">Joernaal &amp; Kalender</string>
+    <string name="ivu_ai_assist">IVU AI-Assistent</string>
+    <string name="welcome_learner">Sawubona, %s</string>
+    <string name="study_badges">Studiekentekens</string>
+    <string name="current_streak">Huidige Reeks</string>
+    <string name="experience_xp">Ervaring (XP)</string>
+    <string name="create_new_deck">Skep Nuwe Dek</string>
+    <string name="deck_title">Dek Titel</string>
+    <string name="select_language">Kies Taal</string>
+    <string name="create">Skep</string>
+    <string name="cancel">Kanselleer</string>
+    <string name="add">Voeg by</string>
+    <string name="delete">Verwyder</string>
+</resources>

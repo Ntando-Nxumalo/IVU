@@ -12,9 +12,10 @@ import com.ntando.ivu.data.entity.*
         Achievement::class,
         Deck::class,
         Flashcard::class,
-        JournalEntry::class
+        JournalEntry::class,
+        UserStats::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -24,4 +25,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun deckDao(): DeckDao
     abstract fun flashcardDao(): FlashcardDao
     abstract fun journalDao(): JournalDao
+    abstract fun userStatsDao(): UserStatsDao
 }

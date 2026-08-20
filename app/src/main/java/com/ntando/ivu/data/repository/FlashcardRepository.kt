@@ -1,108 +1,120 @@
 package com.ntando.ivu.data.repository
 
-import com.ntando.ivu.data.dao.FlashcardDao
-import com.ntando.ivu.data.entity.Flashcard
 import com.ntando.ivu.network.ApiClient
-import com.ntando.ivu.network.CreateFlashcardRequest
+import com.ntando.ivu.network.Flashcard
 import com.ntando.ivu.network.ReviewRequest
-import kotlinx.coroutines.flow.Flow
+import com.ntando.ivu.network.CreateFlashcardRequest
+import com.ntando.ivu.network.ApiResponse
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
-class FlashcardRepository(private val flashcardDao: FlashcardDao) {
+class FlashcardRepository(
+    private val achievementRepository: AchievementRepository? = null,
+    private val userId: Long = -1
+) {
 
-    fun getLocalFlashcards(deckId: Long): Flow<List<Flashcard>> = flashcardDao.getFlashcardsByDeck(deckId)
-
-    suspend fun getFlashcardById(cardId: Long): Flashcard? = flashcardDao.getFlashcardById(cardId)
-
-    suspend fun refreshFlashcards(remoteDeckId: String, localDeckId: Long) {
-        try {
-            val response = ApiClient.apiService.getCards(remoteDeckId)
+    suspend fun fetchAllCards(deckId: String): Result<List<Flashcard>> {
+        return try {
+            val response = ApiClient.apiService.getCards(deckId)
             if (response.isSuccessful) {
-                val networkCards = response.body()?.data ?: emptyList()
-                val entities = networkCards.map { networkCard ->
-                    Flashcard(
-                        remoteId = networkCard.cardId,
-                        deckId = localDeckId,
-                        frontText = networkCard.frontText,
-                        backText = networkCard.backText,
-                        imageUrl = networkCard.imageUrl,
-                        easeFactor = networkCard.easeFactor.toFloat(),
-                        intervalDays = networkCard.intervalDays,
-                        repetitions = networkCard.repetitions,
-                        dueDate = networkCard.dueDate
-                    )
+                val body = response.body()
+                if (body?.success == true) {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.error ?: "Unknown error"))
                 }
-                entities.forEach { flashcardDao.insertFlashcard(it) }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val parsedError = try {
+                    val type = object : TypeToken<ApiResponse<Any>>() {}.type
+                    val apiResponse: ApiResponse<Any> = Gson().fromJson(errorBody, type)
+                    apiResponse.error ?: "Network error: ${response.code()}"
+                } catch (e: Exception) {
+                    "Network error: ${response.code()}"
+                }
+                Result.failure(Exception(parsedError))
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Result.failure(e)
         }
     }
 
-    suspend fun reviewCard(remoteDeckId: String, remoteCardId: String, localCard: Flashcard, rating: String): Boolean {
+    suspend fun fetchDueCards(deckId: String): Result<List<Flashcard>> {
+        return try {
+            val response = ApiClient.apiService.getDueCards(deckId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.error ?: "Unknown error"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val parsedError = try {
+                    val type = object : TypeToken<ApiResponse<Any>>() {}.type
+                    val apiResponse: ApiResponse<Any> = Gson().fromJson(errorBody, type)
+                    apiResponse.error ?: "Network error: ${response.code()}"
+                } catch (e: Exception) {
+                    "Network error: ${response.code()}"
+                }
+                Result.failure(Exception(parsedError))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun submitReview(deckId: String, cardId: String, rating: String): Result<Flashcard> {
         return try {
             val request = ReviewRequest(rating)
-            val response = ApiClient.apiService.reviewCard(remoteDeckId, remoteCardId, request)
+            val response = ApiClient.apiService.reviewCard(deckId, cardId, request)
             if (response.isSuccessful) {
-                response.body()?.data?.let { networkCard ->
-                    val updatedEntity = localCard.copy(
-                        easeFactor = networkCard.easeFactor.toFloat(),
-                        intervalDays = networkCard.intervalDays,
-                        repetitions = networkCard.repetitions,
-                        dueDate = networkCard.dueDate
-                    )
-                    flashcardDao.updateFlashcard(updatedEntity)
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    achievementRepository?.recordActivity(userId, ActivityType.FLASHCARD_REVIEW)
+                    Result.success(body.data)
+                } else {
+                    Result.failure(Exception(body?.error ?: "Failed to submit review"))
                 }
-                true
-            } else false
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    suspend fun createFlashcard(remoteDeckId: String, localDeckId: Long, front: String, back: String, image: String?): Boolean {
-        return try {
-            val request = CreateFlashcardRequest(front, back, image)
-            val response = ApiClient.apiService.createCard(remoteDeckId, request)
-            if (response.isSuccessful) {
-                response.body()?.data?.let { networkCard ->
-                    val entity = Flashcard(
-                        remoteId = networkCard.cardId,
-                        deckId = localDeckId,
-                        frontText = networkCard.frontText,
-                        backText = networkCard.backText,
-                        imageUrl = networkCard.imageUrl,
-                        easeFactor = networkCard.easeFactor.toFloat(),
-                        intervalDays = networkCard.intervalDays,
-                        repetitions = networkCard.repetitions,
-                        dueDate = networkCard.dueDate
-                    )
-                    flashcardDao.insertFlashcard(entity)
-                }
-                true
-            } else false
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    suspend fun updateFlashcardLocal(flashcard: Flashcard) {
-        flashcardDao.updateFlashcard(flashcard)
-    }
-
-    suspend fun deleteCard(remoteDeckId: String?, remoteCardId: String?, localCard: Flashcard): Boolean {
-        return try {
-            var apiSuccess = true
-            if (remoteDeckId != null && remoteCardId != null) {
-                val response = ApiClient.apiService.deleteCard(remoteDeckId, remoteCardId)
-                apiSuccess = response.isSuccessful
+            } else {
+                Result.failure(Exception("Network error: ${response.code()}"))
             }
-            
-            if (apiSuccess) {
-                flashcardDao.deleteFlashcard(localCard)
-                true
-            } else false
         } catch (e: Exception) {
-            false
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createCard(deckId: String, front: String, back: String): Result<Flashcard> {
+        return try {
+            val request = CreateFlashcardRequest(front, back)
+            val response = ApiClient.apiService.createCard(deckId, request)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    achievementRepository?.recordActivity(userId, ActivityType.FLASHCARD_REVIEW)
+                    Result.success(body.data)
+                } else {
+                    Result.failure(Exception(body?.error ?: "Failed to create card"))
+                }
+            } else {
+                Result.failure(Exception("Network error: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun deleteCard(deckId: String, cardId: String): Result<Unit> {
+        return try {
+            val response = ApiClient.apiService.deleteCard(deckId, cardId)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to delete card"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

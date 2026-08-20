@@ -2,11 +2,14 @@ package com.ntando.ivu
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
 import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.entity.User
 import com.ntando.ivu.R
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -17,23 +20,54 @@ import java.util.*
  */
 class IVU : AppCompatActivity() {
 
+    private val tag = "IVU"
     private var currentUserId: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(tag, "onCreate: Initializing Home screen")
         setContentView(R.layout.activity_ivu)
 
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
         currentUserId = sharedPref.getLong("current_user_id", -1)
 
         if (currentUserId == -1L) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            val firebaseUser = FirebaseAuth.getInstance().currentUser
+            if (firebaseUser != null) {
+                // Recover session from Firebase email
+                recoverSession(firebaseUser.email ?: "")
+            } else {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
             return
         }
 
         setupUI()
         setupNavigation()
+    }
+
+    private fun recoverSession(email: String) {
+        lifecycleScope.launch {
+            val db = DatabaseProvider.getDatabase(this@IVU)
+            val user = db.userDao().getUserByEmail(email)
+            if (user != null) {
+                currentUserId = user.id
+                val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
+                with(sharedPref.edit()) {
+                    putLong("current_user_id", currentUserId)
+                    commit()
+                }
+                Log.d(tag, "Recovered session for $email")
+                setupUI()
+                setupNavigation()
+            } else {
+                // Firebase logged in but no local user? Redirect to login to trigger sync
+                FirebaseAuth.getInstance().signOut()
+                startActivity(Intent(this@IVU, MainActivity::class.java))
+                finish()
+            }
+        }
     }
 
     private fun setupUI() {
@@ -48,7 +82,7 @@ class IVU : AppCompatActivity() {
         lifecycleScope.launch {
             db.userDao().getUserById(currentUserId).collect { user ->
                 val name = user?.name?.split(" ")?.firstOrNull() ?: "Learner"
-                tvHeaderTitle.text = "Sawubona, $name"
+                tvHeaderTitle.text = getString(R.string.welcome_learner, name)
             }
         }
     }

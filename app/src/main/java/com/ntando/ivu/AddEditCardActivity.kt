@@ -10,37 +10,25 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.viewmodel.FlashcardViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
-import kotlinx.coroutines.launch
 
 class AddEditCardActivity : AppCompatActivity() {
 
-    private var localDeckId: Long = -1
     private var remoteDeckId: String? = null
-    private var localCardId: Long = -1
+    private var remoteCardId: String? = null
 
     private val viewModel: FlashcardViewModel by viewModels {
-        val db = DatabaseProvider.getDatabase(this)
-        ViewModelFactory(FlashcardRepository(db.flashcardDao()))
+        ViewModelFactory(FlashcardRepository())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_edit_card)
 
-        localDeckId = intent.getLongExtra("deck_id", -1)
         remoteDeckId = intent.getStringExtra("remote_deck_id")
-        localCardId = intent.getLongExtra("card_id", -1)
-
-        // Ensure we have enough context to either add or edit
-        if (localDeckId == -1L && localCardId == -1L) {
-            finish()
-            return
-        }
+        remoteCardId = intent.getStringExtra("card_id")
 
         setupUI()
     }
@@ -53,18 +41,10 @@ class AddEditCardActivity : AppCompatActivity() {
         val btnDelete = findViewById<ImageButton>(R.id.btnDelete)
         val tvTitle = findViewById<TextView>(R.id.tvTitle)
 
-        if (localCardId != -1L) {
+        if (remoteCardId != null) {
             // EDIT MODE
             tvTitle.text = getString(R.string.edit_card_title)
             btnDelete.visibility = View.VISIBLE
-            
-            lifecycleScope.launch {
-                val card = viewModel.getFlashcardById(localCardId)
-                card?.let {
-                    etFront.setText(it.frontText)
-                    etBack.setText(it.backText)
-                }
-            }
         } else {
             // ADD MODE
             tvTitle.text = getString(R.string.add_card_title)
@@ -88,36 +68,26 @@ class AddEditCardActivity : AppCompatActivity() {
 
             btnSave.isEnabled = false
 
-            if (localCardId == -1L) {
-                // ADD: Create new card and sync to server
-                if (remoteDeckId != null) {
-                    viewModel.createFlashcard(remoteDeckId!!, localDeckId, front, back, null) { success ->
+            if (remoteCardId == null) {
+                // ADD
+                remoteDeckId?.let { deckId ->
+                    viewModel.createFlashcard(deckId, front, back) { success ->
                         if (success) {
-                            Toast.makeText(this, "Card created and synced!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Card created!", Toast.LENGTH_SHORT).show()
                             finish()
                         } else {
                             btnSave.isEnabled = true
-                            Toast.makeText(this, "Failed to sync with server", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Failed to create card", Toast.LENGTH_SHORT).show()
                         }
                     }
-                } else {
-                    Toast.makeText(this, "Error: Missing deck information", Toast.LENGTH_SHORT).show()
+                } ?: run {
+                    Toast.makeText(this, "Error: Missing deck ID", Toast.LENGTH_SHORT).show()
                     btnSave.isEnabled = true
                 }
             } else {
-                // EDIT: Update existing card locally
-                lifecycleScope.launch {
-                    val card = viewModel.getFlashcardById(localCardId)
-                    card?.let {
-                        val updated = it.copy(frontText = front, backText = back)
-                        viewModel.updateFlashcardLocal(updated)
-                        Toast.makeText(this@AddEditCardActivity, "Card updated locally", Toast.LENGTH_SHORT).show()
-                        finish()
-                    } ?: run {
-                        btnSave.isEnabled = true
-                        Toast.makeText(this@AddEditCardActivity, "Error: Card not found", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                // EDIT: Placeholder
+                Toast.makeText(this, "Edit not implemented yet", Toast.LENGTH_SHORT).show()
+                btnSave.isEnabled = true
             }
         }
     }
@@ -134,16 +104,15 @@ class AddEditCardActivity : AppCompatActivity() {
     }
 
     private fun deleteCard() {
-        lifecycleScope.launch {
-            val card = viewModel.getFlashcardById(localCardId)
-            card?.let {
-                viewModel.deleteCard(remoteDeckId, it.remoteId, it) { success ->
-                    if (success) {
-                        Toast.makeText(this@AddEditCardActivity, "Card deleted", Toast.LENGTH_SHORT).show()
-                        finish()
-                    } else {
-                        Toast.makeText(this@AddEditCardActivity, "Failed to delete from server", Toast.LENGTH_SHORT).show()
-                    }
+        val deckId = remoteDeckId
+        val cardId = remoteCardId
+        if (deckId != null && cardId != null) {
+            viewModel.deleteFlashcard(deckId, cardId) { success ->
+                if (success) {
+                    Toast.makeText(this, "Card deleted", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this, "Failed to delete card", Toast.LENGTH_SHORT).show()
                 }
             }
         }

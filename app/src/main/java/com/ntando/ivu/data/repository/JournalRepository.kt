@@ -1,64 +1,60 @@
 package com.ntando.ivu.data.repository
 
-import com.ntando.ivu.data.dao.JournalDao
-import com.ntando.ivu.data.entity.JournalEntry
-import com.ntando.ivu.data.entity.Mood
 import com.ntando.ivu.network.ApiClient
+import com.ntando.ivu.network.JournalEntry
 import com.ntando.ivu.network.CreateJournalRequest
-import kotlinx.coroutines.flow.Flow
+import com.ntando.ivu.network.ApiResponse
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
-class JournalRepository(private val journalDao: JournalDao) {
+class JournalRepository(
+    private val achievementRepository: AchievementRepository? = null,
+    private val userId: Long = -1
+) {
 
-    fun getLocalEntries(userId: Long): Flow<List<JournalEntry>> = journalDao.getEntriesByUser(userId)
-
-    suspend fun refreshJournalEntries(userId: Long) {
-        try {
+    suspend fun fetchEntries(): Result<List<JournalEntry>> {
+        return try {
             val response = ApiClient.apiService.getJournalEntries()
             if (response.isSuccessful) {
-                val networkEntries = response.body()?.data ?: emptyList()
-                val entities = networkEntries.map { networkEntry ->
-                    JournalEntry(
-                        userId = userId,
-                        date = networkEntry.date.toLongOrNull() ?: System.currentTimeMillis(),
-                        mood = mapStringToMood(networkEntry.mood),
-                        text = networkEntry.text,
-                        linkedDeckId = networkEntry.linkedDeckId?.toLongOrNull()
-                    )
+                val body = response.body()
+                if (body?.success == true) {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.error ?: "Unknown error"))
                 }
-                entities.forEach { journalDao.insertEntry(it) }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val parsedError = try {
+                    val type = object : TypeToken<ApiResponse<Any>>() {}.type
+                    val apiResponse: ApiResponse<Any> = Gson().fromJson(errorBody, type)
+                    apiResponse.error ?: "Network error: ${response.code()}"
+                } catch (e: Exception) {
+                    "Network error: ${response.code()}"
+                }
+                Result.failure(Exception(parsedError))
             }
         } catch (e: Exception) {
-            // Log error
+            Result.failure(e)
         }
     }
 
-    suspend fun createEntry(userId: Long, date: String, mood: String, text: String, deckId: String?): Boolean {
+    suspend fun createEntry(date: String, mood: String, text: String, linkedDeckId: String?): Result<JournalEntry> {
         return try {
-            val request = CreateJournalRequest(date, mood, text, deckId)
+            val request = CreateJournalRequest(date, mood, text, linkedDeckId)
             val response = ApiClient.apiService.createJournalEntry(request)
             if (response.isSuccessful) {
-                response.body()?.data?.let { networkEntry ->
-                    val entity = JournalEntry(
-                        userId = userId,
-                        date = networkEntry.date.toLongOrNull() ?: System.currentTimeMillis(),
-                        mood = mapStringToMood(networkEntry.mood),
-                        text = networkEntry.text,
-                        linkedDeckId = networkEntry.linkedDeckId?.toLongOrNull()
-                    )
-                    journalDao.insertEntry(entity)
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    achievementRepository?.recordActivity(userId, ActivityType.JOURNAL_ENTRY)
+                    Result.success(body.data)
+                } else {
+                    Result.failure(Exception(body?.error ?: "Failed to create entry"))
                 }
-                true
-            } else false
+            } else {
+                Result.failure(Exception("Network error: ${response.code()}"))
+            }
         } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun mapStringToMood(mood: String): Mood {
-        return when (mood.lowercase()) {
-            "great" -> Mood.GREAT
-            "tough" -> Mood.TOUGH
-            else -> Mood.OKAY
+            Result.failure(e)
         }
     }
 }

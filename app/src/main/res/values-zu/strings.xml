@@ -1,0 +1,29 @@
+<resources>
+    <string name="nav_home">Ikhaya</string>
+    <string name="nav_expense">Izindleko</string>
+    <string name="nav_goals">Imigomo</string>
+    <string name="nav_decks">Amadekhi</string>
+    <string name="nav_journal">Ijenali</string>
+    <string name="nav_achievements">Amabheji</string>
+    <string name="welcome_back">Wamukelekile futhi</string>
+    <string name="welcome_subtitle">Sawubona! Kuhle ukukubona.</string>
+    <string name="log_in">Ngena</string>
+    <string name="register">Bhalisa</string>
+    <string name="sign_out">Phuma</string>
+    <string name="settings">Izilungiselelo</string>
+    <string name="my_decks">Amadekhi Ami</string>
+    <string name="your_progress">Inqubekelaphambili Yakho</string>
+    <string name="journal_calendar">Ijenali neKhalenda</string>
+    <string name="ivu_ai_assist">Umsizi we-IVU AI</string>
+    <string name="welcome_learner">Sawubona, %s</string>
+    <string name="study_badges">Amabheji okufunda</string>
+    <string name="current_streak">Isitshalo samanje</string>
+    <string name="experience_xp">Isipiliyoni (XP)</string>
+    <string name="create_new_deck">Dala Idekhi Entsha</string>
+    <string name="deck_title">Isihloko Sedekhi</string>
+    <string name="select_language">Khetha Ulimi</string>
+    <string name="create">Dala</string>
+    <string name="cancel">Khansela</string>
+    <string name="add">Engeza</string>
+    <string name="delete">Susa</string>
+</resources>

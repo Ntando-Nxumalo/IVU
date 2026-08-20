@@ -64,3 +64,11 @@ data class DeleteResponse(
     val entryId: String? = null,
     val deleted: Boolean
 )
+
+data class AiRequest(
+    val prompt: String
+)
+
+data class AiReplyResponse(
+    val reply: String
+)

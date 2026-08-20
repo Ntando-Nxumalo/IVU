@@ -3,119 +3,119 @@ package com.ntando.ivu
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.User
-import kotlinx.coroutines.flow.firstOrNull
+import com.ntando.ivu.data.repository.AuthRepository
+import com.ntando.ivu.ui.auth.LoginScreen
+import com.ntando.ivu.viewmodel.LoginViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
 
 /**
  * MainActivity serves as the Login screen for the IVU application.
- * Users can log in using their email/username.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
     private lateinit var auth: FirebaseAuth
     private lateinit var credentialManager: CredentialManager
+    private val authRepository = AuthRepository()
+
+    private val viewModel: LoginViewModel by viewModels {
+        ViewModelFactory(authRepository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate: Initializing Login screen")
-        setContentView(R.layout.activity_main)
-
         auth = FirebaseAuth.getInstance()
         credentialManager = CredentialManager.create(this)
 
-        val btnBack = findViewById<ImageButton>(R.id.btnBack)
-        val etUsername = findViewById<EditText>(R.id.etUsername)
-        val etPassword = findViewById<EditText>(R.id.etPassword)
-        val tvForgotPassword = findViewById<TextView>(R.id.tvForgotPassword)
-        val btnLogin = findViewById<Button>(R.id.btnLogin)
-        val btnGoogle = findViewById<Button>(R.id.btnGoogle)
-        val btnRegister = findViewById<TextView>(R.id.btnRegister)
+        setContent {
+            LoginScreen(
+                viewModel = viewModel,
+                onLoginSuccess = { 
+                    Log.d(tag, "onLoginSuccess (Success State) triggered")
+                    handleSuccessfulAuth() 
+                },
+                onNavigateToRegister = {
+                    startActivity(Intent(this, RegisterActivity::class.java))
+                },
+                onGoogleSignInClick = { signInWithGoogle() }
+            )
+        }
+    }
 
-        btnBack.setOnClickListener {
-            finish()
+    private fun handleSuccessfulAuth() {
+        val firebaseUser = auth.currentUser
+        if (firebaseUser == null) {
+            Log.e(tag, "handleSuccessfulAuth: firebaseUser is NULL")
+            Toast.makeText(this, "Authentication state error", Toast.LENGTH_SHORT).show()
+            viewModel.resetState()
+            return
         }
 
-        /**
-         * Login button click listener.
-         * Validates credentials against the Room database.
-         */
-        btnLogin.setOnClickListener {
-            val identifier = etUsername.text.toString().trim()
-            val password = etPassword.text.toString().trim()
-
-            if (identifier.isNotEmpty() && password.isNotEmpty()) {
-                Log.d(TAG, "Attempting login for: $identifier")
-                lifecycleScope.launch {
-                    val db = DatabaseProvider.getDatabase(this@MainActivity)
-                    // Check if user exists by name or email
-                    val user = db.userDao().getUserByName(identifier) ?: db.userDao().getUserByEmail(identifier)
-                    
-                    if (user != null) {
-                        if (user.password == password) {
-                            Log.i(TAG, "Login successful for user: ${user.name}")
-                            // Store user ID in SharedPreferences for session persistence
-                            val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-                            with(sharedPref.edit()) {
-                                putLong("current_user_id", user.id)
-                                apply()
-                            }
-
-                            // Navigate to IVU (Main Hub)
-                            val intent = Intent(this@MainActivity, IVU::class.java)
-                            startActivity(intent)
-                            finishAffinity() // Clear stack to prevent back-navigation to login
-                        } else {
-                            Log.w(TAG, "Login failed: Incorrect password")
-                            Toast.makeText(this@MainActivity, "Incorrect password", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        Log.w(TAG, "Login failed: User not found")
-                        Toast.makeText(this@MainActivity, "User not found. Please register.", Toast.LENGTH_SHORT).show()
-                    }
+        val email = firebaseUser.email ?: ""
+        Log.d(tag, "handleSuccessfulAuth for: $email")
+        Toast.makeText(this, "Syncing your profile...", Toast.LENGTH_SHORT).show()
+        
+        lifecycleScope.launch {
+            try {
+                val db = DatabaseProvider.getDatabase(this@MainActivity)
+                var user = db.userDao().getUserByEmail(email)
+                
+                if (user == null) {
+                    Log.d(tag, "User $email not found in local DB, creating new profile...")
+                    val newUserId = db.userDao().insertUser(
+                        User(
+                            name = firebaseUser.displayName ?: "IVU Learner",
+                            email = email,
+                            password = "" 
+                        )
+                    )
+                    user = User(id = newUserId, name = firebaseUser.displayName ?: "IVU Learner", email = email)
                 }
-            } else {
-                Toast.makeText(this, "Please enter credentials", Toast.LENGTH_SHORT).show()
+                
+                user.let {
+                    Log.d(tag, "Saving session to SharedPreferences for user ID: ${it.id}")
+                    val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
+                    val isSaved = with(sharedPref.edit()) {
+                        putLong("current_user_id", it.id)
+                        commit()
+                    }
+                    Log.d(tag, "Session saved: $isSaved. Redirecting to Home...")
+                    Toast.makeText(this@MainActivity, "Welcome, ${it.name}!", Toast.LENGTH_SHORT).show()
+                    
+                    val intent = Intent(this@MainActivity, IVU::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+            } catch (e: Exception) {
+                Log.e(tag, "Failed to sync user with local database", e)
+                Toast.makeText(this@MainActivity, "Database sync failed: ${e.message}", Toast.LENGTH_LONG).show()
+                viewModel.resetState()
             }
-        }
-
-        tvForgotPassword.setOnClickListener {
-            Toast.makeText(this, "Password reset coming soon!", Toast.LENGTH_SHORT).show()
-        }
-
-        btnGoogle.setOnClickListener {
-            signInWithGoogle()
-        }
-
-        /**
-         * Navigate to the Registration screen.
-         */
-        btnRegister.setOnClickListener {
-            Log.d(TAG, "Navigating to RegisterActivity")
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
         }
     }
 
     private fun signInWithGoogle() {
+        Log.d(tag, "signInWithGoogle: Requesting credentials")
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts = false)
+            .setFilterByAuthorizedAccounts(false)
             .setServerClientId(getString(R.string.default_web_client_id))
             .build()
 
@@ -129,59 +129,54 @@ class MainActivity : AppCompatActivity() {
                     request = request,
                     context = this@MainActivity,
                 )
-                handleSignIn(result.credential)
+                Log.d(tag, "credentialManager.getCredential: Success")
+                handleGoogleSignInResult(result.credential)
             } catch (e: GetCredentialException) {
-                Log.e(TAG, "Google Sign-In failed: ${e.message}")
-                Toast.makeText(this@MainActivity, "Sign-in failed", Toast.LENGTH_SHORT).show()
+                Log.e(tag, "Google Sign-In failed: ${e.message}")
+                viewModel.onSignInError("Google Sign-In cancelled or failed")
             }
         }
     }
 
-    private fun handleSignIn(credential: androidx.credentials.Credential) {
-        if (credential is GoogleIdTokenCredential) {
-            val googleIdToken = credential.idToken
+    private fun handleGoogleSignInResult(credential: androidx.credentials.Credential) {
+        Log.d(tag, "handleGoogleSignInResult: Type = ${credential.type}")
+        
+        val googleIdTokenCredential = try {
+            when (credential) {
+                is GoogleIdTokenCredential -> credential
+                is CustomCredential -> {
+                    if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                        GoogleIdTokenCredential.createFrom(credential.data)
+                    } else {
+                        null
+                    }
+                }
+                else -> null
+            }
+        } catch (e: GoogleIdTokenParsingException) {
+            Log.e(tag, "Failed to parse Google ID Token", e)
+            null
+        }
+
+        if (googleIdTokenCredential != null) {
+            Log.d(tag, "handleGoogleSignInResult: Received ID Token")
+            val googleIdToken = googleIdTokenCredential.idToken
             val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
             
             auth.signInWithCredential(firebaseCredential)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        val firebaseUser = auth.currentUser
-                        Log.i(TAG, "Firebase Auth successful: ${firebaseUser?.email}")
-                        
-                        // Sync with local Room database
-                        lifecycleScope.launch {
-                            val db = DatabaseProvider.getDatabase(this@MainActivity)
-                            var user = db.userDao().getUserByEmail(firebaseUser?.email ?: "")
-                            
-                            if (user == null) {
-                                // Create local user if first time
-                                val newUserId = db.userDao().insertUser(
-                                    User(
-                                        name = firebaseUser?.displayName ?: "Google User",
-                                        email = firebaseUser?.email ?: "",
-                                        password = "" // No local password for Google users
-                                    )
-                                )
-                                user = db.userDao().getUserById(newUserId).firstOrNull()
-                            }
-                            
-                            user?.let {
-                                val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-                                with(sharedPref.edit()) {
-                                    putLong("current_user_id", it.id)
-                                    apply()
-                                }
-                                
-                                val intent = Intent(this@MainActivity, IVU::class.java)
-                                startActivity(intent)
-                                finishAffinity()
-                            }
-                        }
+                        Log.i(tag, "Firebase Auth with Google: Success")
+                        viewModel.onGoogleSignInSuccess()
+                        // handleSuccessfulAuth() is called via LaunchedEffect in LoginScreen
                     } else {
-                        Log.e(TAG, "Firebase Auth failed", task.exception)
-                        Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                        Log.e(tag, "Firebase Auth with Google: FAILED", task.exception)
+                        viewModel.onSignInError("Firebase authentication failed")
                     }
                 }
+        } else {
+            Log.e(tag, "handleGoogleSignInResult: Unexpected or null credential: ${credential.type}")
+            viewModel.onSignInError("Google Sign-In failed: Incorrect credential type")
         }
     }
 }

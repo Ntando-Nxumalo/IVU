@@ -15,7 +15,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.ntando.ivu.R
 import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.repository.ChatRepository
 import com.ntando.ivu.viewmodel.ChatViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class ChatBottomSheetFragment : BottomSheetDialogFragment() {
@@ -37,16 +40,7 @@ class ChatBottomSheetFragment : BottomSheetDialogFragment() {
         val sharedPref = requireContext().getSharedPreferences("IVUPrefs", Context.MODE_PRIVATE)
         val currentUserId = sharedPref.getLong("current_user_id", -1)
 
-        val factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
-                    return ChatViewModel(currentUserId) as T
-                }
-                throw IllegalArgumentException("Unknown ViewModel class")
-            }
-        }
-        
+        val factory = ViewModelFactory(ChatRepository())
         viewModel = ViewModelProvider(this, factory)[ChatViewModel::class.java]
 
         val rvChat = view.findViewById<RecyclerView>(R.id.rvChat)
@@ -57,10 +51,12 @@ class ChatBottomSheetFragment : BottomSheetDialogFragment() {
         rvChat.layoutManager = LinearLayoutManager(context)
         rvChat.adapter = adapter
 
-        viewModel.messages.observe(viewLifecycleOwner) { messages ->
-            adapter.updateMessages(messages)
-            if (messages.isNotEmpty()) {
-                rvChat.smoothScrollToPosition(messages.size - 1)
+        lifecycleScope.launch {
+            viewModel.messages.collectLatest { messages ->
+                adapter.updateMessages(messages)
+                if (messages.isNotEmpty()) {
+                    rvChat.smoothScrollToPosition(messages.size - 1)
+                }
             }
         }
 

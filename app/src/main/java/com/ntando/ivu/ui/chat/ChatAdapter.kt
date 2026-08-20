@@ -33,9 +33,9 @@ class ChatAdapter(private var messages: List<ChatMessage>) :
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = messages[position]
         if (holder is UserViewHolder) {
-            holder.tvMessage.text = message.message
+            holder.tvMessage.text = message.text
         } else if (holder is BotViewHolder) {
-            holder.tvMessage.text = message.message
+            holder.tvMessage.text = message.text
         }
     }
 

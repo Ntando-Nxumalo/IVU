@@ -1,67 +1,74 @@
 package com.ntando.ivu.data.repository
 
-import com.ntando.ivu.data.dao.DeckDao
-import com.ntando.ivu.data.entity.Deck
-import com.ntando.ivu.data.entity.Language
 import com.ntando.ivu.network.ApiClient
 import com.ntando.ivu.network.CreateDeckRequest
-import kotlinx.coroutines.flow.Flow
+import com.ntando.ivu.network.Deck
+import com.ntando.ivu.network.ApiResponse
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
-class DeckRepository(private val deckDao: DeckDao) {
+class DeckRepository {
 
-    fun getLocalDecks(userId: Long): Flow<List<Deck>> = deckDao.getDecksByUser(userId)
-
-    suspend fun refreshDecks(userId: Long) {
-        try {
+    suspend fun fetchDecks(): Result<List<Deck>> {
+        return try {
             val response = ApiClient.apiService.getDecks()
             if (response.isSuccessful) {
-                val networkDecks = response.body()?.data ?: emptyList()
-                val entities = networkDecks.map { networkDeck ->
-                    Deck(
-                        remoteId = networkDeck.deckId,
-                        ownerId = userId,
-                        title = networkDeck.title,
-                        language = mapStringToLanguage(networkDeck.language),
-                        cardCount = networkDeck.cardCount
-                    )
+                val body = response.body()
+                if (body?.success == true) {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.error ?: "Unknown error"))
                 }
-                // Syncing logic: Insert or update based on remoteId
-                // For a student project, we'll keep it simple: insert them.
-                // Room's @Insert(onConflict = OnConflictStrategy.REPLACE) will handle it if we manage IDs correctly.
-                entities.forEach { deckDao.insertDeck(it) }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val parsedError = try {
+                    val type = object : TypeToken<ApiResponse<Any>>() {}.type
+                    val apiResponse: ApiResponse<Any> = Gson().fromJson(errorBody, type)
+                    apiResponse.error ?: "Network error: ${response.code()}"
+                } catch (e: Exception) {
+                    "Network error: ${response.code()}"
+                }
+                Result.failure(Exception(parsedError))
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Result.failure(e)
         }
     }
 
-    suspend fun createDeck(userId: Long, title: String, language: String): Boolean {
+    suspend fun createDeck(title: String, language: String): Result<Deck> {
         return try {
             val request = CreateDeckRequest(title, language)
             val response = ApiClient.apiService.createDeck(request)
             if (response.isSuccessful) {
-                response.body()?.data?.let { networkDeck ->
-                    val entity = Deck(
-                        remoteId = networkDeck.deckId,
-                        ownerId = userId,
-                        title = networkDeck.title,
-                        language = mapStringToLanguage(networkDeck.language),
-                        cardCount = networkDeck.cardCount
-                    )
-                    deckDao.insertDeck(entity)
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Result.success(body.data)
+                } else {
+                    Result.failure(Exception(body?.error ?: "Failed to create deck"))
                 }
-                true
-            } else false
+            } else {
+                Result.failure(Exception("Network error: ${response.code()}"))
+            }
         } catch (e: Exception) {
-            false
+            Result.failure(e)
         }
     }
 
-    private fun mapStringToLanguage(lang: String): Language {
-        return when (lang.lowercase()) {
-            "zu" -> Language.ZU
-            "af" -> Language.AF
-            else -> Language.EN
+    suspend fun deleteDeck(deckId: String): Result<Unit> {
+        return try {
+            val response = ApiClient.apiService.deleteDeck(deckId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception(body?.error ?: "Failed to delete deck"))
+                }
+            } else {
+                Result.failure(Exception("Network error: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

@@ -50,4 +50,9 @@ interface IvuApiService {
 
     @POST("journal")
     suspend fun createJournalEntry(@Body request: CreateJournalRequest): Response<ApiResponse<JournalEntry>>
+
+    // --------- AI ---------
+
+    @POST("ai/ask")
+    suspend fun askAI(@Body request: AiRequest): Response<ApiResponse<AiReplyResponse>>
 }

@@ -2,47 +2,43 @@ package com.ntando.ivu.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ntando.ivu.data.entity.Flashcard
 import com.ntando.ivu.data.repository.FlashcardRepository
-import kotlinx.coroutines.flow.Flow
+import com.ntando.ivu.network.Flashcard
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+sealed class FlashcardUiState {
+    object Idle : FlashcardUiState()
+    object Loading : FlashcardUiState()
+    data class Success(val card: Flashcard) : FlashcardUiState()
+    data class Error(val message: String) : FlashcardUiState()
+}
 
 class FlashcardViewModel(private val repository: FlashcardRepository) : ViewModel() {
 
-    fun getFlashcards(deckId: Long): Flow<List<Flashcard>> = repository.getLocalFlashcards(deckId)
+    private val _uiState = MutableStateFlow<FlashcardUiState>(FlashcardUiState.Idle)
+    val uiState: StateFlow<FlashcardUiState> = _uiState.asStateFlow()
 
-    suspend fun getFlashcardById(cardId: Long): Flashcard? = repository.getFlashcardById(cardId)
-
-    fun refreshFlashcards(remoteDeckId: String, localDeckId: Long) {
+    fun createFlashcard(deckId: String, front: String, back: String, onResult: (Boolean) -> Unit) {
+        _uiState.value = FlashcardUiState.Loading
         viewModelScope.launch {
-            repository.refreshFlashcards(remoteDeckId, localDeckId)
+            val result = repository.createCard(deckId, front, back)
+            if (result.isSuccess) {
+                _uiState.value = FlashcardUiState.Success(result.getOrThrow())
+                onResult(true)
+            } else {
+                _uiState.value = FlashcardUiState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                onResult(false)
+            }
         }
     }
 
-    fun reviewCard(remoteDeckId: String, remoteCardId: String, localCard: Flashcard, rating: String, onResult: (Boolean) -> Unit) {
+    fun deleteFlashcard(deckId: String, cardId: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val success = repository.reviewCard(remoteDeckId, remoteCardId, localCard, rating)
-            onResult(success)
-        }
-    }
-
-    fun createFlashcard(remoteDeckId: String, localDeckId: Long, front: String, back: String, image: String?, onResult: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            val success = repository.createFlashcard(remoteDeckId, localDeckId, front, back, image)
-            onResult(success)
-        }
-    }
-
-    fun updateFlashcardLocal(flashcard: Flashcard) {
-        viewModelScope.launch {
-            repository.updateFlashcardLocal(flashcard)
-        }
-    }
-
-    fun deleteCard(remoteDeckId: String?, remoteCardId: String?, localCard: Flashcard, onResult: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            val success = repository.deleteCard(remoteDeckId, remoteCardId, localCard)
-            onResult(success)
+            val result = repository.deleteCard(deckId, cardId)
+            onResult(result.isSuccess)
         }
     }
 }

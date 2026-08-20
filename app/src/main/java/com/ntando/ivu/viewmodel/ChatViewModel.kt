@@ -1,66 +1,43 @@
 package com.ntando.ivu.viewmodel
 
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntando.ivu.data.model.ChatMessage
-import kotlinx.coroutines.delay
+import com.ntando.ivu.data.repository.ChatRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * ChatViewModel for IVU AI Assist.
- * Acts as a study companion that explains flashcards, generates examples, and quizzes users.
- */
-class ChatViewModel(
-    private val userId: Long
-) : ViewModel() {
+class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
 
-    private val TAG = "ChatViewModel"
+    private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
-    private val _messages = MutableLiveData<List<ChatMessage>>(emptyList())
-    val messages: LiveData<List<ChatMessage>> = _messages
-
-    fun sendWelcomeMessage(userName: String) {
-        if (_messages.value?.isEmpty() == true) {
-            addMessage(ChatMessage("Hi $userName! Want me to quiz you on isiZulu greetings?", false))
-        }
-    }
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     fun sendMessage(text: String) {
-        addMessage(ChatMessage(text, true))
+        if (text.isBlank()) return
+
+        val userMessage = ChatMessage(text, true)
+        _messages.value = _messages.value + userMessage
+        _isLoading.value = true
 
         viewModelScope.launch {
-            delay(1000) // Simulate AI thinking
-            val response = getBotResponse(text.lowercase())
-            addMessage(ChatMessage(response, false))
+            val result = repository.sendMessage(text)
+            _isLoading.value = false
+            
+            val aiResponse = result.getOrElse { it.message ?: "Sorry, I couldn't process that." }
+            _messages.value = _messages.value + ChatMessage(aiResponse, false)
         }
     }
 
-    private fun addMessage(message: ChatMessage) {
-        val current = _messages.value.orEmpty().toMutableList()
-        current.add(message)
-        _messages.value = current
-    }
-
-    private fun getBotResponse(input: String): String {
-        return when {
-            input.contains("quiz") && (input.contains("yes") || input.contains("please")) -> {
-                "Great! How do you say 'thank you' in isiZulu?\n\n(Type your answer below)"
-            }
-            input.contains("ngiyabonga") -> {
-                "Halleluja! That's correct. 'Ngiyabonga' means thank you. Want to try another one?"
-            }
-            input.contains("quiz") -> {
-                "Quiz mode activated! I'll pick a card from your recent deck. Ready for your first question?"
-            }
-            input.contains("explain") || input.contains("meaning") -> {
-                "I can definitely help break that down. Which word or concept would you like me to explain?"
-            }
-            else -> {
-                "I'm here to help you learn! Would you like an example sentence, or should we try a quick quiz?"
-            }
+    fun sendWelcomeMessage(userName: String) {
+        if (_messages.value.isEmpty()) {
+            _messages.value = listOf(
+                ChatMessage("Hi $userName! I'm your IVU study assistant. How can I help you today?", false)
+            )
         }
     }
 }
