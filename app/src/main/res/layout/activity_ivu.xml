@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFF8F0">
+    android:layout_height="match_parent">
 
     <!-- Header -->
     <RelativeLayout
@@ -12,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#E88A68"
-        android:paddingVertical="24dp">
+        android:paddingVertical="24dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -25,7 +25,8 @@
                 android:id="@+id/tvHeaderTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sawubona, Ayanda"
+                android:text="@string/welcome_learner"
+                tools:text="Sawubona, Ayanda"
                 android:textColor="@android:color/white"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -35,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Tuesday, 26 August"
+                android:text="@string/placeholder_date"
                 android:textColor="#F0E4D8"
                 android:textSize="14sp" />
         </LinearLayout>
@@ -48,7 +49,7 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Settings"
+            android:contentDescription="@string/content_desc_settings"
             android:src="@android:drawable/ic_menu_manage"
             app:tint="@android:color/white" />
 
@@ -89,14 +90,15 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        android:contentDescription="Streak Icon" />
+                        android:contentDescription="@string/content_desc_streak_icon" />
 
                     <TextView
                         android:id="@+id/tvStreakTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:text="12-day streak"
+                        android:text="@string/streak_format"
+                        tools:text="12-day streak"
                         android:textColor="#3D2B1F"
                         android:textSize="18sp"
                         android:textStyle="bold"
@@ -106,7 +108,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Keep it going — study today!"
+                        android:text="@string/streak_msg"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         app:layout_constraintStart_toStartOf="@id/tvStreakTitle"
@@ -115,7 +117,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="+40 XP"
+                        android:text="@string/xp_earned_format"
+                        tools:text="+40 XP"
                         android:textColor="#E8743B"
                         android:textStyle="bold"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -129,7 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Today's goal"
+                android:text="@string/todays_goal"
                 android:textColor="#3D2B1F"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -146,7 +149,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="12 / 20 cards reviewed"
+                android:text="@string/cards_reviewed_format"
+                tools:text="12 / 20 cards reviewed"
                 android:textColor="#9E9E9E"
                 android:textSize="12sp" />
 
@@ -180,7 +184,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="My\nDecks"
+                            android:text="@string/nav_my_decks"
                             android:textColor="#3D2B1F"
                             android:textSize="16sp"
                             android:textStyle="bold"
@@ -217,7 +221,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="IVU AI\nAssist"
+                            android:text="@string/nav_ai_assist"
                             android:textColor="#3D2B1F"
                             android:textSize="16sp"
                             android:textStyle="bold"
@@ -254,7 +258,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Journal \u0026\nCalendar"
+                            android:text="@string/nav_journal_calendar"
                             android:textColor="#3D2B1F"
                             android:textSize="16sp"
                             android:textStyle="bold"
@@ -291,7 +295,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Progress \u0026\nBadges"
+                            android:text="@string/nav_progress_badges"
                             android:textColor="#3D2B1F"
                             android:textSize="16sp"
                             android:textStyle="bold"

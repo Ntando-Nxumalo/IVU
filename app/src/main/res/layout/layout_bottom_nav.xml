@@ -24,12 +24,12 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/circle_outline"
-            android:contentDescription="Home" />
+            android:contentDescription="@string/nav_home" />
         <TextView
             android:id="@+id/tvNavHome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Home"
+            android:text="@string/nav_home"
             android:textColor="#CCCCCC"
             android:textSize="12sp" />
     </LinearLayout>
@@ -50,12 +50,12 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/circle_outline"
-            android:contentDescription="Decks" />
+            android:contentDescription="@string/nav_decks" />
         <TextView
             android:id="@+id/tvNavDecks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Decks"
+            android:text="@string/nav_decks"
             android:textColor="#CCCCCC"
             android:textSize="12sp" />
     </LinearLayout>
@@ -76,12 +76,12 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/circle_outline"
-            android:contentDescription="Journal" />
+            android:contentDescription="@string/nav_journal" />
         <TextView
             android:id="@+id/tvNavJournal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Journal"
+            android:text="@string/nav_journal"
             android:textColor="#CCCCCC"
             android:textSize="12sp" />
     </LinearLayout>
@@ -102,12 +102,12 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/circle_outline"
-            android:contentDescription="Me" />
+            android:contentDescription="@string/nav_profile" />
         <TextView
             android:id="@+id/tvNavMe"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Me"
+            android:text="@string/nav_profile"
             android:textColor="#CCCCCC"
             android:textSize="12sp" />
     </LinearLayout>

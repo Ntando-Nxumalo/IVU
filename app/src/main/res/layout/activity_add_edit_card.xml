@@ -2,8 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFF8F0">
+    android:layout_height="match_parent">
 
     <!-- Header -->
     <RelativeLayout
@@ -20,7 +19,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Back"
+            android:contentDescription="@string/content_desc_back"
             android:rotation="180"
             android:src="@android:drawable/ic_menu_revert"
             app:tint="@android:color/white" />
@@ -30,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Add / Edit Card"
+            android:text="@string/title_add_edit_card"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -43,7 +42,7 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Delete"
+            android:contentDescription="@string/content_desc_delete"
             android:src="@android:drawable/ic_menu_delete"
             android:visibility="gone"
             app:tint="@android:color/white" />
@@ -61,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Front Text (Question)"
+            android:text="@string/label_front_text"
             android:textColor="#9E9E9E"
             android:textSize="14sp" />
 
@@ -72,7 +71,9 @@
             android:layout_marginBottom="24dp"
             android:background="@drawable/rounded_edittext"
             android:gravity="top"
-            android:hint="Enter the question or word..."
+            android:hint="@string/hint_front_text"
+            android:inputType="textMultiLine"
+            android:importantForAutofill="no"
             android:minHeight="100dp"
             android:padding="16dp"
             android:textColor="#3D2B1F"
@@ -82,7 +83,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Back Text (Answer)"
+            android:text="@string/label_back_text"
             android:textColor="#9E9E9E"
             android:textSize="14sp" />
 
@@ -93,7 +94,9 @@
             android:layout_marginBottom="32dp"
             android:background="@drawable/rounded_edittext"
             android:gravity="top"
-            android:hint="Enter the answer or translation..."
+            android:hint="@string/hint_back_text"
+            android:inputType="textMultiLine"
+            android:importantForAutofill="no"
             android:minHeight="100dp"
             android:padding="16dp"
             android:textColor="#3D2B1F"
@@ -104,7 +107,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:background="@drawable/btn_primary"
-            android:text="Save Card"
+            android:text="@string/btn_save_card"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="16sp"

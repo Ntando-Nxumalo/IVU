@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFF8F0">
+    android:layout_height="match_parent">
 
     <!-- Header -->
     <RelativeLayout
@@ -18,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Your Progress"
+            android:text="@string/title_progress"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -33,7 +32,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_manage"
             app:tint="@android:color/white"
-            android:contentDescription="Settings" />
+            android:contentDescription="@string/content_desc_settings" />
     </RelativeLayout>
 
     <ScrollView
@@ -55,13 +54,14 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:src="@drawable/ic_leaf"
-                android:contentDescription="Streak Icon" />
+                android:contentDescription="@string/content_desc_streak_icon" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="12-day streak"
+                android:text="@string/streak_format"
+                tools:text="12-day streak"
                 android:textColor="#3D2B1F"
                 android:textSize="22sp"
                 android:textStyle="bold" />
@@ -70,7 +70,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Level 5 · Wordsmith"
+                android:text="@string/label_level_wordsmith"
                 android:textColor="#CCCCCC"
                 android:textSize="14sp" />
 
@@ -87,7 +87,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="540 / 1000 XP to Level 6"
+                android:text="@string/xp_needed_format"
+                tools:text="540 / 1000 XP to Level 6"
                 android:textColor="#CCCCCC"
                 android:textSize="12sp" />
 
@@ -96,7 +97,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="This week"
+                android:text="@string/label_this_week"
                 android:textColor="#3D2B1F"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -106,36 +107,37 @@
                 android:layout_height="100dp"
                 android:layout_marginTop="16dp"
                 android:gravity="bottom"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
                 <!-- Mock Bar Chart -->
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="40dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="M" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_m" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="60dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="T" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_t" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="30dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="W" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_w" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="80dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="T" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_th" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="50dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="F" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_f" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="20dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="S" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_s" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
                 <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center|bottom" android:orientation="vertical">
                     <View android:layout_width="24dp" android:layout_height="70dp" android:background="@drawable/bg_tag_teal" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="S" android:textColor="#CCCCCC" android:textSize="10sp" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/day_su" android:textColor="#CCCCCC" android:textSize="12sp" android:layout_marginTop="4dp"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -144,7 +146,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Badges"
+                android:text="@string/label_badges"
                 android:textColor="#3D2B1F"
                 android:textSize="16sp"
                 android:textStyle="bold" />

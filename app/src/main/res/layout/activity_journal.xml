@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF8F0">
+    tools:ignore="HardcodedText">
 
     <!-- Header -->
     <RelativeLayout
@@ -14,11 +14,23 @@
         android:background="#E88A68"
         app:layout_constraintTop_toTopOf="parent">
 
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/content_desc_back"
+            android:rotation="180"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@android:color/white" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="My Calendar"
+            android:text="@string/title_my_calendar"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -55,7 +67,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="August 2026"
+                        android:text="@string/label_august_2026"
                         android:textColor="#3D2B1F"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -69,13 +81,13 @@
                         android:useDefaultMargins="false">
 
                         <!-- Day labels -->
-                        <TextView style="@style/CalendarDayLabel" android:text="S" />
-                        <TextView style="@style/CalendarDayLabel" android:text="M" />
-                        <TextView style="@style/CalendarDayLabel" android:text="T" />
-                        <TextView style="@style/CalendarDayLabel" android:text="W" />
-                        <TextView style="@style/CalendarDayLabel" android:text="T" />
-                        <TextView style="@style/CalendarDayLabel" android:text="F" />
-                        <TextView style="@style/CalendarDayLabel" android:text="S" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_s_short" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_m_short" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_t_short" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_w_short" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_th_short" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_f_short" />
+                        <TextView style="@style/CalendarDayLabel" android:text="@string/day_sa_short" />
 
                         <!-- Row 1 -->
                         <TextView style="@style/CalendarDay" android:text="" />
@@ -154,7 +166,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:text="Entries this week"
+                android:text="@string/label_entries_week"
                 android:textColor="#3D2B1F"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -184,7 +196,7 @@
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@android:color/white"
-        android:contentDescription="Add Entry" />
+        android:contentDescription="@string/content_desc_add_entry" />
 
     <!-- Synchronized Bottom Navigation -->
     <include

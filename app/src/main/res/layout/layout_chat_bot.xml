@@ -3,60 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFF8F0">
+    android:layout_height="match_parent">
 
-    <!-- Header -->
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#E88A68"
-        android:gravity="center"
-        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
         android:paddingVertical="20dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            android:rotation="180"
+            app:tint="@android:color/white"
+            android:contentDescription="@string/content_desc_back" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp">
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:orientation="vertical">
 
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_revert"
-                android:rotation="180"
-                app:tint="@android:color/white"
-                android:contentDescription="Back" />
-
-            <LinearLayout
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:text="@string/title_ivu_ai"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="IVU AI"
-                    android:textColor="@android:color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Your study buddy"
-                    android:textColor="#F0E4D8"
-                    android:textSize="12sp" />
-            </LinearLayout>
-        </RelativeLayout>
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/subtitle_study_buddy"
+                android:textColor="#F0E4D8"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </RelativeLayout>
 
     <!-- Chat Messages -->
     <androidx.recyclerview.widget.RecyclerView
@@ -86,7 +77,7 @@
             android:backgroundTint="#F0E4D8"
             android:paddingHorizontal="20dp"
             android:paddingVertical="10dp"
-            android:text="Quiz me"
+            android:text="@string/suggestion_quiz_me"
             android:textColor="#3D2B1F"
             android:textSize="14sp" />
 
@@ -98,7 +89,7 @@
             android:backgroundTint="#F0E4D8"
             android:paddingHorizontal="20dp"
             android:paddingVertical="10dp"
-            android:text="Explain this word"
+            android:text="@string/suggestion_explain_word"
             android:textColor="#3D2B1F"
             android:textSize="14sp" />
     </LinearLayout>
@@ -119,7 +110,9 @@
             android:layout_height="56dp"
             android:layout_weight="1"
             android:background="@drawable/rounded_edittext"
-            android:hint="Type your message..."
+            android:hint="@string/hint_type_message"
+            android:inputType="textShortMessage"
+            android:importantForAutofill="no"
             android:paddingHorizontal="16dp"
             android:textColor="#3D2B1F"
             android:textColorHint="#CCCCCC" />
@@ -133,7 +126,7 @@
             app:backgroundTint="#E88A68"
             app:fabSize="normal"
             app:tint="@android:color/white"
-            android:contentDescription="Send" />
+            android:contentDescription="@string/content_desc_send" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

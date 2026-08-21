@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.ntando.ivu.R
 import com.ntando.ivu.data.model.ChatMessage
@@ -42,8 +43,25 @@ class ChatAdapter(private var messages: List<ChatMessage>) :
     override fun getItemCount(): Int = messages.size
 
     fun updateMessages(newMessages: List<ChatMessage>) {
+        val diffResult = DiffUtil.calculateDiff(MessageDiffCallback(messages, newMessages))
         messages = newMessages
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class MessageDiffCallback(
+        private val oldList: List<ChatMessage>,
+        private val newList: List<ChatMessage>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] === newList[newItemPosition] ||
+                   (oldList[oldItemPosition].text == newList[newItemPosition].text &&
+                    oldList[oldItemPosition].isUser == newList[newItemPosition].isUser)
+        }
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
     }
 
     class UserViewHolder(view: View) : RecyclerView.ViewHolder(view) {

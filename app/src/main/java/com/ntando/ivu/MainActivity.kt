@@ -145,7 +145,8 @@ class MainActivity : ComponentActivity() {
             when (credential) {
                 is GoogleIdTokenCredential -> credential
                 is CustomCredential -> {
-                    if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL ||
+                        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_SIWG_CREDENTIAL) {
                         GoogleIdTokenCredential.createFrom(credential.data)
                     } else {
                         null

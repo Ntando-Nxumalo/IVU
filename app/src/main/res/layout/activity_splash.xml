@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF8F0"
     android:padding="32dp">
 
     <!-- Center Content Wrapper -->
@@ -39,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:fontFamily="sans-serif-medium"
-            android:text="IVU"
+            android:text="@string/app_name"
             android:textColor="#3D2B1F"
             android:textSize="36sp"
             android:textStyle="bold" />
