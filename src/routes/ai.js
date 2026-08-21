@@ -6,27 +6,49 @@ const { success, failure } = require("../utils/response");
 // AI routes require a valid logged-in user
 router.use(verifyToken);
 
-/**
- * POST /ai/ask
- * Body: { prompt: string }
- */
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
 router.post("/ask", async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    if (!prompt) {
-      return failure(res, "Prompt is required", 400);
+    if (!prompt || typeof prompt !== "string") {
+      return failure(res, "prompt is required", 400);
     }
 
-    console.log(`AI Prompt from user ${req.user.uid}: ${prompt}`);
+    if (!GEMINI_API_KEY) {
+      return failure(res, "AI service not configured", 500);
+    }
 
-    // TODO: Integrate with OpenAI, Gemini, or another AI provider here.
-    // For now, we return a mock response to verify the connection.
-    const mockReply = `Hello! I received your message: "${prompt}". This is a mock response from the IVU AI backend. Once you add your AI API key, I'll be able to help you study more effectively!`;
+    const systemInstruction =
+      "You are IVU AI Assist, a friendly study helper inside a flashcard app. " +
+      "Help the user understand flashcard content, give extra example sentences, " +
+      "or quiz them conversationally. Keep answers short, warm, and encouraging.";
 
-    return success(res, { reply: mockReply });
+    const response = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API error:", data);
+      return failure(res, "AI service request failed", 502);
+    }
+
+    const replyText =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ??
+      "Sorry, I couldn't come up with a response for that.";
+
+    return success(res, { reply: replyText });
   } catch (err) {
-    console.error("AI Error:", err);
+    console.error(err);
     return failure(res, "Failed to process AI request", 500);
   }
 });
