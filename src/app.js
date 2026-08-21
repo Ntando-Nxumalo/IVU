@@ -5,6 +5,7 @@ const cors = require("cors");
 const deckRoutes = require("./routes/decks");
 const flashcardRoutes = require("./routes/flashcards");
 const journalRoutes = require("./routes/journal");
+const aiRoutes = require("./routes/ai");
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 app.use("/decks", deckRoutes);
 app.use("/decks", flashcardRoutes); // nested under /decks/:deckId/cards
 app.use("/journal", journalRoutes);
+app.use("/ai", aiRoutes);
 
 // Catch-all 404
 app.use((req, res) => {
@@ -28,6 +30,14 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`IVU API listening on port ${PORT}`);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
 });
 
 module.exports = app;
