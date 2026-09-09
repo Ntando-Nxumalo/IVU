@@ -9,6 +9,7 @@ import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.ui.decks.DecksScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.DecksViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 import com.ntando.ivu.data.repository.FlashcardRepository
@@ -25,12 +26,10 @@ class DecksActivity : ComponentActivity() {
         val currentUserId = sharedPref.getLong("current_user_id", -1)
         val db = DatabaseProvider.getDatabase(this)
         val achievementRepository = AchievementRepository(
-            db.achievementDao(),
             db.userStatsDao(),
-            db.journalDao(),
-            db.flashcardDao()
+            db.journalDao()
         )
-        ViewModelFactory(FlashcardRepository(achievementRepository, currentUserId))
+        ViewModelFactory(FlashcardRepository(achievementRepository, currentUserId.toString()))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,23 +45,25 @@ class DecksActivity : ComponentActivity() {
         }
 
         setContent {
-            DecksScreen(
-                viewModel = viewModel,
-                flashcardViewModel = flashcardViewModel,
-                onDeckClick = { deckId ->
-                    val intent = Intent(this, ReviewActivity::class.java).apply {
-                        putExtra("deck_id", deckId)
+            IVUTheme {
+                DecksScreen(
+                    viewModel = viewModel,
+                    flashcardViewModel = flashcardViewModel,
+                    onDeckClick = { deckId ->
+                        val intent = Intent(this, ReviewActivity::class.java).apply {
+                            putExtra("deck_id", deckId)
+                        }
+                        startActivity(intent)
+                    },
+                    onViewCards = { deckId, deckTitle ->
+                        val intent = Intent(this, FlashcardListActivity::class.java).apply {
+                            putExtra("deck_id", deckId)
+                            putExtra("deck_title", deckTitle)
+                        }
+                        startActivity(intent)
                     }
-                    startActivity(intent)
-                },
-                onViewCards = { deckId, deckTitle ->
-                    val intent = Intent(this, FlashcardListActivity::class.java).apply {
-                        putExtra("deck_id", deckId)
-                        putExtra("deck_title", deckTitle)
-                    }
-                    startActivity(intent)
-                }
-            )
+                )
+            }
         }
     }
 }

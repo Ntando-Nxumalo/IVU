@@ -5,9 +5,9 @@
     <string name="nav_goals">Goals</string>
     <string name="nav_decks">Decks</string>
     <string name="nav_journal">Journal</string>
-    <string name="nav_report">Report</string>
+    <string name="nav_report">Me</string>
     <string name="nav_profile">Profile</string>
-    <string name="nav_achievements">Badges</string>
+    <string name="nav_achievements">Me</string>
     <string name="currency_format" translatable="false">R%d</string>
     <string name="currency_format_decimal" translatable="false">R%.2f</string>
     <string name="xp_progress_format" translatable="false">%1$d / 100 XP</string>
@@ -94,6 +94,7 @@
         <item quantity="one">Due: %d card</item>
         <item quantity="other">Due: %d cards</item>
     </plurals>
+    <string name="cards_mastered_format">%1$d / %2$d cards mastered</string>
     <string name="create_new_deck">Create New Deck</string>
     <string name="deck_title">Deck Title</string>
     <string name="select_language">Select Language</string>
@@ -157,10 +158,10 @@
     <string name="xp_earned_format">+%d XP</string>
     <string name="todays_goal">Today\'s goal</string>
     <string name="cards_reviewed_format">%1$d / %2$d cards reviewed</string>
-    <string name="nav_my_decks">My\nDecks</string>
-    <string name="nav_ai_assist">IVU AI\nAssist</string>
-    <string name="nav_journal_calendar">Journal \u0026\nCalendar</string>
-    <string name="nav_progress_badges">Progress \u0026\nBadges</string>
+    <string name="nav_my_decks">Continue\nstudying</string>
+    <string name="nav_ai_assist">Ask\nIVU AI</string>
+    <string name="nav_journal_calendar">Today\'s\njournal</string>
+    <string name="nav_progress_badges">This week\'s\ncalendar</string>
 
     <!-- Register Screen -->
     <string name="create_your_account">Create your account</string>

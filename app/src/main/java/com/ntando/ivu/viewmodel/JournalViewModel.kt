@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntando.ivu.data.repository.JournalRepository
 import com.ntando.ivu.network.JournalEntry
+import com.ntando.ivu.data.entity.Badge
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,7 +12,10 @@ import kotlinx.coroutines.launch
 
 sealed class JournalUiState {
     object Loading : JournalUiState()
-    data class Success(val entries: List<JournalEntry>) : JournalUiState()
+    data class Success(
+        val entries: List<JournalEntry>,
+        val newlyUnlockedBadges: List<Badge> = emptyList()
+    ) : JournalUiState()
     data class Error(val message: String) : JournalUiState()
 }
 
@@ -36,15 +40,26 @@ class JournalViewModel(private val repository: JournalRepository) : ViewModel() 
         }
     }
 
-    fun createEntry(date: String, mood: String, text: String, linkedDeckId: String?, onResult: (Boolean) -> Unit) {
+    fun createEntry(date: String, mood: String, text: String, linkedDeckId: String?, onResult: (Boolean, List<Badge>) -> Unit) {
         viewModelScope.launch {
             val result = repository.createEntry(date, mood, text, linkedDeckId)
-            if (result.isSuccess) {
+            result.onSuccess { (entry, unlockedBadges) ->
                 loadEntries()
-                onResult(true)
-            } else {
-                onResult(false)
+                val currentState = _uiState.value
+                if (currentState is JournalUiState.Success) {
+                    _uiState.value = currentState.copy(newlyUnlockedBadges = unlockedBadges)
+                }
+                onResult(true, unlockedBadges)
+            }.onFailure {
+                onResult(false, emptyList())
             }
+        }
+    }
+    
+    fun clearUnlockedBadges() {
+        val state = _uiState.value
+        if (state is JournalUiState.Success) {
+            _uiState.value = state.copy(newlyUnlockedBadges = emptyList())
         }
     }
 }

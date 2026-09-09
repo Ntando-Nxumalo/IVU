@@ -25,6 +25,15 @@ class SettingsViewModel(
     fun setTheme(isDark: Boolean) {
         viewModelScope.launch {
             preferenceManager.setTheme(isDark)
+            applyTheme(isDark)
+        }
+    }
+
+    private fun applyTheme(isDark: Boolean) {
+        if (isDark) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
     }
 

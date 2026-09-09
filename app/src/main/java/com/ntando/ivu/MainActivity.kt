@@ -21,6 +21,7 @@ import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.User
 import com.ntando.ivu.data.repository.AuthRepository
 import com.ntando.ivu.ui.auth.LoginScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.LoginViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -45,17 +46,19 @@ class MainActivity : ComponentActivity() {
         credentialManager = CredentialManager.create(this)
 
         setContent {
-            LoginScreen(
-                viewModel = viewModel,
-                onLoginSuccess = { 
-                    Log.d(tag, "onLoginSuccess (Success State) triggered")
-                    handleSuccessfulAuth() 
-                },
-                onNavigateToRegister = {
-                    startActivity(Intent(this, RegisterActivity::class.java))
-                },
-                onGoogleSignInClick = { signInWithGoogle() }
-            )
+            IVUTheme {
+                LoginScreen(
+                    viewModel = viewModel,
+                    onLoginSuccess = { 
+                        Log.d(tag, "onLoginSuccess (Success State) triggered")
+                        handleSuccessfulAuth() 
+                    },
+                    onNavigateToRegister = {
+                        startActivity(Intent(this, RegisterActivity::class.java))
+                    },
+                    onGoogleSignInClick = { signInWithGoogle() }
+                )
+            }
         }
     }
 
@@ -94,6 +97,7 @@ class MainActivity : ComponentActivity() {
                     val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
                     val isSaved = with(sharedPref.edit()) {
                         putLong("current_user_id", it.id)
+                        putString("firebase_uid", firebaseUser.uid)
                         commit()
                     }
                     Log.d(tag, "Session saved: $isSaved. Redirecting to Home...")

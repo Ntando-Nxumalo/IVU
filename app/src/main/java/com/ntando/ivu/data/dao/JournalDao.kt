@@ -16,7 +16,7 @@ interface JournalDao {
     suspend fun deleteEntry(entry: JournalEntry)
 
     @Query("SELECT * FROM journal_entries WHERE userId = :userId ORDER BY date DESC")
-    fun getEntriesByUser(userId: Long): Flow<List<JournalEntry>>
+    fun getEntriesByUser(userId: String): Flow<List<JournalEntry>>
 
     @Query("SELECT * FROM journal_entries WHERE entryId = :entryId")
     suspend fun getEntryById(entryId: Long): JournalEntry?

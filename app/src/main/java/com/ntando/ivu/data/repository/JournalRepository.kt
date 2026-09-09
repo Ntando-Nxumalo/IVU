@@ -4,12 +4,13 @@ import com.ntando.ivu.network.ApiClient
 import com.ntando.ivu.network.JournalEntry
 import com.ntando.ivu.network.CreateJournalRequest
 import com.ntando.ivu.network.ApiResponse
+import com.ntando.ivu.data.entity.Badge
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 class JournalRepository(
     private val achievementRepository: AchievementRepository? = null,
-    private val userId: Long = -1
+    private val userId: String = ""
 ) {
 
     suspend fun fetchEntries(): Result<List<JournalEntry>> {
@@ -38,15 +39,15 @@ class JournalRepository(
         }
     }
 
-    suspend fun createEntry(date: String, mood: String, text: String, linkedDeckId: String?): Result<JournalEntry> {
+    suspend fun createEntry(date: String, mood: String, text: String, linkedDeckId: String?): Result<Pair<JournalEntry, List<Badge>>> {
         return try {
             val request = CreateJournalRequest(date, mood, text, linkedDeckId)
             val response = ApiClient.apiService.createJournalEntry(request)
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body?.success == true && body.data != null) {
-                    achievementRepository?.recordActivity(userId, ActivityType.JOURNAL_ENTRY)
-                    Result.success(body.data)
+                    val unlockedBadges = achievementRepository?.recordJournalEntry(userId) ?: emptyList()
+                    Result.success(Pair(body.data, unlockedBadges))
                 } else {
                     Result.failure(Exception(body?.error ?: "Failed to create entry"))
                 }

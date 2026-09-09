@@ -12,8 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,20 +44,19 @@ fun DecksScreen(
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.my_decks), fontWeight = FontWeight.Bold, color = Color.White) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFE88A68)
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDeckDialog = true },
-                containerColor = Color(0xFFE88A68),
+                containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_deck))
             }
-        },
-        containerColor = Color(0xFFFFF8F0)
+        }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val state = uiState) {
@@ -137,7 +136,7 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -146,11 +145,11 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val (tagName, tagColor) = when (deck.language.lowercase()) {
-                    "zu" -> "isiZulu" to Color(0xFFE88A68)
-                    "af" -> "Afrikaans" to Color(0xFF008080)
-                    else -> "English" to Color(0xFFFFD700)
-                }
+            val (tagName, tagColor) = when (deck.language.lowercase()) {
+                "zu" -> "isiZulu" to Color(0xFFE88A68)
+                "af" -> "Afrikaans" to Color(0xFF7FB6A7)
+                else -> "English" to Color(0xFFE8C07C)
+            }
 
                 Surface(
                     color = tagColor,
@@ -179,26 +178,26 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
                 text = deck.title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3D2B1F),
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            val progress = if (deck.cardCount > 0) 0.25f else 0f
+            val progress = if (deck.cardCount > 0) 0.65f else 0f
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp)
-                    .height(10.dp),
-                color = Color(0xFFE88A68),
-                trackColor = Color(0xFFEEEEEE),
-                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = Color(0xFF7FB6A7),
+                trackColor = Color(0xFFEEEEEE)
             )
 
             Text(
-                text = pluralStringResource(R.plurals.due_cards_format, deck.cardCount, deck.cardCount),
+                text = stringResource(R.string.cards_mastered_format, (deck.cardCount * 0.65).toInt(), deck.cardCount),
                 fontSize = 12.sp,
-                color = Color.Gray,
+                color = Color.LightGray,
                 modifier = Modifier.padding(top = 8.dp)
             )
         }

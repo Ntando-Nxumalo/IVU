@@ -9,7 +9,7 @@ enum class Mood { GREAT, OKAY, TOUGH }
 data class JournalEntry(
     @PrimaryKey(autoGenerate = true) val entryId: Long = 0,
     val remoteId: String? = null,
-    val userId: Long,
+    val userId: String,
     val date: Long = System.currentTimeMillis(),
     val mood: Mood,
     val text: String,

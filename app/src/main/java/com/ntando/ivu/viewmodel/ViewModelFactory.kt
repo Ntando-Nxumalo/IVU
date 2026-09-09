@@ -44,7 +44,7 @@ class ViewModelFactory(private val repository: Any) : ViewModelProvider.Factory 
         if (modelClass.isAssignableFrom(AchievementViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             val params = repository as Pair<*, *>
-            return AchievementViewModel(params.first as AchievementRepository, params.second as Long) as T
+            return AchievementViewModel(params.first as AchievementRepository, params.second as String) as T
         }
         if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

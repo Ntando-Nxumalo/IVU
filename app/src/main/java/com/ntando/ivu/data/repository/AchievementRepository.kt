@@ -1,7 +1,7 @@
 package com.ntando.ivu.data.repository
 
 import com.ntando.ivu.data.dao.*
-import com.ntando.ivu.data.entity.Achievement
+import com.ntando.ivu.data.entity.Badge
 import com.ntando.ivu.data.entity.UserStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -9,89 +9,146 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class AchievementRepository(
-    private val achievementDao: AchievementDao,
     private val userStatsDao: UserStatsDao,
-    private val journalDao: JournalDao,
-    private val flashcardDao: FlashcardDao
+    private val journalDao: JournalDao
 ) {
-    fun getAllAchievements(userId: Long): Flow<List<Achievement>> = 
-        achievementDao.getAllAchievements(userId)
-
-    fun getUserStats(userId: Long): Flow<UserStats?> = 
+    fun getUserStats(userId: String): Flow<UserStats?> = 
         userStatsDao.getUserStats(userId)
 
-    suspend fun recordActivity(userId: Long, activityType: ActivityType) {
+    suspend fun recordReview(userId: String): List<Badge> {
+        return recordActivity(userId, ActivityType.FLASHCARD_REVIEW)
+    }
+
+    suspend fun recordJournalEntry(userId: String): List<Badge> {
+        return recordActivity(userId, ActivityType.JOURNAL_ENTRY)
+    }
+
+    private suspend fun recordActivity(userId: String, activityType: ActivityType): List<Badge> {
         val currentTime = System.currentTimeMillis()
         val stats = userStatsDao.getUserStats(userId).first() ?: UserStats(userId)
         
+        val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val isSameDay = stats.lastActiveDate != 0L && 
+                sdf.format(Date(currentTime)) == sdf.format(Date(stats.lastActiveDate))
+        
+        val baseDailyReviews = if (isSameDay) stats.dailyReviews else 0
+        
         var xpToAdd = 0
         var newTotalReviews = stats.totalReviews
+        var newDailyReviews = baseDailyReviews
         
         when (activityType) {
             ActivityType.FLASHCARD_REVIEW -> {
                 xpToAdd = 10
                 newTotalReviews++
+                newDailyReviews++
             }
             ActivityType.JOURNAL_ENTRY -> {
-                xpToAdd = 25
+                xpToAdd = 5
             }
         }
         
         val newXp = stats.xp + xpToAdd
-        val newLevel = (newXp / 100) + 1
+        val newLevel = (newXp / 100).coerceAtLeast(1)
         
         // Streak logic
         val newStreak = calculateStreak(stats, currentTime)
+        val newLongestStreak = if (newStreak > stats.longestStreak) newStreak else stats.longestStreak
         
         val updatedStats = stats.copy(
             xp = newXp,
             level = newLevel,
             currentStreak = newStreak,
+            longestStreak = newLongestStreak,
             totalReviews = newTotalReviews,
-            lastReviewDate = currentTime
+            dailyReviews = newDailyReviews,
+            lastActiveDate = currentTime
         )
         
-        userStatsDao.insertOrUpdate(updatedStats)
-        checkAndUnlockAchievements(userId, updatedStats)
+        val newlyUnlockedBadgeIds = checkAndUnlockBadges(updatedStats, activityType)
+        val finalBadges = stats.badges.toMutableList()
+        val badgesToReturn = mutableListOf<Badge>()
+
+        newlyUnlockedBadgeIds.forEach { badgeId ->
+            if (!finalBadges.contains(badgeId)) {
+                finalBadges.add(badgeId)
+                Badge.ALL.find { it.id == badgeId }?.let { badgesToReturn.add(it) }
+            }
+        }
+
+        userStatsDao.insertOrUpdate(updatedStats.copy(badges = finalBadges))
+        return badgesToReturn
     }
 
     private fun calculateStreak(stats: UserStats, currentTime: Long): Int {
-        if (stats.lastReviewDate == 0L) return 1
+        if (stats.lastActiveDate == 0L) return 1
         
         val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-        val today = sdf.format(Date(currentTime)).toLong()
-        val lastDay = sdf.format(Date(stats.lastReviewDate)).toLong()
+        val todayStr = sdf.format(Date(currentTime))
+        val lastActiveStr = sdf.format(Date(stats.lastActiveDate))
+        
+        val today = todayStr.toLong()
+        val lastActive = lastActiveStr.toLong()
         
         return when {
-            today == lastDay -> stats.currentStreak
-            today - lastDay == 1L || (today % 100 == 1L && lastDay % 100 >= 28L) -> stats.currentStreak + 1
+            today == lastActive -> stats.currentStreak
+            isYesterday(stats.lastActiveDate, currentTime) -> stats.currentStreak + 1
             else -> 1
         }
     }
 
-    private suspend fun checkAndUnlockAchievements(userId: Long, stats: UserStats) {
-        val currentTime = System.currentTimeMillis()
-        
-        // 7-day streak
-        if (stats.currentStreak >= 7) {
-            achievementDao.unlockAchievement("7-Day Streak", userId, currentTime)
+    private fun isYesterday(lastMillis: Long, currentMillis: Long): Boolean {
+        val lastCal = Calendar.getInstance().apply { 
+            timeInMillis = lastMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val currentCal = Calendar.getInstance().apply { 
+            timeInMillis = currentMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
         
-        // 50 cards reviewed
-        if (stats.totalReviews >= 50) {
-            achievementDao.unlockAchievement("Card Master", userId, currentTime)
-        }
-        
-        // First journal entry (if xp > 0 and we just recorded one)
-        // This is a bit simplified, ideally we check journal count
-        val journalCount = journalDao.getEntriesByUser(userId).first().size
-        if (journalCount >= 1) {
-            achievementDao.unlockAchievement("Journalist", userId, currentTime)
-        }
+        currentCal.add(Calendar.DAY_OF_YEAR, -1)
+        return lastCal.timeInMillis == currentCal.timeInMillis
     }
 
-    suspend fun markAsNotified(id: Long) {
-        achievementDao.markAsNotified(id)
+    private suspend fun checkAndUnlockBadges(stats: UserStats, lastActivity: ActivityType): List<String> {
+        val unlockedIds = mutableListOf<String>()
+        
+        // FIRST_REVIEW
+        if (stats.totalReviews >= 1) {
+            unlockedIds.add(Badge.FIRST_REVIEW.id)
+        }
+        
+        // STREAK_7
+        if (stats.currentStreak >= 7) {
+            unlockedIds.add(Badge.STREAK_7.id)
+        }
+        
+        // STREAK_30
+        if (stats.currentStreak >= 30) {
+            unlockedIds.add(Badge.STREAK_30.id)
+        }
+        
+        // CARDS_50
+        if (stats.totalReviews >= 50) {
+            unlockedIds.add(Badge.CARDS_50.id)
+        }
+        
+        // FIRST_JOURNAL
+        if (lastActivity == ActivityType.JOURNAL_ENTRY) {
+            val journalCount = journalDao.getEntriesByUser(stats.userId).first().size
+            if (journalCount >= 1) {
+                unlockedIds.add(Badge.FIRST_JOURNAL.id)
+            }
+        }
+        
+        return unlockedIds
     }
 }
 

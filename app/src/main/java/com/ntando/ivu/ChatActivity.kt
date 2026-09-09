@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.repository.ChatRepository
 import com.ntando.ivu.ui.chat.AiAssistScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.ChatViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -26,10 +27,12 @@ class ChatActivity : ComponentActivity() {
         val currentUserId = sharedPref.getLong("current_user_id", -1)
 
         setContent {
-            AiAssistScreen(
-                viewModel = viewModel,
-                onBack = { finish() }
-            )
+            IVUTheme {
+                AiAssistScreen(
+                    viewModel = viewModel,
+                    onBack = { finish() }
+                )
+            }
         }
 
         // Get user name for welcome message

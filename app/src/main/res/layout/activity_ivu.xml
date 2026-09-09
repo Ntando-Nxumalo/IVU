@@ -73,7 +73,7 @@
                 android:id="@+id/cardStreak"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/surface"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="0dp">
 
@@ -99,7 +99,7 @@
                         android:layout_marginStart="16dp"
                         android:text="@string/streak_format"
                         tools:text="12-day streak"
-                        android:textColor="#3D2B1F"
+                        android:textColor="@color/on_background"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         app:layout_constraintStart_toEndOf="@id/ivStreakIcon"
@@ -109,12 +109,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/streak_msg"
-                        android:textColor="#9E9E9E"
+                        android:textColor="@color/on_background"
                         android:textSize="12sp"
                         app:layout_constraintStart_toStartOf="@id/tvStreakTitle"
                         app:layout_constraintTop_toBottomOf="@id/tvStreakTitle" />
 
                     <TextView
+                        android:id="@+id/tvXpPoints"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/xp_earned_format"
@@ -133,25 +134,27 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="@string/todays_goal"
-                android:textColor="#3D2B1F"
+                android:textColor="@color/on_background"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
             <ProgressBar
+                android:id="@+id/pbXp"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
                 android:layout_marginTop="12dp"
-                android:progress="60"
+                android:progress="0"
                 android:progressDrawable="@drawable/progress_bar_custom" />
 
             <TextView
+                android:id="@+id/tvGoalProgress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/cards_reviewed_format"
                 tools:text="12 / 20 cards reviewed"
-                android:textColor="#9E9E9E"
+                android:textColor="@color/on_background"
                 android:textSize="12sp" />
 
             <!-- Grid Layout -->
@@ -172,7 +175,7 @@
                     android:layout_margin="8dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="@android:color/white"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
@@ -185,7 +188,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/nav_my_decks"
-                            android:textColor="#3D2B1F"
+                            android:textColor="@color/on_background"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             app:layout_constraintStart_toStartOf="parent"
@@ -209,7 +212,7 @@
                     android:layout_margin="8dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="@android:color/white"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
@@ -222,7 +225,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/nav_ai_assist"
-                            android:textColor="#3D2B1F"
+                            android:textColor="@color/on_background"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             app:layout_constraintStart_toStartOf="parent"
@@ -246,7 +249,7 @@
                     android:layout_margin="8dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="@android:color/white"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
@@ -259,7 +262,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/nav_journal_calendar"
-                            android:textColor="#3D2B1F"
+                            android:textColor="@color/on_background"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             app:layout_constraintStart_toStartOf="parent"
@@ -283,7 +286,7 @@
                     android:layout_margin="8dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="@android:color/white"
+                    app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp">
 
@@ -296,7 +299,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/nav_progress_badges"
-                            android:textColor="#3D2B1F"
+                            android:textColor="@color/on_background"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             app:layout_constraintStart_toStartOf="parent"

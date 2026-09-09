@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.ui.decks.FlashcardListScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.FlashcardListViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 
@@ -27,12 +28,14 @@ class FlashcardListActivity : ComponentActivity() {
         }
 
         setContent {
-            FlashcardListScreen(
-                viewModel = viewModel,
-                deckId = deckId,
-                deckTitle = deckTitle,
-                onBack = { finish() }
-            )
+            IVUTheme {
+                FlashcardListScreen(
+                    viewModel = viewModel,
+                    deckId = deckId,
+                    deckTitle = deckTitle,
+                    onBack = { finish() }
+                )
+            }
         }
     }
 }

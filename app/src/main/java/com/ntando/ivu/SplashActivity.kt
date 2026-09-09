@@ -16,6 +16,7 @@ import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.Deck
 import com.ntando.ivu.data.entity.Language
 import com.ntando.ivu.data.entity.Flashcard
+import com.ntando.ivu.data.entity.UserStats
 import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AuthRepository
 import kotlinx.coroutines.delay
@@ -37,6 +38,14 @@ class SplashActivity : AppCompatActivity() {
             val savedLanguage = preferenceManager.appLanguage.first()
             val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(savedLanguage)
             AppCompatDelegate.setApplicationLocales(appLocale)
+            
+            // Apply theme
+            val isDark = preferenceManager.isDarkTheme.first()
+            if (isDark) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
         }
 
         setContentView(R.layout.activity_splash)
@@ -59,26 +68,39 @@ class SplashActivity : AppCompatActivity() {
         tvTagline.startAnimation(fadeIn)
         tvFeatures.startAnimation(fadeIn)
 
-        // Ensure we have demo data for the "Decks" page
+        val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
+        val currentUserId = sharedPref.getLong("current_user_id", -1L)
+        val firebaseUser = authRepository.getCurrentUser()
+        val firebaseUid = firebaseUser?.uid
+
+        // Ensure we have demo data and user stats
         lifecycleScope.launch {
             val db = DatabaseProvider.getDatabase(this@SplashActivity)
-            val existingDecks = db.deckDao().getDecksByUser(1).first() 
+            
+            // Initialize UserStats if logged in
+            if (firebaseUid != null) {
+                val stats = db.userStatsDao().getUserStats(firebaseUid).first()
+                if (stats == null) {
+                    Log.d(TAG, "Initializing UserStats for $firebaseUid")
+                    db.userStatsDao().insertOrUpdate(UserStats(userId = firebaseUid))
+                }
+            }
+
+            // Ensure we have demo data for the "Decks" page
+            val targetUserId = if (currentUserId != -1L) currentUserId else 1L
+            val existingDecks = db.deckDao().getDecksByUser(targetUserId).first() 
             
             if (existingDecks.isEmpty()) {
-                Log.d(TAG, "Inserting demo data for user 1")
-                val deck1 = db.deckDao().insertDeck(Deck(ownerId = 1, title = "Everyday isiZulu", language = Language.ZU, cardCount = 40))
-                val deck2 = db.deckDao().insertDeck(Deck(ownerId = 1, title = "Afrikaans Basics", language = Language.AF, cardCount = 40))
-                val deck3 = db.deckDao().insertDeck(Deck(ownerId = 1, title = "Exam Vocabulary", language = Language.EN, cardCount = 40))
-                val deck4 = db.deckDao().insertDeck(Deck(ownerId = 1, title = "Travel Phrases", language = Language.ZU, cardCount = 40))
+                Log.d(TAG, "Inserting demo data for user $targetUserId")
+                val deck1 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Everyday isiZulu", language = Language.ZU, cardCount = 40))
+                val deck2 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Afrikaans Basics", language = Language.AF, cardCount = 40))
+                val deck3 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Exam Vocabulary", language = Language.EN, cardCount = 40))
+                val deck4 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Travel Phrases", language = Language.ZU, cardCount = 40))
                 
                 // Add a sample card to the first deck so review works
                 db.flashcardDao().insertFlashcard(Flashcard(deckId = deck1, frontText = "Sawubona", backText = "Hello"))
             }
         }
-
-        val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-        val currentUserId = sharedPref.getLong("current_user_id", -1L)
-        val firebaseUser = authRepository.getCurrentUser()
 
         if (currentUserId != -1L || firebaseUser != null) {
             lifecycleScope.launch {

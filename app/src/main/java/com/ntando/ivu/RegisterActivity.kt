@@ -22,6 +22,7 @@ import com.ntando.ivu.data.entity.Achievement
 import com.ntando.ivu.data.entity.User
 import com.ntando.ivu.data.repository.AuthRepository
 import com.ntando.ivu.ui.auth.RegisterScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.RegisterViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -46,18 +47,20 @@ class RegisterActivity : ComponentActivity() {
         credentialManager = CredentialManager.create(this)
         
         setContent {
-            RegisterScreen(
-                viewModel = viewModel,
-                onRegisterSuccess = { 
-                    Log.d(tag, "onRegisterSuccess triggered")
-                    handleSuccessfulRegistration() 
-                },
-                onNavigateToLogin = {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                },
-                onGoogleSignInClick = { signInWithGoogle() }
-            )
+            IVUTheme {
+                RegisterScreen(
+                    viewModel = viewModel,
+                    onRegisterSuccess = { 
+                        Log.d(tag, "onRegisterSuccess triggered")
+                        handleSuccessfulRegistration() 
+                    },
+                    onNavigateToLogin = {
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    },
+                    onGoogleSignInClick = { signInWithGoogle() }
+                )
+            }
         }
     }
 
@@ -87,11 +90,12 @@ class RegisterActivity : ComponentActivity() {
                     )
                     
                     // Initialize achievements for new user
+                    val firebaseUid = firebaseUser.uid
                     val initialAchievements = listOf(
-                        Achievement(userId = newId, title = "Quick Starter", description = "Create your first study deck", icon = "bolt"),
-                        Achievement(userId = newId, title = "7-Day Streak", description = "Study flashcards for 7 consecutive days", icon = "star"),
-                        Achievement(userId = newId, title = "Card Master", description = "Master 100 flashcards", icon = "school"),
-                        Achievement(userId = newId, title = "Journalist", description = "Write 5 journal entries about your progress", icon = "edit")
+                        Achievement(userId = firebaseUid, title = "Quick Starter", description = "Create your first study deck", icon = "bolt"),
+                        Achievement(userId = firebaseUid, title = "7-Day Streak", description = "Study flashcards for 7 consecutive days", icon = "star"),
+                        Achievement(userId = firebaseUid, title = "Card Master", description = "Master 100 flashcards", icon = "school"),
+                        Achievement(userId = firebaseUid, title = "Journalist", description = "Write 5 journal entries about your progress", icon = "edit")
                     )
                     initialAchievements.forEach { db.achievementDao().insertAchievement(it) }
                     newId
@@ -103,6 +107,7 @@ class RegisterActivity : ComponentActivity() {
                 val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
                 val isSaved = with(sharedPref.edit()) {
                     putLong("current_user_id", userId)
+                    putString("firebase_uid", firebaseUser.uid)
                     commit()
                 }
                 Log.d(tag, "Registration session saved: $isSaved. Redirecting...")

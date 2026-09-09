@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.ui.achievements.AchievementScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.AchievementViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 
@@ -16,27 +17,27 @@ class AchievementsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-        val currentUserId = sharedPref.getLong("current_user_id", -1)
+        val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
 
-        if (currentUserId == -1L) {
+        if (firebaseUid.isEmpty()) {
             finish()
             return
         }
 
         val db = DatabaseProvider.getDatabase(this)
         val repository = AchievementRepository(
-            db.achievementDao(),
             db.userStatsDao(),
-            db.journalDao(),
-            db.flashcardDao()
+            db.journalDao()
         )
 
         val viewModel: AchievementViewModel by viewModels {
-            ViewModelFactory(repository to currentUserId)
+            ViewModelFactory(repository to firebaseUid)
         }
 
         setContent {
-            AchievementScreen(viewModel = viewModel)
+            IVUTheme {
+                AchievementScreen(viewModel = viewModel)
+            }
         }
     }
 }

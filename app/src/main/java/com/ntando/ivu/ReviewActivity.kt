@@ -8,6 +8,7 @@ import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.ui.review.FlashcardReviewScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.FlashcardReviewViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 
@@ -15,15 +16,13 @@ class ReviewActivity : ComponentActivity() {
 
     private val viewModel: FlashcardReviewViewModel by viewModels {
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-        val currentUserId = sharedPref.getLong("current_user_id", -1)
+        val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
         val db = DatabaseProvider.getDatabase(this)
         val achievementRepository = AchievementRepository(
-            db.achievementDao(),
             db.userStatsDao(),
-            db.journalDao(),
-            db.flashcardDao()
+            db.journalDao()
         )
-        ViewModelFactory(FlashcardRepository(achievementRepository, currentUserId))
+        ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,11 +36,13 @@ class ReviewActivity : ComponentActivity() {
         }
 
         setContent {
-            FlashcardReviewScreen(
-                viewModel = viewModel,
-                deckId = deckId,
-                onBack = { finish() }
-            )
+            IVUTheme {
+                FlashcardReviewScreen(
+                    viewModel = viewModel,
+                    deckId = deckId,
+                    onBack = { finish() }
+                )
+            }
         }
     }
 }

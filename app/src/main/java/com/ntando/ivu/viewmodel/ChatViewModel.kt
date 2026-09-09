@@ -18,7 +18,7 @@ class ChatViewModel(private val repository: ChatRepository) : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     fun sendMessage(text: String) {
-        if (text.isBlank()) return
+        if (text.isBlank() || _isLoading.value) return
 
         val userMessage = ChatMessage(text, true)
         _messages.value = _messages.value + userMessage

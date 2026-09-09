@@ -1,6 +1,7 @@
 package com.ntando.ivu.ui.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,7 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,12 +47,20 @@ fun AiAssistScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.ivu_ai_assist), fontWeight = FontWeight.Bold) },
+                title = { 
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(stringResource(R.string.title_ivu_ai), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White)
+                        Text(stringResource(R.string.subtitle_study_buddy), fontSize = 12.sp, color = Color.White.copy(alpha = 0.8f))
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xFFE88A68)
+                )
             )
         },
         containerColor = Color(0xFFFFF8F0)
@@ -67,7 +76,7 @@ fun AiAssistScreen(
                     .weight(1f)
                     .fillMaxWidth(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(messages) { message ->
                     ChatBubble(message)
@@ -75,25 +84,36 @@ fun AiAssistScreen(
                 
                 if (isLoading) {
                     item {
-                        Text(
-                            text = "IVU is typing...",
-                            fontSize = 12.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(modifier = Modifier.size(32.dp), shape = CircleShape, color = Color(0xFF7FB6A7)) {}
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "IVU is typing...",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 }
             }
 
+            // Suggestions
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SuggestionChip(text = "Quiz me", onClick = { viewModel.sendMessage("Quiz me") })
+                SuggestionChip(text = "Explain this word", onClick = { /* ... */ })
+            }
+
             // Input Area
             Surface(
-                color = Color.White,
-                tonalElevation = 2.dp,
+                color = Color.Transparent,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(12.dp)
+                        .padding(16.dp)
                         .navigationBarsPadding()
                         .imePadding(),
                     verticalAlignment = Alignment.CenterVertically
@@ -101,17 +121,19 @@ fun AiAssistScreen(
                     OutlinedTextField(
                         value = textInput,
                         onValueChange = { textInput = it },
-                        placeholder = { Text("Ask anything about your study...") },
+                        placeholder = { Text("Type your message...") },
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFE88A68),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = Color.LightGray,
                             unfocusedBorderColor = Color.LightGray
                         ),
-                        maxLines = 4
+                        singleLine = true
                     )
                     
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     
                     FloatingActionButton(
                         onClick = {
@@ -123,9 +145,9 @@ fun AiAssistScreen(
                         containerColor = Color(0xFFE88A68),
                         contentColor = Color.White,
                         shape = CircleShape,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(56.dp)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Add, contentDescription = "Send", modifier = Modifier.size(24.dp))
                     }
                 }
             }
@@ -134,31 +156,49 @@ fun AiAssistScreen(
 }
 
 @Composable
-fun ChatBubble(message: ChatMessage) {
-    val alignment = if (message.isUser) Alignment.End else Alignment.Start
-    val bubbleColor = if (message.isUser) Color(0xFFE88A68) else Color(0xFFF5EFE6)
-    val textColor = if (message.isUser) Color.White else Color(0xFF3D2B1F)
-    val shape = if (message.isUser) {
-        RoundedCornerShape(16.dp, 16.dp, 0.dp, 16.dp)
-    } else {
-        RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp)
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = alignment
+fun SuggestionChip(text: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF2E6D3),
+        modifier = Modifier.height(40.dp)
     ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 16.dp)) {
+            Text(text, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF3D2B1F))
+        }
+    }
+}
+
+@Composable
+fun ChatBubble(message: ChatMessage) {
+    val isUser = message.isUser
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        if (!isUser) {
+            Surface(modifier = Modifier.size(36.dp), shape = CircleShape, color = Color(0xFF7FB6A7)) {}
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        
+        val bubbleColor = if (isUser) Color(0xFFF2E6D3) else Color.White
+        val textColor = Color(0xFF3D2B1F)
+        val shape = RoundedCornerShape(20.dp)
+
         Box(
             modifier = Modifier
-                .widthIn(max = 280.dp)
+                .widthIn(max = 260.dp)
                 .clip(shape)
                 .background(bubbleColor)
-                .padding(12.dp)
+                .border(if (!isUser) 0.5.dp else 0.dp, Color.LightGray, shape)
+                .padding(16.dp)
         ) {
             Text(
                 text = message.text,
                 color = textColor,
-                fontSize = 15.sp
+                fontSize = 14.sp
             )
         }
     }

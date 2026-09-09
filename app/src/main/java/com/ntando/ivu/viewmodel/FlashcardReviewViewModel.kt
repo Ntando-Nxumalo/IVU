@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.network.Flashcard
+import com.ntando.ivu.data.entity.Badge
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,10 +16,15 @@ sealed class FlashcardReviewUiState {
         val cards: List<Flashcard>,
         val currentIndex: Int = 0,
         val isFlipped: Boolean = false,
-        val remainingCount: Int
+        val remainingCount: Int,
+        val newlyUnlockedBadges: List<Badge> = emptyList()
     ) : FlashcardReviewUiState()
     data class Error(val message: String) : FlashcardReviewUiState()
-    data class SessionComplete(val reviewedCount: Int, val dueTomorrowCount: Int) : FlashcardReviewUiState()
+    data class SessionComplete(
+        val reviewedCount: Int, 
+        val dueTomorrowCount: Int,
+        val newlyUnlockedBadges: List<Badge> = emptyList()
+    ) : FlashcardReviewUiState()
 }
 
 class FlashcardReviewViewModel(
@@ -30,10 +36,13 @@ class FlashcardReviewViewModel(
     
     private var currentDeckId: String? = null
     private val reviewedCards = mutableListOf<Flashcard>()
+    private val sessionUnlockedBadges = mutableListOf<Badge>()
+    private var isSubmitting = false
 
     fun loadDueCards(deckId: String) {
         currentDeckId = deckId
         reviewedCards.clear()
+        sessionUnlockedBadges.clear()
         _uiState.value = FlashcardReviewUiState.Loading
         viewModelScope.launch {
             val result = repository.fetchDueCards(deckId)
@@ -60,6 +69,8 @@ class FlashcardReviewViewModel(
     }
 
     fun submitReview(rating: String) {
+        if (isSubmitting) return
+        
         val state = _uiState.value
         val deckId = currentDeckId ?: return
         
@@ -67,27 +78,39 @@ class FlashcardReviewViewModel(
             val currentCard = state.cards[state.currentIndex]
             val cardId = currentCard.cardId ?: return
             
+            isSubmitting = true
             viewModelScope.launch {
                 val result = repository.submitReview(deckId, cardId, rating)
-                result.onSuccess { updatedCard ->
+                isSubmitting = false
+                result.onSuccess { (updatedCard, newlyUnlocked) ->
                     reviewedCards.add(updatedCard)
-                }
-                
-                val nextIndex = state.currentIndex + 1
-                if (nextIndex < state.cards.size) {
-                    _uiState.value = state.copy(
-                        currentIndex = nextIndex,
-                        isFlipped = false,
-                        remainingCount = state.cards.size - nextIndex
-                    )
-                } else {
-                    val dueTomorrow = calculateDueTomorrow(reviewedCards)
-                    _uiState.value = FlashcardReviewUiState.SessionComplete(
-                        reviewedCount = state.cards.size,
-                        dueTomorrowCount = dueTomorrow
-                    )
+                    sessionUnlockedBadges.addAll(newlyUnlocked)
+                    
+                    val nextIndex = state.currentIndex + 1
+                    if (nextIndex < state.cards.size) {
+                        _uiState.value = state.copy(
+                            currentIndex = nextIndex,
+                            isFlipped = false,
+                            remainingCount = state.cards.size - nextIndex,
+                            newlyUnlockedBadges = newlyUnlocked
+                        )
+                    } else {
+                        val dueTomorrow = calculateDueTomorrow(reviewedCards)
+                        _uiState.value = FlashcardReviewUiState.SessionComplete(
+                            reviewedCount = state.cards.size,
+                            dueTomorrowCount = dueTomorrow,
+                            newlyUnlockedBadges = sessionUnlockedBadges.toList()
+                        )
+                    }
                 }
             }
+        }
+    }
+
+    fun clearUnlockedBadges() {
+        val state = _uiState.value
+        if (state is FlashcardReviewUiState.Success) {
+            _uiState.value = state.copy(newlyUnlockedBadges = emptyList())
         }
     }
 

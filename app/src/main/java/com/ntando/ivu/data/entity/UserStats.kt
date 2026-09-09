@@ -5,10 +5,13 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "user_stats")
 data class UserStats(
-    @PrimaryKey val userId: Long,
+    @PrimaryKey val userId: String,
+    val currentStreak: Int = 0,
+    val longestStreak: Int = 0,
     val xp: Int = 0,
     val level: Int = 1,
-    val currentStreak: Int = 0,
     val totalReviews: Int = 0,
-    val lastReviewDate: Long = 0
+    val dailyReviews: Int = 0,
+    val lastActiveDate: Long = 0,
+    val badges: List<String> = emptyList()
 )

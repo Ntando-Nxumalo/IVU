@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#E88A68</color>
+    <color name="primary_container">#823D1F</color>
+    <color name="secondary">#D2B48C</color>
+    <color name="background">#121212</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="on_primary">#000000</color>
+    <color name="on_background">#F0E4D8</color>
+    <color name="accent">#E88A68</color>
+    <color name="error">#CF6679</color>
+
+    <!-- App Icon Background -->
+    <color name="ic_launcher_background">#E88A68</color>
+
+    <color name="primary_green">#E88A68</color>
+    <color name="dark_green">#E88A68</color>
+    <color name="premium_dark">#F0E4D8</color>
+    <color name="dark_blue">#121212</color>
+    <color name="primary_blue">#D2B48C</color>
+    <color name="background_white">#121212</color>
+    <color name="accent_yellow">#D2B48C</color>
+    <color name="warning_red">#CF6679</color>
+    <color name="surface_variant">#1E1E1E</color>
+    <color name="white">#000000</color>
+    <color name="black">#FFFFFF</color>
+    <color name="hint_black">#F0E4D8</color>
+</resources>

@@ -68,7 +68,7 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name="com.ntando.ivu.AchievementsActivity"
-            android:exported="false"
+            android:exported="true"
             android:windowSoftInputMode="adjustResize" />
 
         <provider

@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
@@ -30,26 +31,86 @@ fun FlashcardReviewScreen(
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var badgeToShow by remember { mutableStateOf<com.ntando.ivu.data.entity.Badge?>(null) }
 
     LaunchedEffect(deckId) {
         viewModel.loadDueCards(deckId)
     }
 
+    // Handle badge unlock feedback
+    LaunchedEffect(uiState) {
+        val state = uiState
+        if (state is FlashcardReviewUiState.Success && state.newlyUnlockedBadges.isNotEmpty()) {
+            badgeToShow = state.newlyUnlockedBadges.first()
+        } else if (state is FlashcardReviewUiState.SessionComplete && state.newlyUnlockedBadges.isNotEmpty()) {
+            badgeToShow = state.newlyUnlockedBadges.first()
+        }
+    }
+
+    if (badgeToShow != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                badgeToShow = null 
+                viewModel.clearUnlockedBadges()
+            },
+            title = { Text("🎉 Badge Unlocked!") },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text("🏅", fontSize = 48.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(badgeToShow?.displayName ?: "", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(badgeToShow?.description ?: "", textAlign = TextAlign.Center)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        badgeToShow = null 
+                        viewModel.clearUnlockedBadges()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
+                ) {
+                    Text("Awesome!")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.review_session), fontWeight = FontWeight.Bold) },
+                title = {
+                    val state = uiState
+                    if (state is FlashcardReviewUiState.Success) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(end = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            LinearProgressIndicator(
+                                progress = { (state.currentIndex + 1).toFloat() / state.cards.size },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                                color = Color(0xFF7FB6A7),
+                                trackColor = Color(0xFFEEEEEE)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "${state.currentIndex + 1}/${state.cards.size}",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFFFF8F0)
-                )
+                }
             )
-        },
-        containerColor = Color(0xFFFFF8F0)
+        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -97,7 +158,7 @@ fun FlashcardReviewScreen(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            color = Color(0xFF3D2B1F)
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         
                         val summaryText = if (state.reviewedCount > 0) {
@@ -149,31 +210,13 @@ fun ReviewContent(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Progress Indicator
-        LinearProgressIndicator(
-            progress = { (currentIndex + 1).toFloat() / cards.size },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp),
-            color = Color(0xFFE88A68),
-            trackColor = Color(0xFFE0E0E0),
-            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
-        )
-        Text(
-            text = stringResource(R.string.review_progress_format, currentIndex + 1, cards.size),
-            modifier = Modifier.padding(top = 12.dp),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Gray
-        )
-
         Spacer(modifier = Modifier.weight(1f))
 
         // Flip Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(350.dp)
+                .height(400.dp)
                 .graphicsLayer {
                     rotationY = rotation
                     cameraDistance = 12f * density
@@ -181,7 +224,7 @@ fun ReviewContent(
                 .clickable { onFlip() },
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -190,20 +233,27 @@ fun ReviewContent(
                 contentAlignment = Alignment.Center
             ) {
                 if (rotation <= 90f) {
-                    // Front Text
-                    Text(
-                        text = card.frontText,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        color = Color(0xFF3D2B1F)
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = card.frontText,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFF3D2B1F)
+                        )
+                        Text(
+                            text = "(isiZulu)", // Should ideally be dynamic
+                            fontSize = 16.sp,
+                            color = Color.LightGray,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
                 } else {
                     // Back Text (Rotated 180)
                     Text(
                         text = card.backText,
                         modifier = Modifier.graphicsLayer { rotationY = 180f },
-                        fontSize = 28.sp,
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.Center,
                         color = Color(0xFFE88A68)
@@ -211,6 +261,22 @@ fun ReviewContent(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = androidx.compose.foundation.shape.CircleShape,
+            color = Color(0xFF7FB6A7)
+        ) {}
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = if (!isFlipped) stringResource(R.string.tap_to_reveal) else stringResource(R.string.tap_to_flip),
+            color = Color.LightGray,
+            fontSize = 14.sp
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -220,38 +286,38 @@ fun ReviewContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                RatingButton(stringResource(R.string.rating_again), "again", Color(0xFFE57373), Modifier.weight(1f), onRate)
-                RatingButton(stringResource(R.string.rating_hard), "hard", Color(0xFFFFB74D), Modifier.weight(1f), onRate)
-                RatingButton(stringResource(R.string.rating_good), "good", Color(0xFF81C784), Modifier.weight(1f), onRate)
-                RatingButton(stringResource(R.string.rating_easy), "easy", Color(0xFF64B5F6), Modifier.weight(1f), onRate)
+                RatingButtonCol(stringResource(R.string.rating_again), "1m", "again", Color(0xFFF2D3D3), Modifier.weight(1f), onRate)
+                RatingButtonCol(stringResource(R.string.rating_hard), "6m", "hard", Color(0xFFF2E6D3), Modifier.weight(1f), onRate)
+                RatingButtonCol(stringResource(R.string.rating_good), "1d", "good", Color(0xFFD3F2E6), Modifier.weight(1f), onRate)
+                RatingButtonCol(stringResource(R.string.rating_easy), "4d", "easy", Color(0xFFF2DCD3), Modifier.weight(1f), onRate)
             }
-        } else {
-            Text(
-                text = stringResource(R.string.tap_to_flip),
-                color = Color.Gray,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
-            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }
 
 @Composable
-fun RatingButton(
+fun RatingButtonCol(
     label: String,
+    time: String,
     rating: String,
     color: Color,
     modifier: Modifier,
     onRate: (String) -> Unit
 ) {
-    Button(
-        onClick = { onRate(rating) },
-        modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = color),
-        shape = RoundedCornerShape(12.dp),
-        contentPadding = PaddingValues(0.dp)
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(label, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(label, fontSize = 12.sp, color = Color.Gray)
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = { onRate(rating) },
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = Color(0xFF3D2B1F)),
+            shape = RoundedCornerShape(24.dp),
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Text(time, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }

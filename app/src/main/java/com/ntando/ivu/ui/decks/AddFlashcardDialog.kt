@@ -1,6 +1,8 @@
 package com.ntando.ivu.ui.decks
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -23,19 +25,21 @@ fun AddFlashcardDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.add_card_title)) },
         text = {
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 OutlinedTextField(
                     value = frontText,
                     onValueChange = { frontText = it },
                     label = { Text(stringResource(R.string.front_text)) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 5
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = backText,
                     onValueChange = { backText = it },
                     label = { Text(stringResource(R.string.back_text)) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 5
                 )
                 
                 if (errorMessage != null) {

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AuthRepository
 import com.ntando.ivu.ui.settings.SettingsScreen
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.SettingsViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 
@@ -22,21 +23,24 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            SettingsScreen(
-                viewModel = viewModel,
-                onBack = { finish() },
-                onSignOut = {
-                    val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        remove("current_user_id")
-                        commit()
+            IVUTheme {
+                SettingsScreen(
+                    viewModel = viewModel,
+                    onBack = { finish() },
+                    onSignOut = {
+                        val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
+                        with(sharedPref.edit()) {
+                            remove("current_user_id")
+                            remove("firebase_uid")
+                            commit()
+                        }
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
                     }
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
-                }
-            )
+                )
+            }
         }
     }
 }

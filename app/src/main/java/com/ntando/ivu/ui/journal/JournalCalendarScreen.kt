@@ -37,23 +37,65 @@ fun JournalCalendarScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
+    var badgeToShow by remember { mutableStateOf<com.ntando.ivu.data.entity.Badge?>(null) }
+
+    // Handle badge unlock feedback
+    LaunchedEffect(uiState) {
+        val state = uiState
+        if (state is JournalUiState.Success && state.newlyUnlockedBadges.isNotEmpty()) {
+            badgeToShow = state.newlyUnlockedBadges.first()
+        }
+    }
+
+    if (badgeToShow != null) {
+        AlertDialog(
+            onDismissRequest = { 
+                badgeToShow = null 
+                viewModel.clearUnlockedBadges()
+            },
+            title = { Text("🎉 Badge Unlocked!") },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text("🏅", fontSize = 48.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(badgeToShow?.displayName ?: "", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(badgeToShow?.description ?: "", textAlign = TextAlign.Center)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        badgeToShow = null 
+                        viewModel.clearUnlockedBadges()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
+                ) {
+                    Text("Awesome!")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.journal_calendar), fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_my_calendar), fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = Color.White)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFE88A68)
+                )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onAddEntry(selectedDate) },
                 containerColor = Color(0xFFE88A68),
-                contentColor = Color.White
+                contentColor = Color.White,
+                shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_entry))
             }
@@ -67,7 +109,13 @@ fun JournalCalendarScreen(
                 onDateSelected = { selectedDate = it }
             )
             
-            HorizontalDivider(thickness = 1.dp, color = Color.LightGray.copy(alpha = 0.3f))
+            Text(
+                text = "Entries this week",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF3D2B1F),
+                modifier = Modifier.padding(16.dp)
+            )
             
             Box(modifier = Modifier.weight(1f)) {
                 when (val state = uiState) {
@@ -125,7 +173,7 @@ fun CalendarView(
             text = monthFormat.format(calendar.time),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF3D2B1F),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
@@ -195,47 +243,43 @@ fun CalendarView(
 @Composable
 fun JournalEntryItem(entry: JournalEntry) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val (moodEmoji, moodColor) = when (entry.mood.lowercase()) {
-                    "great" -> "😊" to Color(0xFF4CAF50)
-                    "okay" -> "😐" to Color(0xFFFFC107)
-                    "tough" -> "😔" to Color(0xFFF44336)
-                    else -> "😶" to Color.Gray
-                }
-                
-                Surface(
-                    color = moodColor.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "$moodEmoji ${entry.mood.uppercase()}",
-                        color = moodColor,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val (moodEmoji, moodColor) = when (entry.mood.lowercase()) {
+                "great" -> "😊" to Color(0xFF7FB6A7)
+                "okay" -> "😐" to Color(0xFFE8C07C)
+                "tough" -> "😔" to Color(0xFFE88A68)
+                else -> "😶" to Color.Gray
             }
             
-            Text(
-                text = entry.text,
-                modifier = Modifier.padding(top = 12.dp),
-                fontSize = 15.sp,
-                color = Color(0xFF3D2B1F)
-            )
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = moodColor.copy(alpha = 0.6f)
+            ) {}
             
-            if (entry.linkedDeckId != null) {
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column {
+                val sdf = SimpleDateFormat("EEE d MMM", Locale.getDefault())
+                val dateText = sdf.format(java.util.Date(entry.date))
                 Text(
-                    text = "Linked to a deck",
+                    text = "$dateText — Feeling ${entry.mood.lowercase()}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF3D2B1F)
+                )
+                Text(
+                    text = if (entry.linkedDeckId != null) "Linked to: Everyday isiZulu deck" else "No deck linked",
                     fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 8.dp)
+                    color = Color.LightGray
                 )
             }
         }
