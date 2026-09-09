@@ -59,7 +59,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintBottom_toTopOf="@id/composeBottomNav"
         app:layout_constraintTop_toBottomOf="@id/header">
 
         <LinearLayout
@@ -320,11 +320,10 @@
     </ScrollView>
 
     <!-- Bottom Navigation -->
-    <include
-        android:id="@+id/bottomNavigation"
-        layout="@layout/layout_bottom_nav"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composeBottomNav"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="80dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

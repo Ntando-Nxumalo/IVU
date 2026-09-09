@@ -5,7 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.ui.decks.DecksScreen
@@ -23,13 +26,13 @@ class DecksActivity : ComponentActivity() {
     
     private val flashcardViewModel: FlashcardViewModel by viewModels {
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-        val currentUserId = sharedPref.getLong("current_user_id", -1)
+        val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
         val db = DatabaseProvider.getDatabase(this)
         val achievementRepository = AchievementRepository(
             db.userStatsDao(),
             db.journalDao()
         )
-        ViewModelFactory(FlashcardRepository(achievementRepository, currentUserId.toString()))
+        ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +48,10 @@ class DecksActivity : ComponentActivity() {
         }
 
         setContent {
-            IVUTheme {
+            val preferenceManager = PreferenceManager(this)
+            val isDarkTheme by preferenceManager.isDarkTheme.collectAsState(initial = false)
+            
+            IVUTheme(darkTheme = isDarkTheme) {
                 DecksScreen(
                     viewModel = viewModel,
                     flashcardViewModel = flashcardViewModel,
@@ -61,6 +67,14 @@ class DecksActivity : ComponentActivity() {
                             putExtra("deck_title", deckTitle)
                         }
                         startActivity(intent)
+                    },
+                    onNavigate = { screen ->
+                        when (screen) {
+                            "home" -> startActivity(Intent(this, IVU::class.java))
+                            "decks" -> {} // Already here
+                            "journal" -> startActivity(Intent(this, JournalActivity::class.java))
+                            "profile" -> startActivity(Intent(this, AchievementsActivity::class.java))
+                        }
                     }
                 )
             }

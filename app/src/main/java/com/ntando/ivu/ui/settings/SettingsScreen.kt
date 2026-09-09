@@ -22,11 +22,43 @@ import com.ntando.ivu.viewmodel.SettingsViewModel
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onNavigate: (String) -> Unit,
 ) {
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val appLanguage by viewModel.appLanguage.collectAsState()
+    val isRemindersEnabled by viewModel.isRemindersEnabled.collectAsState()
     val userEmail = viewModel.userEmail
+    val userName = viewModel.userName
+    var showLanguageDialog by remember { mutableStateOf(value = false) }
+
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(R.string.select_language)) },
+            text = {
+                Column {
+                    val languages = listOf("en" to "English", "zu" to "isiZulu", "af" to "Afrikaans")
+                    languages.forEach { (code, name) ->
+                        TextButton(
+                            onClick = {
+                                viewModel.setLanguage(code)
+                                showLanguageDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(name, color = if (appLanguage == code) Color(0xFFE88A68) else Color.Gray)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -42,7 +74,13 @@ fun SettingsScreen(
                 )
             )
         },
-        containerColor = Color(0xFFFFF8F0)
+        bottomBar = {
+            com.ntando.ivu.ui.components.BottomNavigationBar(
+                currentScreen = "profile",
+                onNavigate = onNavigate
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -69,7 +107,7 @@ fun SettingsScreen(
                     ) {}
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(text = "Ayanda Maseko", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF3D2B1F))
+                        Text(text = userName, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF3D2B1F))
                         Text(text = userEmail, fontSize = 12.sp, color = Color.LightGray)
                     }
                 }
@@ -82,9 +120,12 @@ fun SettingsScreen(
             SettingsCard {
                 SettingsItem(
                     label = stringResource(R.string.label_app_language),
-                    value = if (appLanguage == "zu") "isiZulu" else "English",
-                    onClick = { /* ... */ }
-                )
+                    value = when(appLanguage) {
+                        "zu" -> "isiZulu"
+                        "af" -> "Afrikaans"
+                        else -> "English"
+                    },
+                ) { showLanguageDialog = true }
                 SettingsItem(
                     label = stringResource(R.string.label_theme),
                     value = if (isDarkTheme) "Dark" else "Warm (light)",
@@ -92,8 +133,8 @@ fun SettingsScreen(
                 )
                 SettingsItem(
                     label = stringResource(R.string.label_reminders),
-                    value = "On – 6:00 PM",
-                    onClick = { /* ... */ }
+                    value = if (isRemindersEnabled) "On – 6:00 PM" else "Off",
+                    onClick = { viewModel.setRemindersEnabled(!isRemindersEnabled) }
                 )
                 SettingsItem(
                     label = stringResource(R.string.label_sync),
@@ -145,7 +186,7 @@ fun SectionHeader(text: String) {
 fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         content = content
@@ -170,7 +211,7 @@ fun SettingsItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = label, fontSize = 14.sp, color = Color(0xFF3D2B1F))
+            Text(text = label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (value != null) {
                     Text(text = value, fontSize = 14.sp, color = Color(0xFFE88A68))
@@ -185,6 +226,6 @@ fun SettingsItem(
         }
     }
     if (showDivider) {
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = Color(0xFFEEEEEE))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
     }
 }

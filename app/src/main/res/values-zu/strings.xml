@@ -16,6 +16,13 @@
     <string name="journal_calendar">Ijenali neKhalenda</string>
     <string name="ivu_ai_assist">Umsizi we-IVU AI</string>
     <string name="welcome_learner">Sawubona, %s</string>
+    <string name="todays_goal">Umgomo wanamuhla</string>
+    <string name="cards_reviewed_format">%1$d / %2$d amakhadi abuyekeziwe</string>
+    <string name="nav_my_decks">Qhubeka nobufunda</string>
+    <string name="nav_ai_assist">Buza IVU AI</string>
+    <string name="nav_journal_calendar">Ijenali yanamuhla</string>
+    <string name="nav_progress_badges">Ikhalenda laleli sonto</string>
+    <string name="nav_profile">Mina</string>
     <string name="study_badges">Amabheji okufunda</string>
     <string name="current_streak">Isitshalo samanje</string>
     <string name="experience_xp">Isipiliyoni (XP)</string>

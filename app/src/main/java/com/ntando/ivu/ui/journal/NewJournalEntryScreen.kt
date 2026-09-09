@@ -1,6 +1,5 @@
 package com.ntando.ivu.ui.journal
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,16 +20,18 @@ import com.ntando.ivu.R
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NewJournalEntryScreen(
     onDismiss: () -> Unit,
     onConfirm: (String, String, String, String?) -> Unit,
+    decks: List<com.ntando.ivu.network.Deck> = emptyList(),
     initialDate: Calendar = Calendar.getInstance(),
     isLoading: Boolean = false
 ) {
     var mood by remember { mutableStateOf("okay") }
     var text by remember { mutableStateOf("") }
+    var selectedDeckId by remember { mutableStateOf<String?>(null) }
     val moods = listOf("great" to "😊", "okay" to "😐", "tough" to "😔")
     val moodColors = mapOf("great" to Color(0xFF7FB6A7), "okay" to Color(0xFFE8C07C), "tough" to Color(0xFFE88A68))
 
@@ -130,20 +131,33 @@ fun NewJournalEntryScreen(
                 color = Color(0xFF3D2B1F),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = { /* ... */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7FB6A7)),
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = selectedDeckId == null,
+                    onClick = { selectedDeckId = null },
+                    label = { Text("Calendar") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF7FB6A7),
+                        selectedLabelColor = Color.White
+                    ),
                     shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text("✓ Calendar", fontSize = 12.sp)
-                }
-                Button(
-                    onClick = { /* ... */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2E6D3), contentColor = Color(0xFF3D2B1F)),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text("Afrikaans Basics", fontSize = 12.sp)
+                )
+                
+                decks.forEach { deck ->
+                    FilterChip(
+                        selected = selectedDeckId == deck.deckId,
+                        onClick = { selectedDeckId = deck.deckId },
+                        label = { Text(deck.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color(0xFFF2E6D3),
+                            selectedLabelColor = Color(0xFF3D2B1F)
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
                 }
             }
 
@@ -152,7 +166,7 @@ fun NewJournalEntryScreen(
             Button(
                 onClick = { 
                     val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(initialDate.time)
-                    onConfirm(dateStr, mood, text, null) 
+                    onConfirm(dateStr, mood, text, selectedDeckId) 
                 },
                 enabled = text.isNotBlank() && !isLoading,
                 modifier = Modifier.fillMaxWidth().height(56.dp),

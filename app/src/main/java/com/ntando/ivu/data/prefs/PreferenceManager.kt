@@ -14,6 +14,7 @@ class PreferenceManager(private val context: Context) {
     companion object {
         val THEME_KEY = booleanPreferencesKey("dark_theme")
         val LANGUAGE_KEY = stringPreferencesKey("app_language")
+        val REMINDERS_KEY = booleanPreferencesKey("study_reminders")
     }
 
     val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -22,6 +23,10 @@ class PreferenceManager(private val context: Context) {
 
     val appLanguage: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[LANGUAGE_KEY] ?: "en"
+    }
+
+    val isRemindersEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[REMINDERS_KEY] ?: true
     }
 
     suspend fun setTheme(isDark: Boolean) {
@@ -33,6 +38,12 @@ class PreferenceManager(private val context: Context) {
     suspend fun setLanguage(language: String) {
         context.dataStore.edit { preferences ->
             preferences[LANGUAGE_KEY] = language
+        }
+    }
+
+    suspend fun setRemindersEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[REMINDERS_KEY] = enabled
         }
     }
 }

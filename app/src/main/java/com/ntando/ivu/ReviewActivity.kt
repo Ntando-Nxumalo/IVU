@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.ui.review.FlashcardReviewScreen
@@ -36,7 +39,10 @@ class ReviewActivity : ComponentActivity() {
         }
 
         setContent {
-            IVUTheme {
+            val preferenceManager = PreferenceManager(this)
+            val isDarkTheme by preferenceManager.isDarkTheme.collectAsState(initial = false)
+
+            IVUTheme(darkTheme = isDarkTheme) {
                 FlashcardReviewScreen(
                     viewModel = viewModel,
                     deckId = deckId,

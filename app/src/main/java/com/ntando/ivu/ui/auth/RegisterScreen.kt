@@ -97,7 +97,7 @@ fun RegisterScreen(
                         name = it
                         nameError = if (it.isBlank()) nameRequiredErr else null
                     },
-                    placeholder = { Text("Ayanda Maseko") },
+                    placeholder = { Text(stringResource(R.string.hint_full_name)) },
                     isError = nameError != null,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,

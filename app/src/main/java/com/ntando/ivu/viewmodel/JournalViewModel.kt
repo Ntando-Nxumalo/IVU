@@ -3,7 +3,9 @@ package com.ntando.ivu.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntando.ivu.data.repository.JournalRepository
+import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.network.JournalEntry
+import com.ntando.ivu.network.Deck
 import com.ntando.ivu.data.entity.Badge
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,28 +16,38 @@ sealed class JournalUiState {
     object Loading : JournalUiState()
     data class Success(
         val entries: List<JournalEntry>,
-        val newlyUnlockedBadges: List<Badge> = emptyList()
+        val newlyUnlockedBadges: List<Badge> = emptyList(),
+        val decks: List<Deck> = emptyList()
     ) : JournalUiState()
     data class Error(val message: String) : JournalUiState()
 }
 
-class JournalViewModel(private val repository: JournalRepository) : ViewModel() {
+class JournalViewModel(
+    private val repository: JournalRepository,
+    private val deckRepository: DeckRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<JournalUiState>(JournalUiState.Loading)
     val uiState: StateFlow<JournalUiState> = _uiState.asStateFlow()
 
     init {
-        loadEntries()
+        loadData()
     }
 
-    fun loadEntries() {
+    fun loadData() {
         _uiState.value = JournalUiState.Loading
         viewModelScope.launch {
-            val result = repository.fetchEntries()
-            result.onSuccess { entries ->
-                _uiState.value = JournalUiState.Success(entries)
-            }.onFailure {
-                _uiState.value = JournalUiState.Error(it.message ?: "Failed to load journal")
+            val journalResult = repository.fetchEntries()
+            val decksResult = deckRepository.fetchDecks()
+            
+            if (journalResult.isSuccess && decksResult.isSuccess) {
+                _uiState.value = JournalUiState.Success(
+                    entries = journalResult.getOrDefault(emptyList()),
+                    decks = decksResult.getOrDefault(emptyList())
+                )
+            } else {
+                val error = journalResult.exceptionOrNull()?.message ?: decksResult.exceptionOrNull()?.message ?: "Failed to load data"
+                _uiState.value = JournalUiState.Error(error)
             }
         }
     }
@@ -44,7 +56,7 @@ class JournalViewModel(private val repository: JournalRepository) : ViewModel() 
         viewModelScope.launch {
             val result = repository.createEntry(date, mood, text, linkedDeckId)
             result.onSuccess { (entry, unlockedBadges) ->
-                loadEntries()
+                loadData()
                 val currentState = _uiState.value
                 if (currentState is JournalUiState.Success) {
                     _uiState.value = currentState.copy(newlyUnlockedBadges = unlockedBadges)

@@ -14,13 +14,18 @@ class SettingsViewModel(
     private val preferenceManager: PreferenceManager
 ) : ViewModel() {
 
-    val userEmail = authRepository.getCurrentUser()?.email ?: "Not signed in"
+    private val firebaseUser = authRepository.getCurrentUser()
+    val userEmail = firebaseUser?.email ?: "Not signed in"
+    val userName = firebaseUser?.displayName ?: "IVU Learner"
     
     val isDarkTheme: StateFlow<Boolean> = preferenceManager.isDarkTheme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val appLanguage: StateFlow<String> = preferenceManager.appLanguage
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
+
+    val isRemindersEnabled: StateFlow<Boolean> = preferenceManager.isRemindersEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     fun setTheme(isDark: Boolean) {
         viewModelScope.launch {
@@ -42,6 +47,12 @@ class SettingsViewModel(
             preferenceManager.setLanguage(language)
             val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(language)
             AppCompatDelegate.setApplicationLocales(appLocale)
+        }
+    }
+
+    fun setRemindersEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.setRemindersEnabled(enabled)
         }
     }
 

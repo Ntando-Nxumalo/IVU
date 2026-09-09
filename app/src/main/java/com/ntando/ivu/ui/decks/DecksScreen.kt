@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,28 +32,37 @@ fun DecksScreen(
     viewModel: DecksViewModel,
     flashcardViewModel: FlashcardViewModel,
     onDeckClick: (String) -> Unit,
-    onViewCards: (String, String) -> Unit
+    onViewCards: (String, String) -> Unit,
+    onNavigate: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val flashcardUiState by flashcardViewModel.uiState.collectAsState()
     
     var showAddDeckDialog by remember { mutableStateOf(false) }
     var selectedDeckForAddCard by remember { mutableStateOf<String?>(null) }
+    var deckToDelete by remember { mutableStateOf<Deck?>(null) }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.my_decks), fontWeight = FontWeight.Bold, color = Color.White) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = Color(0xFFE88A68)
                 )
+            )
+        },
+        bottomBar = {
+            com.ntando.ivu.ui.components.BottomNavigationBar(
+                currentScreen = "decks",
+                onNavigate = onNavigate
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDeckDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                containerColor = Color(0xFFE88A68),
+                contentColor = Color.White,
+                shape = androidx.compose.foundation.shape.CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_deck))
             }
@@ -92,7 +102,8 @@ fun DecksScreen(
                                     deck = deck, 
                                     onClick = { deck.deckId?.let { onDeckClick(it) } },
                                     onAddCard = { selectedDeckForAddCard = deck.deckId },
-                                    onViewCards = { deck.deckId?.let { onViewCards(it, deck.title) } }
+                                    onViewCards = { deck.deckId?.let { onViewCards(it, deck.title) } },
+                                    onDelete = { deckToDelete = deck }
                                 )
                             }
                         }
@@ -127,10 +138,34 @@ fun DecksScreen(
             errorMessage = (flashcardUiState as? FlashcardUiState.Error)?.message
         )
     }
+
+    if (deckToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { deckToDelete = null },
+            title = { Text("Delete Deck") },
+            text = { Text("Are you sure you want to delete '${deckToDelete?.title}'? All cards in this deck will be permanently removed.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        deckToDelete?.deckId?.let { viewModel.deleteDeck(it) }
+                        deckToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deckToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards: () -> Unit) {
+fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards: () -> Unit, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,11 +180,11 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-            val (tagName, tagColor) = when (deck.language.lowercase()) {
-                "zu" -> "isiZulu" to Color(0xFFE88A68)
-                "af" -> "Afrikaans" to Color(0xFF7FB6A7)
-                else -> "English" to Color(0xFFE8C07C)
-            }
+                val (tagName, tagColor) = when (deck.language.lowercase()) {
+                    "zu" -> "isiZulu" to Color(0xFFE88A68)
+                    "af" -> "Afrikaans" to Color(0xFF7FB6A7)
+                    else -> "English" to Color(0xFFE8C07C)
+                }
 
                 Surface(
                     color = tagColor,
@@ -171,6 +206,9 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
                     IconButton(onClick = onAddCard) {
                         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_card), tint = Color.Gray)
                     }
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete Deck", tint = Color.LightGray)
+                    }
                 }
             }
 
@@ -182,7 +220,7 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            val progress = if (deck.cardCount > 0) 0.65f else 0f
+            val progress = 0f 
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
@@ -195,7 +233,7 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
             )
 
             Text(
-                text = stringResource(R.string.cards_mastered_format, (deck.cardCount * 0.65).toInt(), deck.cardCount),
+                text = stringResource(R.string.cards_mastered_format, 0, deck.cardCount),
                 fontSize = 12.sp,
                 color = Color.LightGray,
                 modifier = Modifier.padding(top = 8.dp)

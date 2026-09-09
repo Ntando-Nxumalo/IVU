@@ -15,7 +15,14 @@
     <string name="your_progress">Jou Vordering</string>
     <string name="journal_calendar">Joernaal &amp; Kalender</string>
     <string name="ivu_ai_assist">IVU AI-Assistent</string>
-    <string name="welcome_learner">Sawubona, %s</string>
+    <string name="welcome_learner">Goeiedag, %s</string>
+    <string name="todays_goal">Vandag se doelwit</string>
+    <string name="cards_reviewed_format">%1$d / %2$d kaarte hersien</string>
+    <string name="nav_my_decks">Gaan voort met leer</string>
+    <string name="nav_ai_assist">Vra IVU AI</string>
+    <string name="nav_journal_calendar">Vandag se joernaal</string>
+    <string name="nav_progress_badges">Hierdie week se kalender</string>
+    <string name="nav_profile">Ek</string>
     <string name="study_badges">Studiekentekens</string>
     <string name="current_streak">Huidige Reeks</string>
     <string name="experience_xp">Ervaring (XP)</string>

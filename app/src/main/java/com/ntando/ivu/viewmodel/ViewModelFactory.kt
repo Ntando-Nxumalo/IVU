@@ -8,49 +8,49 @@ import com.ntando.ivu.data.repository.AuthRepository
 import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.data.repository.JournalRepository
-
 import com.ntando.ivu.data.repository.ChatRepository
 
 class ViewModelFactory(private val repository: Any) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ChatViewModel(repository as ChatRepository) as T
+        return when {
+            modelClass.isAssignableFrom(ChatViewModel::class.java) -> 
+                ChatViewModel(repository as ChatRepository) as T
+            
+            modelClass.isAssignableFrom(JournalViewModel::class.java) -> {
+                val params = repository as Pair<JournalRepository, DeckRepository>
+                JournalViewModel(params.first, params.second) as T
+            }
+            
+            modelClass.isAssignableFrom(LoginViewModel::class.java) -> 
+                LoginViewModel(repository as AuthRepository) as T
+                
+            modelClass.isAssignableFrom(RegisterViewModel::class.java) -> 
+                RegisterViewModel(repository as AuthRepository) as T
+                
+            modelClass.isAssignableFrom(FlashcardViewModel::class.java) -> 
+                FlashcardViewModel(repository as FlashcardRepository) as T
+                
+            modelClass.isAssignableFrom(DecksViewModel::class.java) -> 
+                DecksViewModel(repository as DeckRepository) as T
+                
+            modelClass.isAssignableFrom(FlashcardReviewViewModel::class.java) -> 
+                FlashcardReviewViewModel(repository as FlashcardRepository) as T
+                
+            modelClass.isAssignableFrom(FlashcardListViewModel::class.java) -> 
+                FlashcardListViewModel(repository as FlashcardRepository) as T
+                
+            modelClass.isAssignableFrom(AchievementViewModel::class.java) -> {
+                val params = repository as Pair<AchievementRepository, String>
+                AchievementViewModel(params.first, params.second) as T
+            }
+            
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> {
+                val params = repository as Pair<AuthRepository, PreferenceManager>
+                SettingsViewModel(params.first, params.second) as T
+            }
+            
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
-        if (modelClass.isAssignableFrom(JournalViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return JournalViewModel(repository as JournalRepository) as T
-        }
-        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(repository as AuthRepository) as T
-        }
-        if (modelClass.isAssignableFrom(RegisterViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return RegisterViewModel(repository as AuthRepository) as T
-        }
-        if (modelClass.isAssignableFrom(FlashcardViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return FlashcardViewModel(repository as FlashcardRepository) as T
-        }
-        if (modelClass.isAssignableFrom(DecksViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return DecksViewModel(repository as DeckRepository) as T
-        }
-        if (modelClass.isAssignableFrom(FlashcardReviewViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return FlashcardReviewViewModel(repository as FlashcardRepository) as T
-        }
-        if (modelClass.isAssignableFrom(AchievementViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            val params = repository as Pair<*, *>
-            return AchievementViewModel(params.first as AchievementRepository, params.second as String) as T
-        }
-        if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            val params = repository as Pair<*, *>
-            return SettingsViewModel(params.first as AuthRepository, params.second as PreferenceManager) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

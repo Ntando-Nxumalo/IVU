@@ -33,7 +33,8 @@ import java.util.*
 fun JournalCalendarScreen(
     viewModel: JournalViewModel,
     onBack: () -> Unit,
-    onAddEntry: (Calendar) -> Unit
+    onAddEntry: (Calendar) -> Unit,
+    onNavigate: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
@@ -90,6 +91,12 @@ fun JournalCalendarScreen(
                 )
             )
         },
+        bottomBar = {
+            com.ntando.ivu.ui.components.BottomNavigationBar(
+                currentScreen = "journal",
+                onNavigate = onNavigate
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onAddEntry(selectedDate) },
@@ -100,7 +107,7 @@ fun JournalCalendarScreen(
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_entry))
             }
         },
-        containerColor = Color(0xFFFFF8F0)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             CalendarView(
@@ -252,7 +259,7 @@ fun JournalEntryItem(entry: JournalEntry) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val (moodEmoji, moodColor) = when (entry.mood.lowercase()) {
+            val (_, moodColor) = when (entry.mood.lowercase()) {
                 "great" -> "😊" to Color(0xFF7FB6A7)
                 "okay" -> "😐" to Color(0xFFE8C07C)
                 "tough" -> "😔" to Color(0xFFE88A68)
@@ -268,8 +275,14 @@ fun JournalEntryItem(entry: JournalEntry) {
             Spacer(modifier = Modifier.width(16.dp))
             
             Column {
-                val sdf = SimpleDateFormat("EEE d MMM", Locale.getDefault())
-                val dateText = sdf.format(java.util.Date(entry.date))
+                val inputSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val displaySdf = SimpleDateFormat("EEE d MMM", Locale.getDefault())
+                val dateText = try {
+                    val date = inputSdf.parse(entry.date)
+                    if (date != null) displaySdf.format(date) else entry.date
+                } catch (e: Exception) {
+                    entry.date
+                }
                 Text(
                     text = "$dateText — Feeling ${entry.mood.lowercase()}",
                     fontSize = 14.sp,

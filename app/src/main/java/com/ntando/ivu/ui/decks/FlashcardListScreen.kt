@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,9 +28,11 @@ fun FlashcardListScreen(
     viewModel: FlashcardListViewModel,
     deckId: String,
     deckTitle: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onDeleteDeck: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(deckId) {
         viewModel.loadCards(deckId)
@@ -43,10 +46,29 @@ fun FlashcardListScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Delete Deck", color = Color.Red) },
+                                onClick = {
+                                    showMenu = false
+                                    onDeleteDeck()
+                                }
+                            )
+                        }
+                    }
                 }
             )
         },
-        containerColor = Color(0xFFFFF8F0)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val state = uiState) {
@@ -79,7 +101,7 @@ fun FlashcardListItem(card: Flashcard, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -87,7 +109,7 @@ fun FlashcardListItem(card: Flashcard, onDelete: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = card.frontText, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF3D2B1F))
+                Text(text = card.frontText, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                 Text(text = card.backText, fontSize = 14.sp, color = Color(0xFFE88A68), modifier = Modifier.padding(top = 4.dp))
                 
                 Spacer(modifier = Modifier.height(8.dp))

@@ -1,12 +1,15 @@
 package com.ntando.ivu
 
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.ChatRepository
 import com.ntando.ivu.ui.chat.AiAssistScreen
 import com.ntando.ivu.ui.theme.IVUTheme
@@ -23,11 +26,14 @@ class ChatActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val sharedPref = getSharedPreferences("IVUPrefs", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
         val currentUserId = sharedPref.getLong("current_user_id", -1)
 
         setContent {
-            IVUTheme {
+            val preferenceManager = PreferenceManager(this)
+            val isDarkTheme by preferenceManager.isDarkTheme.collectAsState(initial = false)
+
+            IVUTheme(darkTheme = isDarkTheme) {
                 AiAssistScreen(
                     viewModel = viewModel,
                     onBack = { finish() }

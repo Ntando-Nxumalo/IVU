@@ -7,12 +7,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.data.repository.JournalRepository
+import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.ui.journal.JournalCalendarScreen
 import com.ntando.ivu.ui.journal.NewJournalEntryScreen
 import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.JournalViewModel
+import com.ntando.ivu.viewmodel.JournalUiState
 import com.ntando.ivu.viewmodel.ViewModelFactory
 import java.util.*
 
@@ -26,7 +29,7 @@ class JournalActivity : ComponentActivity() {
             db.userStatsDao(),
             db.journalDao()
         )
-        ViewModelFactory(JournalRepository(achievementRepository, firebaseUid))
+        ViewModelFactory(JournalRepository(achievementRepository, firebaseUid) to DeckRepository())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +45,10 @@ class JournalActivity : ComponentActivity() {
         }
 
         setContent {
-            IVUTheme {
+            val preferenceManager = PreferenceManager(this)
+            val isDarkTheme by preferenceManager.isDarkTheme.collectAsState(initial = false)
+
+            IVUTheme(darkTheme = isDarkTheme) {
                 var showAddDialog by remember { 
                     mutableStateOf(intent.getStringExtra("action") == "NEW_ENTRY") 
                 }
@@ -54,13 +60,25 @@ class JournalActivity : ComponentActivity() {
                     onAddEntry = { selectedDate ->
                         dateForNewEntry = selectedDate
                         showAddDialog = true
+                    },
+                    onNavigate = { screen ->
+                        when (screen) {
+                            "home" -> startActivity(Intent(this, IVU::class.java))
+                            "decks" -> startActivity(Intent(this, DecksActivity::class.java))
+                            "journal" -> {} // Already here
+                            "profile" -> startActivity(Intent(this, AchievementsActivity::class.java))
+                        }
                     }
                 )
                 
                 if (showAddDialog) {
+                    val state = viewModel.uiState.collectAsState().value
+                    val decks = (state as? JournalUiState.Success)?.decks ?: emptyList()
+                    
                     NewJournalEntryScreen(
                         initialDate = dateForNewEntry,
                         onDismiss = { showAddDialog = false },
+                        decks = decks,
                         onConfirm = { date, mood, text, linkedDeckId ->
                             viewModel.createEntry(date, mood, text, linkedDeckId) { success, _ ->
                                 if (success) {

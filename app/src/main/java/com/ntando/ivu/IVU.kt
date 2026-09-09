@@ -8,11 +8,20 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.ntando.ivu.ui.components.BottomNavigationBar
+import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.User
+import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.R
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,6 +39,29 @@ class IVU : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag, "onCreate: Initializing Home screen")
+        
+        // Observe and apply theme
+        val preferenceManager = PreferenceManager(this)
+        lifecycleScope.launch {
+            preferenceManager.isDarkTheme.collect { isDark ->
+                val mode = if (isDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+                if (AppCompatDelegate.getDefaultNightMode() != mode) {
+                    AppCompatDelegate.setDefaultNightMode(mode)
+                }
+            }
+        }
+        
+        // Observe language and recreate if needed
+        lifecycleScope.launch {
+            preferenceManager.appLanguage.collect { lang ->
+                val currentLocales = AppCompatDelegate.getApplicationLocales()
+                if (currentLocales.toLanguageTags() != lang) {
+                    val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(lang)
+                    AppCompatDelegate.setApplicationLocales(appLocale)
+                }
+            }
+        }
+
         setContentView(R.layout.activity_ivu)
 
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
@@ -53,8 +85,9 @@ class IVU : AppCompatActivity() {
             FirebaseAuth.getInstance().currentUser?.let { user ->
                 with(sharedPref.edit()) {
                     putString("firebase_uid", user.uid)
-                    apply()
+                    commit()
                 }
+                Log.d(tag, "Populated missing firebase_uid: ${user.uid}")
             }
         }
 
@@ -98,18 +131,22 @@ class IVU : AppCompatActivity() {
 
         val db = DatabaseProvider.getDatabase(this)
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
-        val firebaseUid = sharedPref.getString("firebase_uid", null)
+        
+        // Always get the latest firebaseUid inside the setup method
+        val firebaseUid = sharedPref.getString("firebase_uid", null) ?: FirebaseAuth.getInstance().currentUser?.uid
 
         // Set Current Date
         val sdf = SimpleDateFormat("EEEE, d MMMM", Locale.getDefault())
         tvDate.text = sdf.format(Date())
 
         lifecycleScope.launch {
-            db.userDao().getUserById(currentUserId).collect { user ->
-                Log.d(tag, "UI Update: Displaying user name for ID $currentUserId")
-                val name = user?.name?.split(" ")?.firstOrNull() ?: "Learner"
-                tvHeaderTitle.text = getString(R.string.welcome_learner, name)
-            }
+            val firebaseUser = FirebaseAuth.getInstance().currentUser
+            val dbUser = db.userDao().getUserById(currentUserId).first()
+            val nameToUse = firebaseUser?.displayName?.split(" ")?.firstOrNull() 
+                ?: dbUser?.name?.split(" ")?.firstOrNull()
+                ?: "Learner"
+            
+            tvHeaderTitle.text = getString(R.string.welcome_learner, nameToUse)
         }
 
         if (firebaseUid != null) {
@@ -123,10 +160,10 @@ class IVU : AppCompatActivity() {
                         Log.d(tag, "setupUI: Stats updated - Streak: ${stats.currentStreak}, XP: ${stats.xp}")
                         // Update UI on main thread
                         runOnUiThread {
-                            tvStreakTitle.text = getString(R.string.streak_format, stats.currentStreak)
+                            tvStreakTitle.text = resources.getQuantityString(R.plurals.days_format, stats.currentStreak, stats.currentStreak)
                             tvXpPoints.text = getString(R.string.xp_earned_format, stats.xp)
 
-                            val goal = 20
+                            val goal = 10
                             tvGoalProgress.text = getString(R.string.cards_reviewed_format, stats.dailyReviews, goal)
 
                             pbXp.max = goal
@@ -165,18 +202,24 @@ class IVU : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        // Bottom Navigation
-        findViewById<View>(R.id.navHome).setOnClickListener {
-            // Already here
-        }
-        findViewById<View>(R.id.navDecks).setOnClickListener {
-            startActivity(Intent(this, DecksActivity::class.java))
-        }
-        findViewById<View>(R.id.navJournal).setOnClickListener {
-            startActivity(Intent(this, JournalActivity::class.java))
-        }
-        findViewById<View>(R.id.navMe).setOnClickListener {
-            startActivity(Intent(this, AchievementsActivity::class.java))
+        // Bottom Navigation (Compose)
+        val composeBottomNav = findViewById<ComposeView>(R.id.composeBottomNav)
+        val preferenceManager = PreferenceManager(this)
+        composeBottomNav.setContent {
+            val isDarkTheme by preferenceManager.isDarkTheme.collectAsState(initial = false)
+            IVUTheme(darkTheme = isDarkTheme) {
+                BottomNavigationBar(
+                    currentScreen = "home",
+                    onNavigate = { screen ->
+                        when (screen) {
+                            "home" -> {} // Already here
+                            "decks" -> startActivity(Intent(this, DecksActivity::class.java))
+                            "journal" -> startActivity(Intent(this, JournalActivity::class.java))
+                            "profile" -> startActivity(Intent(this, AchievementsActivity::class.java))
+                        }
+                    }
+                )
+            }
         }
     }
 }

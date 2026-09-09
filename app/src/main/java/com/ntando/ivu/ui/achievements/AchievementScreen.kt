@@ -24,130 +24,144 @@ import com.ntando.ivu.R
 import com.ntando.ivu.data.entity.Badge
 import com.ntando.ivu.viewmodel.AchievementViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AchievementScreen(viewModel: AchievementViewModel) {
+fun AchievementScreen(
+    viewModel: AchievementViewModel,
+    onNavigate: (String) -> Unit
+) {
     val stats by viewModel.userStats.collectAsState()
     var selectedBadge by remember { mutableStateOf<Badge?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFF8F0))
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.title_progress),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF3D2B1F),
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        // Large Streak Icon
-        Surface(
-            modifier = Modifier.size(100.dp),
-            color = Color.Transparent
+    Scaffold(
+        bottomBar = {
+            com.ntando.ivu.ui.components.BottomNavigationBar(
+                currentScreen = "profile",
+                onNavigate = onNavigate
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "🔥", // Image shows a leaf/flame
-                fontSize = 80.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-
-        Text(
-            text = pluralStringResource(R.plurals.days_format, stats?.currentStreak ?: 0, stats?.currentStreak ?: 0),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF3D2B1F)
-        )
-        Text(
-            text = "Level ${stats?.level ?: 1} · Wordsmith",
-            fontSize = 14.sp,
-            color = Color.LightGray
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // XP Bar
-        val xpProgress = (stats?.xp ?: 0) % 1000 // Assuming 1000 for level 5 in image
-        LinearProgressIndicator(
-            progress = { xpProgress / 1000f },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(12.dp)
-                .clip(CircleShape),
-            color = Color(0xFFE8C07C),
-            trackColor = Color(0xFFEEEEEE)
-        )
-        Text(
-            text = "${stats?.xp ?: 0} / 1000 XP to Level ${ (stats?.level ?: 0) + 1 }",
-            fontSize = 12.sp,
-            modifier = Modifier.padding(top = 8.dp),
-            color = Color.Gray
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // This Week Section
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "This week",
-                fontSize = 16.sp,
+                text = stringResource(R.string.title_progress),
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3D2B1F)
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth().height(100.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Bottom
+
+            // Large Streak Icon
+            Surface(
+                modifier = Modifier.size(100.dp),
+                color = Color.Transparent
             ) {
-                val mockHeights = listOf(0.4f, 0.7f, 0.3f, 0.8f, 0.5f, 0.2f, 0.6f)
-                val days = listOf("M", "T", "W", "T", "F", "S", "S")
-                mockHeights.forEachIndexed { index, height ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .width(12.dp)
-                                .fillMaxHeight(height)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFF7FB6A7))
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(days[index], fontSize = 10.sp, color = Color.Gray)
+                Text(
+                    text = "🔥",
+                    fontSize = 80.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Text(
+                text = pluralStringResource(R.plurals.days_format, stats?.currentStreak ?: 0, stats?.currentStreak ?: 0),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = "Level ${stats?.level ?: 1} · Wordsmith",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // XP Bar
+            val xpProgress = (stats?.xp ?: 0) % 100
+            LinearProgressIndicator(
+                progress = { xpProgress / 100f },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .clip(CircleShape),
+                color = Color(0xFFE8C07C),
+                trackColor = Color(0xFFEEEEEE)
+            )
+            Text(
+                text = "${stats?.xp ?: 0} / ${((stats?.level ?: 1) * 100)} XP total",
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 8.dp),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // This Week Section
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "This week",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    val mockHeights = listOf(0.4f, 0.7f, 0.3f, 0.8f, 0.5f, 0.2f, 0.6f)
+                    val days = listOf("M", "T", "W", "T", "F", "S", "S")
+                    mockHeights.forEachIndexed { index, height ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(
+                                modifier = Modifier
+                                    .width(12.dp)
+                                    .fillMaxHeight(height)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF7FB6A7))
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(days[index], fontSize = 10.sp, color = Color.Gray)
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // Badges Section
-        Text(
-            text = "Badges",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF3D2B1F),
-            modifier = Modifier.align(Alignment.Start)
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
+            // Badges Section
+            Text(
+                text = "Badges",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(Badge.ALL) { badge ->
-                val isUnlocked = stats?.badges?.contains(badge.id) == true
-                BadgeItem(
-                    badge = badge,
-                    isUnlocked = isUnlocked,
-                    onClick = { selectedBadge = badge }
-                )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                items(Badge.ALL) { badge ->
+                    val isUnlocked = stats?.badges?.contains(badge.id) == true
+                    BadgeItem(
+                        badge = badge,
+                        isUnlocked = isUnlocked,
+                        onClick = { selectedBadge = badge }
+                    )
+                }
             }
         }
     }
@@ -176,26 +190,6 @@ fun AchievementScreen(viewModel: AchievementViewModel) {
 }
 
 @Composable
-fun ProgressCard(title: String, value: String, icon: String, modifier: Modifier) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = icon, fontSize = 32.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = title, fontSize = 12.sp, color = Color.Gray)
-            Text(text = value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        }
-    }
-}
-
-@Composable
 fun BadgeItem(badge: Badge, isUnlocked: Boolean, onClick: () -> Unit) {
     val badgeColors = mapOf(
         "FIRST_REVIEW" to Color(0xFFE8C07C),
@@ -212,7 +206,7 @@ fun BadgeItem(badge: Badge, isUnlocked: Boolean, onClick: () -> Unit) {
             .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -238,7 +232,7 @@ fun BadgeItem(badge: Badge, isUnlocked: Boolean, onClick: () -> Unit) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                color = Color(0xFF3D2B1F)
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = if (isUnlocked) "Unlocked" else "Locked",

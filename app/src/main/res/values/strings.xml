@@ -6,7 +6,7 @@
     <string name="nav_decks">Decks</string>
     <string name="nav_journal">Journal</string>
     <string name="nav_report">Me</string>
-    <string name="nav_profile">Profile</string>
+    <string name="nav_profile">Me</string>
     <string name="nav_achievements">Me</string>
     <string name="currency_format" translatable="false">R%d</string>
     <string name="currency_format_decimal" translatable="false">R%.2f</string>
@@ -144,7 +144,7 @@
     <string name="ivu_ai_assist">IVU AI Assist</string>
 
     <!-- Home -->
-    <string name="welcome_learner">Sawubona, %s</string>
+    <string name="welcome_learner">Hello, %s</string>
 
     <!-- Firebase / Google Auth -->
     <string name="default_web_client_id" translatable="false">34465820973-avb1jfir18fi7qi5eoatv9anri6qus7e.apps.googleusercontent.com</string>
@@ -158,10 +158,10 @@
     <string name="xp_earned_format">+%d XP</string>
     <string name="todays_goal">Today\'s goal</string>
     <string name="cards_reviewed_format">%1$d / %2$d cards reviewed</string>
-    <string name="nav_my_decks">Continue\nstudying</string>
-    <string name="nav_ai_assist">Ask\nIVU AI</string>
-    <string name="nav_journal_calendar">Today\'s\njournal</string>
-    <string name="nav_progress_badges">This week\'s\ncalendar</string>
+    <string name="nav_my_decks">Continue studying</string>
+    <string name="nav_ai_assist">Ask IVU AI</string>
+    <string name="nav_journal_calendar">Today\'s journal</string>
+    <string name="nav_progress_badges">This week\'s calendar</string>
 
     <!-- Register Screen -->
     <string name="create_your_account">Create your account</string>
