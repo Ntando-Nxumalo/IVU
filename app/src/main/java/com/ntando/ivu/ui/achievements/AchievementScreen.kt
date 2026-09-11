@@ -3,9 +3,8 @@ package com.ntando.ivu.ui.achievements
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -42,126 +41,145 @@ fun AchievementScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(20.dp)
         ) {
-            Text(
-                text = stringResource(R.string.title_progress),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            // Large Streak Icon
-            Surface(
-                modifier = Modifier.size(100.dp),
-                color = Color.Transparent
-            ) {
+            item {
                 Text(
-                    text = "🔥",
-                    fontSize = 80.sp,
-                    textAlign = TextAlign.Center
+                    text = stringResource(R.string.title_progress),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 24.dp)
                 )
             }
 
-            Text(
-                text = pluralStringResource(R.plurals.days_format, stats?.currentStreak ?: 0, stats?.currentStreak ?: 0),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = "Level ${stats?.level ?: 1} · Wordsmith",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
+            item {
+                // Large Streak Icon
+                Surface(
+                    modifier = Modifier.size(100.dp),
+                    color = Color.Transparent
+                ) {
+                    Text(
+                        text = "🔥",
+                        fontSize = 80.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // XP Bar
-            val xpProgress = (stats?.xp ?: 0) % 100
-            LinearProgressIndicator(
-                progress = { xpProgress / 100f },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(12.dp)
-                    .clip(CircleShape),
-                color = Color(0xFFE8C07C),
-                trackColor = Color(0xFFEEEEEE)
-            )
-            Text(
-                text = "${stats?.xp ?: 0} / ${((stats?.level ?: 1) * 100)} XP total",
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 8.dp),
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // This Week Section
-            Column(modifier = Modifier.fillMaxWidth()) {
+            item {
                 Text(
-                    text = "This week",
-                    fontSize = 16.sp,
+                    text = stringResource(R.string.streak_format, stats?.currentStreak ?: 0),
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(100.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    val mockHeights = listOf(0.4f, 0.7f, 0.3f, 0.8f, 0.5f, 0.2f, 0.6f)
-                    val days = listOf("M", "T", "W", "T", "F", "S", "S")
-                    mockHeights.forEachIndexed { index, height ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(
-                                modifier = Modifier
-                                    .width(12.dp)
-                                    .fillMaxHeight(height)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFF7FB6A7))
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(days[index], fontSize = 10.sp, color = Color.Gray)
+                Text(
+                    text = stringResource(R.string.label_level_wordsmith, stats?.level ?: 1),
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                // XP Bar
+                val xpProgress = (stats?.xp ?: 0) % 100
+                LinearProgressIndicator(
+                    progress = { xpProgress / 100f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp)
+                        .clip(CircleShape),
+                    color = Color(0xFFE8C07C),
+                    trackColor = Color(0xFFEEEEEE)
+                )
+                Text(
+                    text = "${stats?.xp ?: 0} / ${((stats?.level ?: 1) * 100)} XP total",
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            item {
+                // This Week Section
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.label_this_week_section),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        val mockHeights = listOf(0.4f, 0.7f, 0.3f, 0.8f, 0.5f, 0.2f, 0.6f)
+                        val days = listOf("M", "T", "W", "T", "F", "S", "S")
+                        mockHeights.forEachIndexed { index, height ->
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(12.dp)
+                                        .fillMaxHeight(height)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0xFF7FB6A7))
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(days[index], fontSize = 10.sp, color = Color.Gray)
+                            }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(32.dp))
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            item {
+                // Badges Section
+                Text(
+                    text = stringResource(R.string.label_badges_section),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-            // Badges Section
-            Text(
-                text = "Badges",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f)
-            ) {
-                items(Badge.ALL) { badge ->
-                    val isUnlocked = stats?.badges?.contains(badge.id) == true
-                    BadgeItem(
-                        badge = badge,
-                        isUnlocked = isUnlocked,
-                        onClick = { selectedBadge = badge }
-                    )
+            items(Badge.ALL.chunked(2)) { rowBadges ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    rowBadges.forEach { badge ->
+                        val isUnlocked = stats?.badges?.contains(badge.id) == true
+                        Box(modifier = Modifier.weight(1f)) {
+                            BadgeItem(
+                                badge = badge,
+                                isUnlocked = isUnlocked,
+                                onClick = { selectedBadge = badge }
+                            )
+                        }
+                    }
+                    if (rowBadges.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
@@ -173,16 +191,16 @@ fun AchievementScreen(
             title = { Text(badge.displayName) },
             text = { 
                 Column {
-                    Text(if (isUnlocked) badge.description else "Condition: ${badge.description}")
+                    Text(if (isUnlocked) badge.description else stringResource(R.string.label_condition, badge.description))
                     if (isUnlocked) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Earned! 🎉", fontWeight = FontWeight.Bold, color = Color(0xFFE88A68))
+                        Text(stringResource(R.string.label_earned), fontWeight = FontWeight.Bold, color = Color(0xFFE88A68))
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { selectedBadge = null }) {
-                    Text("Close")
+                    Text(stringResource(R.string.btn_close))
                 }
             }
         )
@@ -235,7 +253,7 @@ fun BadgeItem(badge: Badge, isUnlocked: Boolean, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = if (isUnlocked) "Unlocked" else "Locked",
+                text = if (isUnlocked) stringResource(R.string.label_unlocked) else stringResource(R.string.label_locked),
                 fontSize = 11.sp,
                 textAlign = TextAlign.Center,
                 color = if (isUnlocked) Color(0xFFE88A68) else Color.Gray,

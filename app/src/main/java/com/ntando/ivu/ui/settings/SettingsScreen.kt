@@ -121,19 +121,19 @@ fun SettingsScreen(
                 SettingsItem(
                     label = stringResource(R.string.label_app_language),
                     value = when(appLanguage) {
-                        "zu" -> "isiZulu"
-                        "af" -> "Afrikaans"
-                        else -> "English"
+                        "zu" -> stringResource(R.string.label_isizulu)
+                        "af" -> stringResource(R.string.label_afrikaans)
+                        else -> stringResource(R.string.label_english)
                     },
                 ) { showLanguageDialog = true }
                 SettingsItem(
                     label = stringResource(R.string.label_theme),
-                    value = if (isDarkTheme) "Dark" else "Warm (light)",
+                    value = if (isDarkTheme) stringResource(R.string.label_theme_dark) else stringResource(R.string.label_theme_light),
                     onClick = { viewModel.setTheme(!isDarkTheme) }
                 )
                 SettingsItem(
                     label = stringResource(R.string.label_reminders),
-                    value = if (isRemindersEnabled) "On – 6:00 PM" else "Off",
+                    value = if (isRemindersEnabled) stringResource(R.string.label_reminders_on) else stringResource(R.string.label_reminders_off),
                     onClick = { viewModel.setRemindersEnabled(!isRemindersEnabled) }
                 )
                 SettingsItem(
@@ -145,18 +145,6 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // SECURITY SECTION
-            SectionHeader(stringResource(R.string.section_security))
-            SettingsCard {
-                SettingsItem(
-                    label = stringResource(R.string.btn_change_password),
-                    showDivider = false,
-                    onClick = { /* ... */ }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
                 onClick = {

@@ -33,6 +33,11 @@ fun NewJournalEntryScreen(
     var text by remember { mutableStateOf("") }
     var selectedDeckId by remember { mutableStateOf<String?>(null) }
     val moods = listOf("great" to "😊", "okay" to "😐", "tough" to "😔")
+    val moodNames = mapOf(
+        "great" to stringResource(R.string.mood_great),
+        "okay" to stringResource(R.string.mood_okay),
+        "tough" to stringResource(R.string.mood_tough)
+    )
     val moodColors = mapOf("great" to Color(0xFF7FB6A7), "okay" to Color(0xFFE8C07C), "tough" to Color(0xFFE88A68))
 
     Scaffold(
@@ -40,7 +45,7 @@ fun NewJournalEntryScreen(
             TopAppBar(
                 title = { 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("New Entry", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White)
+                        Text(stringResource(R.string.title_new_entry), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White)
                         val sdf = SimpleDateFormat("EEEE, d MMMM", Locale.getDefault())
                         Text(sdf.format(initialDate.time), fontSize = 12.sp, color = Color.White.copy(alpha = 0.8f))
                     }
@@ -63,7 +68,7 @@ fun NewJournalEntryScreen(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "How did studying feel today?",
+                text = stringResource(R.string.label_how_feel),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF3D2B1F)
@@ -92,7 +97,7 @@ fun NewJournalEntryScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = m.replaceFirstChar { it.uppercase() },
+                            text = moodNames[m] ?: m,
                             fontSize = 14.sp,
                             color = Color(0xFF3D2B1F)
                         )
@@ -103,7 +108,7 @@ fun NewJournalEntryScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Notes",
+                text = stringResource(R.string.label_notes),
                 fontSize = 14.sp,
                 color = Color.LightGray,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -114,6 +119,7 @@ fun NewJournalEntryScreen(
                 placeholder = { Text("Struggled with verb conjugation but got the greetings down well...", color = Color.LightGray.copy(alpha = 0.5f)) },
                 modifier = Modifier.fillMaxWidth().height(180.dp),
                 shape = RoundedCornerShape(12.dp),
+                textStyle = LocalTextStyle.current.copy(fontWeight = FontWeight.Bold, color = Color.Black),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -125,7 +131,7 @@ fun NewJournalEntryScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Link to today",
+                text = stringResource(R.string.label_link_to_today),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF3D2B1F),
@@ -139,7 +145,7 @@ fun NewJournalEntryScreen(
                 FilterChip(
                     selected = selectedDeckId == null,
                     onClick = { selectedDeckId = null },
-                    label = { Text("Calendar") },
+                    label = { Text(stringResource(R.string.label_calendar)) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = Color(0xFF7FB6A7),
                         selectedLabelColor = Color.White

@@ -13,6 +13,7 @@ import com.ntando.ivu.data.repository.ChatRepository
 class ViewModelFactory(private val repository: Any) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        android.util.Log.d("ViewModelFactory", "Creating ViewModel for: ${modelClass.name}")
         return when {
             modelClass.isAssignableFrom(ChatViewModel::class.java) -> 
                 ChatViewModel(repository as ChatRepository) as T

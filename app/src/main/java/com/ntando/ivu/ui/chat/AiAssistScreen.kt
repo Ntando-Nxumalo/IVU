@@ -88,7 +88,7 @@ fun AiAssistScreen(
                             Surface(modifier = Modifier.size(32.dp), shape = CircleShape, color = Color(0xFF7FB6A7)) {}
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "IVU is typing...",
+                                text = stringResource(R.string.label_ivu_typing),
                                 fontSize = 12.sp,
                                 color = Color.Gray
                             )
@@ -97,13 +97,12 @@ fun AiAssistScreen(
                 }
             }
 
-            // Suggestions
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SuggestionChip(text = "Quiz me", onClick = { viewModel.sendMessage("Quiz me") })
-                SuggestionChip(text = "Explain this word", onClick = { /* ... */ })
+                SuggestionChip(text = stringResource(R.string.label_suggestion_quiz), onClick = { viewModel.sendMessage("Quiz me") })
+                SuggestionChip(text = stringResource(R.string.label_suggestion_explain), onClick = { /* ... */ })
             }
 
             // Input Area
@@ -121,7 +120,7 @@ fun AiAssistScreen(
                     OutlinedTextField(
                         value = textInput,
                         onValueChange = { textInput = it },
-                        placeholder = { Text("Type your message...") },
+                        placeholder = { Text(stringResource(R.string.hint_message)) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(

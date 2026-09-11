@@ -142,8 +142,8 @@ fun DecksScreen(
     if (deckToDelete != null) {
         AlertDialog(
             onDismissRequest = { deckToDelete = null },
-            title = { Text("Delete Deck") },
-            text = { Text("Are you sure you want to delete '${deckToDelete?.title}'? All cards in this deck will be permanently removed.") },
+            title = { Text(stringResource(R.string.delete_deck_title)) },
+            text = { Text(stringResource(R.string.delete_deck_confirm, deckToDelete?.title ?: "")) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -152,12 +152,12 @@ fun DecksScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
-                    Text("Delete", color = Color.White)
+                    Text(stringResource(R.string.delete), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deckToDelete = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -181,9 +181,9 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val (tagName, tagColor) = when (deck.language.lowercase()) {
-                    "zu" -> "isiZulu" to Color(0xFFE88A68)
-                    "af" -> "Afrikaans" to Color(0xFF7FB6A7)
-                    else -> "English" to Color(0xFFE8C07C)
+                    "zu" -> stringResource(R.string.label_isizulu) to Color(0xFFE88A68)
+                    "af" -> stringResource(R.string.label_afrikaans) to Color(0xFF7FB6A7)
+                    else -> stringResource(R.string.label_english) to Color(0xFFE8C07C)
                 }
 
                 Surface(

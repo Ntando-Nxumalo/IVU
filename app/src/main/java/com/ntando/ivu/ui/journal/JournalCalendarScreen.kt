@@ -117,7 +117,7 @@ fun JournalCalendarScreen(
             )
             
             Text(
-                text = "Entries this week",
+                text = stringResource(R.string.label_entries_this_week),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF3D2B1F),
@@ -290,7 +290,7 @@ fun JournalEntryItem(entry: JournalEntry) {
                     color = Color(0xFF3D2B1F)
                 )
                 Text(
-                    text = if (entry.linkedDeckId != null) "Linked to: Everyday isiZulu deck" else "No deck linked",
+                    text = if (entry.linkedDeckId != null) stringResource(R.string.label_linked_to_deck) else stringResource(R.string.label_no_deck_linked),
                     fontSize = 12.sp,
                     color = Color.LightGray
                 )

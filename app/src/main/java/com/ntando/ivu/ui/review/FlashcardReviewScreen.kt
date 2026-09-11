@@ -162,7 +162,7 @@ fun FlashcardReviewScreen(
                         )
                         
                         val summaryText = if (state.reviewedCount > 0) {
-                            "You reviewed ${state.reviewedCount} cards.\nNext review: ${state.dueTomorrowCount} cards due tomorrow."
+                            stringResource(R.string.review_summary_format, state.reviewedCount, state.dueTomorrowCount)
                         } else {
                             stringResource(R.string.session_complete_msg)
                         }

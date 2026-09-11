@@ -196,7 +196,7 @@
 
     <!-- Achievements Screen -->
     <string name="title_progress">Your Progress</string>
-    <string name="label_level_wordsmith">Level 5 · Wordsmith</string>
+    <string name="label_level_wordsmith">Level %1$d · Wordsmith</string>
     <string name="xp_needed_format">%1$d / %2$d XP to Level %3$d</string>
     <string name="label_this_week">This week</string>
     <string name="label_badges">Badges</string>
@@ -242,4 +242,38 @@
 
     <!-- Badges -->
     <string name="badge_7_day_streak">7-day streak</string>
+    <string name="no_cards_msg">No cards in this deck</string>
+    <string name="delete_deck_title">Delete Deck</string>
+    <string name="delete_deck_confirm">Are you sure you want to delete \'%1$s\'? All cards in this deck will be permanently removed.</string>
+    <string name="label_isizulu">isiZulu</string>
+    <string name="label_afrikaans">Afrikaans</string>
+    <string name="label_english">English</string>
+    <string name="label_theme_dark">Dark</string>
+    <string name="label_theme_light">Warm (light)</string>
+    <string name="label_reminders_off">Off</string>
+    <string name="label_unlocked">Unlocked</string>
+    <string name="label_locked">Locked</string>
+    <string name="label_condition">Condition: %1$s</string>
+    <string name="label_earned">Earned! 🎉</string>
+    <string name="btn_close">Close</string>
+    <string name="label_no_deck_linked">No deck linked</string>
+    <string name="label_linked_to">Linked to: %1$s</string>
+    <string name="label_how_feel">How did studying feel today?</string>
+    <string name="label_notes">Notes</string>
+    <string name="label_link_to_today">Link to today</string>
+    <string name="label_calendar">Calendar</string>
+    <string name="title_new_entry">New Entry</string>
+    <string name="label_entries_this_week">Entries this week</string>
+    <string name="label_badges_section">Badges</string>
+    <string name="label_this_week_section">This week</string>
+    <string name="label_ivu_typing">IVU is typing...</string>
+    <string name="label_suggestion_quiz">Quiz me</string>
+    <string name="label_suggestion_explain">Explain this word</string>
+    <string name="hint_message">Type your message...</string>
+    <string name="label_reminders_on">On – 6:00 PM</string>
+    <string name="label_linked_to_deck">Linked to a deck</string>
+    <string name="mood_great">Great</string>
+    <string name="mood_okay">Okay</string>
+    <string name="mood_tough">Tough</string>
+    <string name="review_summary_format">You reviewed %1$d cards.\nNext review: %2$d cards due tomorrow.</string>
 </resources>

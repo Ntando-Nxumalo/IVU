@@ -13,9 +13,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ntando.ivu.R
 import com.ntando.ivu.network.Flashcard
 import com.ntando.ivu.viewmodel.FlashcardListUiState
 import com.ntando.ivu.viewmodel.FlashcardListViewModel
@@ -57,7 +59,7 @@ fun FlashcardListScreen(
                             onDismissRequest = { showMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Delete Deck", color = Color.Red) },
+                                text = { Text(stringResource(R.string.delete_deck_title), color = Color.Red) },
                                 onClick = {
                                     showMenu = false
                                     onDeleteDeck()
@@ -76,7 +78,7 @@ fun FlashcardListScreen(
                 is FlashcardListUiState.Error -> Text(state.message, color = Color.Red, modifier = Modifier.align(Alignment.Center))
                 is FlashcardListUiState.Success -> {
                     if (state.cards.isEmpty()) {
-                        Text("No cards in this deck", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+                        Text(stringResource(R.string.no_cards_msg), modifier = Modifier.align(Alignment.Center), color = Color.Gray)
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),

@@ -158,16 +158,24 @@ class IVU : AppCompatActivity() {
                         db.userStatsDao().insertOrUpdate(com.ntando.ivu.data.entity.UserStats(userId = firebaseUid))
                     } else {
                         Log.d(tag, "setupUI: Stats updated - Streak: ${stats.currentStreak}, XP: ${stats.xp}")
+                        
+                        // Check if it's a new day to reset daily progress in UI
+                        val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                        val isSameDay = stats.lastActiveDate != 0L && 
+                                sdf.format(Date()) == sdf.format(Date(stats.lastActiveDate))
+                        
+                        val displayDailyReviews = if (isSameDay) stats.dailyReviews else 0
+
                         // Update UI on main thread
                         runOnUiThread {
-                            tvStreakTitle.text = resources.getQuantityString(R.plurals.days_format, stats.currentStreak, stats.currentStreak)
+                            tvStreakTitle.text = getString(R.string.streak_format, stats.currentStreak)
                             tvXpPoints.text = getString(R.string.xp_earned_format, stats.xp)
 
                             val goal = 10
-                            tvGoalProgress.text = getString(R.string.cards_reviewed_format, stats.dailyReviews, goal)
+                            tvGoalProgress.text = getString(R.string.cards_reviewed_format, displayDailyReviews, goal)
 
                             pbXp.max = goal
-                            ObjectAnimator.ofInt(pbXp, "progress", stats.dailyReviews.coerceAtMost(goal))
+                            ObjectAnimator.ofInt(pbXp, "progress", displayDailyReviews.coerceAtMost(goal))
                                 .setDuration(1000)
                                 .start()
                         }
