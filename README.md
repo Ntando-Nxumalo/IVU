@@ -1,47 +1,117 @@
-# IVU - Multilingual Study Companion 📖🎓
+# IVU — Your Multilingual Study Companion
 
-IVU is a premium study application designed to help users master new languages and subjects through flashcards, active recall, and AI-driven insights. It combines modern UI with gamification to make learning Zulu, Afrikaans, and other languages engaging and simple.
+**A warm, intelligent flashcard, journal & study companion.**
 
-🎯 **Purpose & Audience**
-**What the app does:**
-IVU simplifies learning by allowing users to create study decks, track progress with spaced repetition, and maintain a learning journal. It provides visual feedback through study streaks and rewards consistency with a leveling system.
+IVU ("It's For You") is a modern Android application designed to turn language learning into a sustainable daily habit. By combining the scientifically proven **SM-2 Spaced Repetition (SRS)** algorithm with reflective journaling and real-time AI assistance, IVU provides a holistic environment for mastering English, isiZulu, and Afrikaans.
 
-**Who it's for:**
-The app is designed for students, language learners, and anyone looking for a "gamified" approach to studying. It's particularly useful for those learning South African languages like Zulu and Afrikaans.
+Built for the **Open Source Coding (Intermediate)** module (OPSC6312) at The Independent Institute of Education.
 
-📱 **Demonstration**
-*(Video link to be updated)*
+📦 **Backend Repository:** [ivu-api](https://github.com/Ntando-Nxumalo/ivu-api)
+🌐 **Live API:** Hosted on Render
 
-🎨 **Design Decisions**
-- **MVVM Architecture:** Chosen to ensure a clean separation between UI logic and data handling.
-- **Hybrid UI Strategy:** Jetpack Compose for complex, state-driven components and traditional XML Layouts for standard Activity structures.
-- **Material 3 Design:** Leveraged for a modern, accessible, and "premium" feel.
-- **Repository Pattern:** Centralizes data access from the Room database.
+---
 
-🛠 **GitHub & GitHub Actions**
-- **Version Control:** GitHub feature-branch workflow.
-- **CI/CD Automation:** GitHub Actions for automated builds and testing.
+## ✨ Features
 
-🌟 **Custom Features**
-1. 🤖 **IVU AI Assist**
-A built-in study assistant that uses natural language to explain concepts, generate example sentences in different languages, and quiz you on your decks.
-2. 📊 **Gamified Progress**
-Track study streaks and earn badges like "Card Master" and "7-Day Streak" to stay motivated.
+### 🧠 Intelligent Learning
+- **SM-2 Spaced Repetition:** Flashcard reviews are scheduled based on your memory performance, ensuring long-term retention.
+- **Dynamic Decks:** Create, manage, and delete study decks for different languages with real-time card counting and progress tracking.
 
-🏗 **Technical Details**
-- **UI Framework:** Jetpack Compose & XML (Hybrid).
-- **Database:** Room Persistence Library.
-- **Navigation:** Custom Radial Navigation Menu.
-- **Concurrency:** Kotlin Coroutines and Flow.
+### 📓 Reflective Journaling
+- **Paginated Calendar:** A full-screen interactive calendar with **swipe-to-navigate** month views to track your study history.
+- **Mood Tracking:** Tag study sessions with moods (Great, Okay, Tough) to correlate emotional state with learning progress.
+- **Contextual Linking:** Link specific journal entries to the deck you studied that day.
 
-🔧 **Installation**
-1. Clone the repository.
-2. Open the project in Android Studio (Ladybug 2024.2.1 or newer).
-3. Ensure Android SDK 35 is installed.
-4. Sync Gradle and run.
+### 🤖 IVU AI Assist (Powered by Groq)
+- **Instant Assistance:** A high-speed conversational study helper using the `openai/gpt-oss-120b` model via Groq for near-zero latency.
+- **Smart Quizzing:** Ask IVU to quiz you on your cards, explain complex grammar, or provide cultural context for new words.
 
-📦 **Key Dependencies**
-- `androidx.room`: Local data storage.
-- `androidx.compose`: Modern UI toolkit.
-- `androidx.lifecycle`: ViewModel and Lifecycle management.
-- `kotlinx.coroutines`: Asynchronous programming.
+### 🔥 Gamification & Progress
+- **Daily Goals:** A 10-card daily review target designed for fast leveling and consistent engagement.
+- **Progression System:** Earn XP, level up (e.g., "Level 5 · Wordsmith"), and maintain daily study streaks.
+- **Badge Framework:** Unlock 5 unique milestone badges (First Review, 7-Day Streak, Monthly Master, etc.) with real-time unlock notifications.
+
+### 🎨 Premium UI/UX
+- **Warm Terracotta Theme:** A custom color palette designed to reduce "study anxiety" and provide a comfortable learning environment.
+- **Full Localization:** Complete UI synchronization in **English, isiZulu, and Afrikaans**.
+- **Dynamic Theming:** Seamless support for **Dark Mode** and **Warm Light Mode** across all screens.
+
+---
+
+## 🧱 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Language** | Kotlin |
+| **UI Framework** | Jetpack Compose (Material 3) |
+| **Architecture** | MVVM (Model-View-ViewModel) |
+| **Local Persistence** | Room Database (SQLite) |
+| **Authentication** | Firebase Auth (Email/Pass + Google SSO) |
+| **Remote Database** | Google Cloud Firestore |
+| **Networking** | Retrofit 2 + OkHttp 4 |
+| **Backend** | Node.js + Express (Hosted on Render) |
+| **AI Engine** | Groq API (GPT-OSS-120B Model) |
+| **CI/CD** | GitHub Actions (Automated Unit Testing & Builds) |
+
+---
+
+## 📂 Project Structure
+
+```text
+app/src/main/java/com/ntando/ivu/
+├── data/
+│   ├── database/       # Room database & TypeConverters
+│   ├── dao/            # Data Access Objects for local sync
+│   ├── entity/         # UserStats, Badges, and User entities
+│   ├── prefs/          # DataStore for Theme & Language persistence
+│   └── repository/     # Repositories bridging Firestore + Local Room
+├── ui/
+│   ├── components/     # Shared UI (Synced Bottom Navigation)
+│   ├── theme/          # Material 3 Color schemes & Typography
+│   ├── auth/           # Bolder, accessible Login & Register screens
+│   ├── journal/        # Paginated Calendar & Entry screens
+│   └── achievements/   # Unified scrolling Progress & Badge grid
+└── viewmodel/          # State management for all core features
+```
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Ntando-Nxumalo/IVU.git
+   ```
+2. **Setup Firebase:** Add your `google-services.json` to the `app/` directory.
+3. **Environment:** Ensure the `ivu-api` is running and the `BASE_URL` in `ApiClient.kt` is updated.
+4. **Build:** Run `./gradlew assembleDebug` or open in Android Studio.
+
+---
+
+## 📋 Project Status
+
+- [x] **Part 1:** Research, Planning & Design
+- [x] **Part 2:** Prototype Development (Current)
+- [ ] **Final PoE:** Play Store Prep & Offline Sync Optimization
+
+---
+
+## 🤖 AI Usage Disclosure
+
+During the development of this project, AI assistance (Gemini/Claude) was utilized for a specific, high-level task:
+
+- **AI Integration Logic:** The AI provided the technical scaffolding for proxying AI requests through the Node.js backend. This included configuring the initial fetch requests to Gemini and the subsequent migration to the **Groq API** to ensure security (keeping API keys off the client device) and high performance.
+
+All other core application logic, including the **SM-2 Spaced Repetition implementation**, **Room/Firestore data synchronization**, **paginated calendar architecture**, and the **custom terracotta UI system**, was authored and refined by the developer to meet the specific requirements of the OPSC6312 module.
+
+---
+
+## 👤 Author
+
+**Ntando Nxumalo**  
+Student Number: *[Insert Your Number]*
+
+---
+
+## 📄 License
+This project was created for academic purposes as part of The Independent Institute of Education's OPSC6312 module.

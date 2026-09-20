@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+    <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_card.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_gradient.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/btn_gradient.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/btn_outline.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/btn_secondary.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/circle_background.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/header_rounded_bottom.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_background.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_launcher_foreground.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/input_field.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/logo_circle.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/nav_button_bg.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/rounded_button.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/rounded_edittext.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/font/barlow_condensed.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_achievements.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_ivu.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_journal.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_register.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_splash.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/common_header.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_view_photo.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_badge.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_chat_bot.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_chat_user.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/layout_bottom_nav.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/nav_bar.xml">
+        <config>
+          <theme>@style/Theme.IVU</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/menu/bottom_nav_menu.xml">
+        <config>
+          <theme>@style/Theme.PocketEye</theme>
+        </config>
+      </layout>
+    </layouts>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b683402c-c101-4dff-8686-59bee4b3098b" name="Changes" comment="Refactor UI for localization and improve layout responsiveness&#10;&#10;- **Localization &amp; Internationalization**:&#10;    - Externalized hardcoded strings across all screens, including Achievements, AI Assist, Decks, Journal, and Settings.&#10;    - Updated `strings.xml` with new keys and placeholders for dynamic content.&#10;    - Provided comprehensive Afrikaans (`values-af`) and isiZulu (`values-zu`) translations for the entire application.&#10;- **UI/UX Refinement**:&#10;    - **Achievements**: Refactored `AchievementScreen` to use `LazyColumn` instead of a grid for the primary layout, improving scroll performance and layout flexibility.&#10;    - **Main Dashboard**: Wrapped the main activity layout in a `ScrollView` to prevent clipping on smaller screens.&#10;    - **Auth Screens**: Enhanced `LoginScreen` and `RegisterScreen` with improved typography, bold labels, and consistent field styling; removed the placeholder &quot;Forgot Password&quot; link.&#10;    - **Journal**: Added localized mood names and improved the &quot;New Entry&quot; screen with better text styling and dynamic date formatting.&#10;    - **Settings**: Simplified the settings menu by removing the unused Security section and externalizing status labels (e.g., &quot;Dark&quot;, &quot;Warm&quot;, &quot;On/Off&quot;).&#10;- **Feature Enhancements**:&#10;    - **Progress Tracking**: Implemented logic in `IVU.kt` to reset daily review progress in the UI when a new day is detected based on `lastActiveDate`.&#10;    - **AI Assist**: Added localized suggestion chips and typing indicators.&#10;- **Technical Improvements**:&#10;    - Added debug logging to `ViewModelFactory` to track ViewModel instantiation.&#10;    - Standardized string formatting for streaks and level labels using `%1$d` placeholders." />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[LocalEmulator::path=C:\Users\ntand\.android\avd\Medium_Phone.avd]" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="IVU" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="Kotlin Class" />
+        <option value="Kotlin File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Ntando-Nxumalo&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Ntando-Nxumalo/IVU.git&quot;,
+    &quot;accountId&quot;: &quot;1c64ec0d-6ff9-454f-9e46-48f2dea7ef72&quot;
+  }
+}</component>
+  <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="C:\Users\ntand\.gradle\wrapper\dists\gradle-9.3.1-bin\23ovyewtku6u96viwx3xl3oks\gradle-9.3.1" javaHome="C:\Program Files\Android\Android Studio\jbr" gradleVersion="9.3.1" />
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="3B2B8G0wWERahjPq1gSv329zEgK" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectReloadState">
+    <option name="STATE" value="1" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Load Gradle Dependencies.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PocketEye [:app:testDebugUnitTest].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/ntand/AndroidStudioProjects/IVU/app&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.android.studio.ml.bot.mainConfigurable&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\ntand\AndroidStudioProjects\IVU\app" />
+      <recent name="C:\Users\ntand\AndroidStudioProjects\IVU\app\src\main\res\drawable" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Android App.app">
+    <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
+      <module name="IVU.app.androidTest" />
+      <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="ALLOW_ASSUME_VERIFIED" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Trace" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PocketEye [:app:testDebugUnitTest]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":app:testDebugUnitTest" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.PocketEye [:app:testDebugUnitTest]" />
+        <item itemvalue="Gradle.PocketEye [:app:testDebugUnitTest]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b683402c-c101-4dff-8686-59bee4b3098b" name="Changes" comment="" />
+      <created>1773677124224</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773677124224</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Setup Room database and implement core expense tracking architecture&#10;&#10;- Configure Room, KSP, and Navigation dependencies in `build.gradle.kts`.&#10;- Define data entities for User, Category, Expense, Goal, Achievement, and CurrencyRate.&#10;- Implement DAOs and a central `AppDatabase` with a singleton `DatabaseProvider`.&#10;- Add repository classes and ViewModels for Achievements, Expenses, and Authentication.&#10;- Create placeholder Compose screens for Dashboard, Expenses, Goals, Achievements, and Login.&#10;- Update `MainActivity` to initialize the database, seed initial achievements, and handle test data.">
+      <option name="closed" value="true" />
+      <created>1774342213595</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1774342213595</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Setup Room database and implement core expense tracking architecture&#10;&#10;- Configure Room, KSP, and Navigation dependencies in `build.gradle.kts`.&#10;- Define data entities for User, Category, Expense, Goal, Achievement, and CurrencyRate.&#10;- Implement DAOs and a central `AppDatabase` with a singleton `DatabaseProvider`.&#10;- Add repository classes and ViewModels for Achievements, Expenses, and Authentication.&#10;- Create placeholder Compose screens for Dashboard, Expenses, Goals, Achievements, and Login.&#10;- Update `MainActivity` to initialize the database, seed initial achievements, and handle test data.">
+      <option name="closed" value="true" />
+      <created>1774342231559</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1774342231559</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Refine data layer and enhance achievement logic&#10;&#10;- Implement `CurrencyRepository` and `GoalRepository` to abstract DAO operations.&#10;- Update `Expense` entity with a foreign key relationship to `Category` and add supporting indices.&#10;- Simplify achievement initialization in `MainActivity` using a list-based insertion approach.&#10;- Refactor `AchievementRepository` and `MainActivity` to unify achievement unlocking logic.&#10;- Clean up unused imports and redundant whitespace across DAO, Entity, and Database classes.&#10;- Add documentation comments to repository classes for better code clarity.">
+      <option name="closed" value="true" />
+      <created>1774343145044</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1774343145044</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Implement authentication, splash screen, and real-time dashboard updates&#10;&#10;- **Authentication &amp; User Management**: Added a `password` field to the `User` entity, implemented login logic in `MainActivity`, and created a functional `RegisterActivity`.&#10;- **Navigation &amp; Lifecycle**: Introduced `SplashActivity` as the new entry point with a 2-second delay. Updated `AndroidManifest.xml` to reflect activity name changes and launcher configurations.&#10;- **Data Layer**: &#10;    - Updated `ExpenseDao` to return `Flow` for total spending, category summaries, and expense counts to support real-time UI updates.&#10;    - Incremented `AppDatabase` version to `2` and enabled `fallbackToDestructiveMigration`.&#10;    - Added `getUserByName` to `UserDao` and updated `ExpenseRepository` and `ExpenseViewModel` to expose new spending and summary flows.&#10;- **UI &amp; UX**:&#10;    - Redesigned `activity_dashboard.xml` using `ConstraintLayout` and `CardView` for a modern look.&#10;    - Updated `AddExpenseActivity` (formerly `AddExpensesActivityActivity`) to persist actual expense data to the database.&#10;    - Refined `bg_card` drawable and updated the app theme to use `AppCompat.DayNight`.&#10;    - Replaced default launcher icons with a custom logo.&#10;- **Cleanup**: Removed Compose-based test logic from `MainActivity` in favor of XML-based Activity logic.">
+      <option name="closed" value="true" />
+      <created>1776189368699</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1776189368699</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Implement authentication, splash screen, and real-time dashboard updates&#10;&#10;- **Authentication &amp; User Management**: Added a `password` field to the `User` entity, implemented login logic in `MainActivity`, and created a functional `RegisterActivity`.&#10;- **Navigation &amp; Lifecycle**: Introduced `SplashActivity` as the new entry point with a 2-second delay. Updated `AndroidManifest.xml` to reflect activity name changes and launcher configurations.&#10;- **Data Layer**: &#10;    - Updated `ExpenseDao` to return `Flow` for total spending, category summaries, and expense counts to support real-time UI updates.&#10;    - Incremented `AppDatabase` version to `2` and enabled `fallbackToDestructiveMigration`.&#10;    - Added `getUserByName` to `UserDao` and updated `ExpenseRepository` and `ExpenseViewModel` to expose new spending and summary flows.&#10;- **UI &amp; UX**:&#10;    - Redesigned `activity_dashboard.xml` using `ConstraintLayout` and `CardView` for a modern look.&#10;    - Updated `AddExpenseActivity` (formerly `AddExpensesActivityActivity`) to persist actual expense data to the database.&#10;    - Refined `bg_card` drawable and updated the app theme to use `AppCompat.DayNight`.&#10;    - Replaced default launcher icons with a custom logo.&#10;- **Cleanup**: Removed Compose-based test logic from `MainActivity` in favor of XML-based Activity logic.">
+      <option name="closed" value="true" />
+      <created>1776191336855</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776191336855</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Revitalize UI/UX and enhance data layer with real-time updates&#10;&#10;- Implement a modern, reusable bottom navigation bar across all main activities.&#10;- Refactor `Dashboard` to use `ExpenseViewModel` and support real-time data updates via Flows.&#10;- Integrate Jetpack Compose into XML layouts to render dynamic charts for spending breakdowns and goals.&#10;- Redesign `Dashboard`, `AddExpense`, `Goals`, and `Reports` layouts with improved styling, card-based UI, and rounded headers.&#10;- Enhance `SplashActivity` with fade-in/slide-up animations and a Coroutine-based transition.&#10;- Update `ExpenseDao` and `ExpenseRepository` to support fetching recent transactions and improve naming consistency.&#10;- Implement a `RoomDatabase.Callback` in `DatabaseProvider` to pre-populate default categories on database creation.&#10;- Add specific color resources and custom drawables for a unified design language.">
+      <option name="closed" value="true" />
+      <created>1776869500574</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1776869500574</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Enhance data persistence and expand core features for goals, expenses, and reporting&#10;&#10;- **Data Layer Improvements**:&#10;    - Update `AppDatabase` to version 3 and implement thread-safe singleton initialization with `@Volatile` and `synchronized`.&#10;    - Refactor `Goal` entity to include `name`, `targetAmount`, and `currentAmount` fields.&#10;    - Expand `GoalDao` and `GoalRepository` with methods for deletion, updates, and Flow-based queries (all goals and top goals).&#10;    - Update `CategoryDao` to include a one-shot fetch for categories and use `IGNORE` conflict strategy.&#10;    - Improve database pre-population logic to check for existing categories on database open.&#10;&#10;- **Expense Management**:&#10;    - Enhance `AddExpenseActivity` with `DatePickerDialog` and `TimePickerDialog` for precise entry.&#10;    - Add photo attachment support to expenses using `ActivityResultContracts.GetContent`.&#10;    - Update expense saving logic to capture date, time, and photo URI.&#10;&#10;- **Dashboard &amp; Reporting**:&#10;    - Integrate real goal data into the Dashboard's Compose-based charts with progress tracking.&#10;    - Implement real-time data observation in `ReportsActivity`, displaying total, average, highest, and lowest spending.&#10;    - Add category and time period filters (Spinners) to the Reports screen.&#10;    - Refactor `LineChart` styling to match the application's green theme.&#10;&#10;- **UI/UX Refinement**:&#10;    - Redesign `SetGoalsActivity` layout to focus on creating specific savings goals rather than general budget limits.&#10;    - Update various layout files (`add_expenses_activity.xml`, `goals.xml`, `reports.xml`) for improved spacing, better labeling, and consistent color themes.&#10;    - Remove redundant &quot;Vision&quot; text from the splash screen.">
+      <option name="closed" value="true" />
+      <created>1776873595268</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1776873595268</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Revamp UI/UX and enhance core feature set&#10;&#10;- **UI/UX Overhaul**:&#10;    - Introduced a consistent `common_header` layout and a unified `nav_bar` component across all screens.&#10;    - Updated `activity_main` and `activity_register` with a clean, card-based design and improved typography.&#10;    - Redesigned the Dashboard with an extended green header, modern card elevations, and a revamped XP progress bar.&#10;    - Standardized input fields and buttons using new `rounded_edittext` and `rounded_button` drawables.&#10;&#10;- **Feature Enhancements**:&#10;    - Added a &quot;Custom Category&quot; option in `AddExpenseActivity` to allow user-defined spending categories.&#10;    - Enhanced Goal tracking in `Dashboard` with an interactive &quot;Edit Amount&quot; feature via a Compose-based dialog.&#10;    - Expanded the `Goal` entity and UI to support `minTargetAmount` and `maxTargetAmount`.&#10;    - Implemented PDF report exportation in `ReportsActivity`.&#10;    - Improved data visualization in Reports with dynamic line charts and category/time-period filtering.&#10;&#10;- **Technical Updates**:&#10;    - Incremented `AppDatabase` version to 4 to accommodate schema changes in the `Goal` entity.&#10;    - Refactored navigation logic across `Dashboard`, `AddExpenseActivity`, `GoalsActivity`, and `ReportsActivity` for better consistency.&#10;    - Updated `Expense` entity with a default null value for `photoPath`.">
+      <option name="closed" value="true" />
+      <created>1777037145249</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1777037145250</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Update SplashActivity animations and transition logic&#10;&#10;- Replace `androidx.appcompat` slide animation with standard `android.R.anim.slide_in_left`.&#10;- Explicitly set `pbLoading` visibility to `VISIBLE` during the splash delay.&#10;- Add `overridePendingTransition` with a deprecation suppression for the activity transition.&#10;- Clean up XML header in `.idea/misc.xml`.">
+      <option name="closed" value="true" />
+      <created>1777322605020</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1777322605020</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Implement multi-user support, budget tracking, and gamified achievements&#10;&#10;- **Data Layer Enhancements**:&#10;    - Update `User`, `Expense`, `Category`, `Goal`, and `Achievement` entities to include `userId` for multi-user data isolation.&#10;    - Implement foreign key relationships and indices across entities to ensure data integrity.&#10;    - Expand `ExpenseDao` and `GoalDao` with queries for category summaries, date-range filtering, and budget-specific tracking.&#10;    - Increment database version to 6.&#10;&#10;- **New Features &amp; Gamification**:&#10;    - Implement an `AchievementRepository` with logic to unlock rewards for milestones like first expenses, daily streaks, and staying under budget.&#10;    - Add a `ChatViewModel` and `ChatBottomSheetFragment` to provide a &quot;Pocket Eye Assistant&quot; chatbot for financial tips and balance queries.&#10;    - Integrate a currency converter with real-time conversion logic in `CurrencyViewModel`.&#10;    - Support receipt photo attachments for expenses, including a full-screen photo viewer dialog.&#10;&#10;- **UI &amp; UX Improvements**:&#10;    - Refactor `Dashboard` with Jetpack Compose charts for &quot;Savings Goals&quot; progress and &quot;Spending Breakdown.&quot;&#10;    - Implement a new &quot;Budget Tracker&quot; component to visualize spending against category-specific limits.&#10;    - Redesign the main navigation with a `BottomAppBar` and a radial floating action button (FAB) menu for quick actions.&#10;    - Add `ManageCategoriesActivity` to allow users to customize their expense categories.&#10;    - Update `SplashActivity` to handle persistent user sessions via `SharedPreferences`.&#10;&#10;- **Technical Updates**:&#10;    - Integrate `MPAndroidChart` for reporting and visualization.&#10;    - Apply consistent Material Design 3 styling and color schemes across all activities and layouts.&#10;    - Add `windowSoftInputMode` configurations to `AndroidManifest.xml` for better keyboard handling in forms.">
+      <option name="closed" value="true" />
+      <created>1781525408195</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1781525408195</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Implement PDF export preview and refine UI layouts&#10;&#10;- Add `FileProvider` configuration to `AndroidManifest.xml` and define file paths for secure PDF sharing.&#10;- Enhance PDF export in `ReportsActivity` with a success dialog and an option to open the file using a `FileProvider` URI.&#10;- Update `goals.xml` to use `NestedScrollView` for better scroll performance and add text labels to the radial FAB menu.&#10;- Refactor `ReportsActivity` to clean up redundant comments and ensure consistent category coloring across charts and lists.&#10;- Improve receipt thumbnail handling in the expenses adapter with better fallback logic.">
+      <option name="closed" value="true" />
+      <created>1781532165470</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1781532165470</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Implement unit testing suite and refine reports logic&#10;&#10;- Add test dependencies for MockK, Coroutines, Turbine, and AndroidX Arch Core.&#10;- Implement comprehensive unit tests for `AuthViewModel`, `AchievementViewModel`, `ExpenseViewModel`, `ChatViewModel`, and `CurrencyViewModel`.&#10;- Add unit tests for `AchievementRepository` to verify achievement unlocking logic.&#10;- Update `ReportsActivity` to improve image URI handling and fix photo dialog layout issues.&#10;- Refine date filtering and average spending calculations in `ReportsActivity`.&#10;- Update expense list UI in reports to include consistent tinting for placeholder receipt icons.">
+      <option name="closed" value="true" />
+      <created>1781537960910</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1781537960910</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Implement achievement system and CI/CD workflow&#10;&#10;- Implement `AchievementsActivity` and `AchievementAdapter` to display user milestones.&#10;- Create `activity_achievements.xml` and `item_achievement.xml` layouts with lock/unlock states.&#10;- Add GitHub Actions workflow in `.github/workflows/build.yml` for automated builds and unit testing.&#10;- Integrate achievement navigation into the `Dashboard` via the XP card and update the radial FAB menu logic.&#10;- Refactor `SetGoalsActivity` to improve category loading, edit mode handling, and navigation consistency.&#10;- Update `README.md` with comprehensive project details, including feature descriptions, tech stack, and CI/CD status.&#10;- Add `nav_achievements` and other supporting string resources to `strings.xml`.&#10;- Register `AchievementsActivity` in the `AndroidManifest.xml`.">
+      <option name="closed" value="true" />
+      <created>1781541240163</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1781541240163</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Enhance achievement system and implement leveling celebrations&#10;&#10;- Update `Achievement` entity to include `isNotified` field and increment database version to 7.&#10;- Refactor `AchievementRepository` to return newly unlocked achievements and improve budget tracking logic.&#10;- Expand `AchievementDao` with queries to handle unnotified achievements and fetch records once.&#10;- Update `ExpenseViewModel` to track levels (now every 5 expenses) and emit `ExpenseEvent` for level-ups and new achievements.&#10;- Implement celebration dialogs in `Dashboard` to notify users of level-ups and earned badges.&#10;- Enhance `AchievementsActivity` with automatic seeding of initial achievements and mapping achievement icons to visual assets.&#10;- Adjust `ChatViewModel` logic to align with the updated XP and leveling thresholds.">
+      <option name="closed" value="true" />
+      <created>1781544116870</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1781544116870</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Update README documentation with detailed project information&#10;&#10;- Add project description, feature highlights, and technical overview.&#10;- Elaborate on the AI Chat Assistant, Multi-Currency Converter, and Gamified Experience (XP and Leveling system).&#10;- Expand technical details regarding MVVM architecture, hybrid Jetpack Compose/XML UI, and Room database usage.&#10;- Update installation instructions and list key project dependencies.&#10;- Improve accessibility by adding alt text to placeholder images.">
+      <option name="closed" value="true" />
+      <created>1781544641233</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1781544641233</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Enhance codebase with comprehensive logging, documentation, and architectural refinements&#10;&#10;- **Logging &amp; Observability**: Integrated extensive `Log` statements across all Activities, ViewModels, and Repositories to track lifecycle events, database operations, user authentication, and navigation flows.&#10;- **Documentation**: Added class-level KDoc comments and function-level documentation to core components like `Dashboard`, `ReportsActivity`, and `ExpenseRepository` explaining their purpose and logic.&#10;- **Architectural Refinements**:&#10;    - Centralized data access in `ExpenseRepository` and `AchievementRepository` with reactive `Flow` logging.&#10;    - Updated `ExpenseViewModel` to handle gamification events (Level Up, Achievement Unlocked) via `SharedFlow`.&#10;    - Refined `Dashboard` UI logic to dynamically hide navigation bars when the keyboard is active to maximize screen space.&#10;- **Bug Fixes &amp; Stability**: &#10;    - Added safety checks for user session validation across all major activities.&#10;    - Improved bitmap handling in `ReportsActivity` with downsampling and persistable URI permission handling for receipt photos.&#10;    - Fixed potential null pointer issues in `CurrencyViewModel` by improving input parsing.&#10;- **Documentation Update**: Overhauled `README.md` to include detailed sections on purpose, technical design decisions, MVVM architecture, and CI/CD integration.&#10;- **Redundancy**: Created a duplicate `ExpenseRepository.kt` in a top-level directory (likely for organizational cleanup).">
+      <option name="closed" value="true" />
+      <created>1781547114918</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1781547114918</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Creation of new project">
+      <option name="closed" value="true" />
+      <created>1786476347067</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1786476347067</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Creation of new project">
+      <option name="closed" value="true" />
+      <created>1786476816581</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1786476816581</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Deprecate legacy Expense Tracker components and externalize strings in `activity_main.xml`&#10;&#10;- **Deprecation**: Marked several core activities and UI components as deprecated, including `AddExpenseActivity`, `SplashActivity`, `RegisterActivity`, `ManageCategoriesActivity`, `AchievementsActivity`, `GoalsActivity`, `ReportsActivity`, and the `Chat` UI components, in favor of the new `IVU` architecture.&#10;- **Localization &amp; Clean-up**:&#10;    - Refactored `activity_main.xml` to use string resources instead of hardcoded text for labels, hints, and content descriptions.&#10;    - Added `autofillHints` to email and password fields for better user experience.&#10;    - Updated `strings.xml` with new keys for the authentication screens.&#10;- **Refactoring**: Redirected legacy `Dashboard.kt` to the updated `IVU.kt` component.">
+      <option name="closed" value="true" />
+      <created>1786481154203</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1786481154203</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Implement network synchronization and refactor application architecture to MVVM&#10;&#10;- **Networking**: Integrated Retrofit and OkHttp for API communication, including an `AuthInterceptor` to attach Firebase ID tokens to requests.&#10;- **MVVM Architecture**:&#10;    - Introduced `Repository` and `ViewModel` layers for `Deck`, `Flashcard`, and `Journal` components to manage data flow between local Room database and remote API.&#10;    - Implemented `ViewModelFactory` to handle dependency injection for the new ViewModels.&#10;- **Data Persistence**:&#10;    - Updated `Deck`, `Flashcard`, and `JournalEntry` entities to include `remoteId` for backend synchronization.&#10;    - Incremented database version to 9.&#10;- **Feature Enhancements**:&#10;    - **Decks &amp; Journal**: Added background refresh logic to sync local data with the server on activity start.&#10;    - **Flashcards**: Refactored `ReviewActivity` to submit card ratings to the backend and updated `AddEditCardActivity` with remote create/delete capabilities.&#10;    - **UI/UX**: Added a delete action to the card editor and externalized several UI strings for better localization.&#10;- **Configuration**:&#10;    - Added `INTERNET` permission to `AndroidManifest.xml`.&#10;    - Updated `build.gradle.kts` with dependencies for Retrofit, OkHttp, Coil, and Firebase Auth.">
+      <option name="closed" value="true" />
+      <created>1787058078386</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1787058078386</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Implement network synchronization and refactor application architecture to MVVM&#10;&#10;- **Networking**: Integrated Retrofit and OkHttp for API communication, including an `AuthInterceptor` to attach Firebase ID tokens to requests.&#10;- **MVVM Architecture**:&#10;    - Introduced `Repository` and `ViewModel` layers for `Deck`, `Flashcard`, and `Journal` components to manage data flow between local Room database and remote API.&#10;    - Implemented `ViewModelFactory` to handle dependency injection for the new ViewModels.&#10;- **Data Persistence**:&#10;    - Updated `Deck`, `Flashcard`, and `JournalEntry` entities to include `remoteId` for backend synchronization.&#10;    - Incremented database version to 9.&#10;- **Feature Enhancements**:&#10;    - **Decks &amp; Journal**: Added background refresh logic to sync local data with the server on activity start.&#10;    - **Flashcards**: Refactored `ReviewActivity` to submit card ratings to the backend and updated `AddEditCardActivity` with remote create/delete capabilities.&#10;    - **UI/UX**: Added a delete action to the card editor and externalized several UI strings for better localization.&#10;- **Configuration**:&#10;    - Added `INTERNET` permission to `AndroidManifest.xml`.&#10;    - Updated `build.gradle.kts` with dependencies for Retrofit, OkHttp, Coil, and Firebase Auth.">
+      <option name="closed" value="true" />
+      <created>1787059067843</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1787059067843</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Integrate Firebase Authentication and Google Sign-In&#10;&#10;- **Authentication**:&#10;    - Implemented Google Sign-In using the `androidx.credentials` API and `CredentialManager` in `MainActivity` and `RegisterActivity`.&#10;    - Integrated Firebase Authentication to handle Google ID tokens and manage user sessions.&#10;- **Local Synchronization**:&#10;    - Added logic to sync Firebase-authenticated users with the local Room database.&#10;    - Implemented automatic local user profile creation and achievement initialization for first-time Google sign-ins.&#10;- **Configuration**:&#10;    - Added `google-services.json` for Firebase project configuration.&#10;    - Applied the Google Services plugin to `app/build.gradle.kts`.&#10;    - Externalized the Google Web Client ID to `strings.xml` and a new `Constants` object.&#10;- **Dependencies**:&#10;    - Added Firebase BoM, Auth, and Analytics dependencies.&#10;    - Included `androidx.credentials` and `googleid` libraries.&#10;    - Updated Kotlin to version 2.1.10 and KSP to 2.1.10-1.0.30.&#10;- **Cleanup**: Removed unused `appcompat` dependency and cleaned up manual context references in `MainActivity` and `RegisterActivity`.">
+      <option name="closed" value="true" />
+      <created>1787075085480</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1787075085480</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Integrate Firebase Authentication and Google Sign-In&#10;&#10;- **Authentication**:&#10;    - Implemented Google Sign-In using the `androidx.credentials` API and `CredentialManager` in `MainActivity` and `RegisterActivity`.&#10;    - Integrated Firebase Authentication to handle Google ID tokens and manage user sessions.&#10;- **Local Synchronization**:&#10;    - Added logic to sync Firebase-authenticated users with the local Room database.&#10;    - Implemented automatic local user profile creation and achievement initialization for first-time Google sign-ins.&#10;- **Configuration**:&#10;    - Added `google-services.json` for Firebase project configuration.&#10;    - Applied the Google Services plugin to `app/build.gradle.kts`.&#10;    - Externalized the Google Web Client ID to `strings.xml` and a new `Constants` object.&#10;- **Dependencies**:&#10;    - Added Firebase BoM, Auth, and Analytics dependencies.&#10;    - Included `androidx.credentials` and `googleid` libraries.&#10;    - Updated Kotlin to version 2.1.10 and KSP to 2.1.10-1.0.30.&#10;- **Cleanup**: Removed unused `appcompat` dependency and cleaned up manual context references in `MainActivity` and `RegisterActivity`.">
+      <option name="closed" value="true" />
+      <created>1787253478606</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1787253478607</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Integrate Firebase Authentication and Google Sign-In&#10;&#10;- **Authentication**:&#10;    - Implemented Google Sign-In using the `androidx.credentials` API and `CredentialManager` in `MainActivity` and `RegisterActivity`.&#10;    - Integrated Firebase Authentication to handle Google ID tokens and manage user sessions.&#10;- **Local Synchronization**:&#10;    - Added logic to sync Firebase-authenticated users with the local Room database.&#10;    - Implemented automatic local user profile creation and achievement initialization for first-time Google sign-ins.&#10;- **Configuration**:&#10;    - Added `google-services.json` for Firebase project configuration.&#10;    - Applied the Google Services plugin to `app/build.gradle.kts`.&#10;    - Externalized the Google Web Client ID to `strings.xml` and a new `Constants` object.&#10;- **Dependencies**:&#10;    - Added Firebase BoM, Auth, and Analytics dependencies.&#10;    - Included `androidx.credentials` and `googleid` libraries.&#10;    - Updated Kotlin to version 2.1.10 and KSP to 2.1.10-1.0.30.&#10;- **Cleanup**: Removed unused `appcompat` dependency and cleaned up manual context references in `MainActivity` and `RegisterActivity`.">
+      <option name="closed" value="true" />
+      <created>1787309371451</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1787309371451</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Integrate Firebase Authentication and Google Sign-In&#10;&#10;- **Authentication**:&#10;    - Implemented Google Sign-In using the `androidx.credentials` API and `CredentialManager` in `MainActivity` and `RegisterActivity`.&#10;    - Integrated Firebase Authentication to handle Google ID tokens and manage user sessions.&#10;- **Local Synchronization**:&#10;    - Added logic to sync Firebase-authenticated users with the local Room database.&#10;    - Implemented automatic local user profile creation and achievement initialization for first-time Google sign-ins.&#10;- **Configuration**:&#10;    - Added `google-services.json` for Firebase project configuration.&#10;    - Applied the Google Services plugin to `app/build.gradle.kts`.&#10;    - Externalized the Google Web Client ID to `strings.xml` and a new `Constants` object.&#10;- **Dependencies**:&#10;    - Added Firebase BoM, Auth, and Analytics dependencies.&#10;    - Included `androidx.credentials` and `googleid` libraries.&#10;    - Updated Kotlin to version 2.1.10 and KSP to 2.1.10-1.0.30.&#10;- **Cleanup**: Removed unused `appcompat` dependency and cleaned up manual context references in `MainActivity` and `RegisterActivity`.">
+      <option name="closed" value="true" />
+      <created>1787310991246</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1787310991247</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Refactor UI resources for localization and upgrade build configuration to JDK 17&#10;&#10;- **Localization &amp; String Management**:&#10;    - Externalized hardcoded strings across all layout files (`achievements`, `decks`, `journal`, `settings`, etc.) to `strings.xml`.&#10;    - Introduced `plurals` for achievements, due cards, and day formats to handle grammatical variations.&#10;    - Marked non-translatable strings (formatting, IDs) with `translatable=&quot;false&quot;`.&#10;- **UI &amp; Accessibility**:&#10;    - Added `contentDescription` to image-based views across the application for improved accessibility.&#10;    - Enhanced input fields in `RegisterActivity` and `AddEditCardActivity` with appropriate `inputType`, `autofillHints`, and `importantForAutofill` attributes.&#10;    - Simplified `item_badge.xml` by using `drawableTop` instead of nested views.&#10;    - Added a missing back button to the Journal screen.&#10;- **Build System &amp; Dependencies**:&#10;    - Upgraded `sourceCompatibility`, `targetCompatibility`, and `jvmToolchain` from version 11 to 17.&#10;    - Migrated remaining direct dependency strings in `build.gradle.kts` to Version Catalog (`libs.versions.toml`).&#10;    - Updated Gradle Wrapper to version 9.5.0 and refined bytecode target levels in project configuration.&#10;- **Performance &amp; Logic**:&#10;    - Refactored `ChatAdapter` to use `DiffUtil` for efficient RecyclerView updates instead of `notifyDataSetChanged()`.&#10;    - Updated Google Sign-In logic in `MainActivity` and `RegisterActivity` to support `TYPE_GOOGLE_ID_TOKEN_SIWG_CREDENTIAL`.&#10;- **Cleanup**:&#10;    - Removed redundant background color definitions from layout roots to rely on theme-level styling.&#10;    - Updated `CalendarDayLabel` style for better padding distribution.">
+      <option name="closed" value="true" />
+      <created>1787315050563</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1787315050563</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Implement plural string resources for UI components&#10;&#10;- **UI Localization**:&#10;    - Updated `AchievementScreen` to use `pluralStringResource` for displaying the current streak, ensuring proper grammatical formatting for day counts.&#10;    - Updated `DecksScreen` to use `pluralStringResource` for the card count display in deck items.&#10;- **IDE Configuration**: Updated internal planning mode state in `.idea/planningMode.xml`.">
+      <option name="closed" value="true" />
+      <created>1787315372012</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1787315372012</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Refactor gamification system and finalize application UI/UX for IVU study hub&#10;&#10;- **Achievements &amp; Gamification**:&#10;    - Replaced the legacy achievement system with a new `Badge` framework and `UserStats` model to track XP, levels, and streaks.&#10;    - Implemented sophisticated streak logic (current and longest) and daily activity tracking.&#10;    - Redesigned `AchievementScreen` with a progress dashboard, weekly activity bar chart, and an interactive badge grid with unlock feedback.&#10;    - Added a badge unlock notification dialog to the Flashcard and Journal workflows.&#10;- **Authentication &amp; Session Management**:&#10;    - Transitioned all repositories, DAOs, and entities to use Firebase UIDs (`String`) instead of local `Long` IDs for user identification.&#10;    - Polished `LoginScreen` and `RegisterScreen` with consistent branding, improved form validation UI, and Google Sign-In styling.&#10;    - Updated `MainActivity` to manage session persistence using `firebase_uid`.&#10;- **Feature Enhancements**:&#10;    - **Flashcards**: Integrated review sessions with the achievement system and added a session progress indicator to `FlashcardReviewScreen`.&#10;    - **Journal**: Replaced the new entry dialog with a dedicated `NewJournalEntryScreen` featuring mood selection and deck linking.&#10;    - **AI Assistant**: Overhauled the `AiAssistScreen` UI with colored message bubbles, typing indicators, and suggestion chips.&#10;- **Architecture &amp; Data Persistence**:&#10;    - Incremented database version to 12 and added `TypeConverters` for `List&lt;String&gt;` to support badge storage.&#10;    - Removed all deprecated `expensetracker` legacy components, including DAOs, entities, and ViewModels.&#10;    - Consolidated `ViewModelFactory` to handle the new `String`-based user identifiers.&#10;- **UI/UX &amp; Branding**:&#10;    - Established `IVUTheme` and applied it across all Compose screens for visual consistency.&#10;    - Refactored XML layouts (`activity_ivu.xml`, `layout_bottom_nav.xml`) to use theme-aware color attributes.&#10;    - Updated the splash screen logic to initialize demo data and user stats for new Firebase users.&#10;- **Configuration &amp; CI**:&#10;    - Updated GitHub Actions workflow to use latest `actions/checkout@v4` and `setup-java@v4`.&#10;    - Set `AchievementsActivity` to `exported=&quot;true&quot;` in `AndroidManifest.xml`.">
+      <option name="closed" value="true" />
+      <created>1788943902196</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1788943902196</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Implement unified UI components, dark theme support, and enhanced deck management&#10;&#10;- **Navigation &amp; UI Architecture**:&#10;    - Replaced legacy XML bottom navigation with a shared Compose `BottomNavigationBar` across `IVU`, `DecksActivity`, `JournalActivity`, `AchievementsActivity`, and `SettingsActivity`.&#10;    - Integrated `Scaffold` into several screens to manage layout, bars, and floating action buttons consistently.&#10;    - Updated `IVUTheme` to include specific light/dark surface and text color definitions.&#10;- **Theme &amp; Language Management**:&#10;    - Integrated `PreferenceManager` across all activities to observe and apply dark theme and app language settings dynamically.&#10;    - Added a language selection dialog and a study reminders toggle in the `SettingsScreen`.&#10;    - Implemented `AppCompatDelegate` observers in the main activity to handle configuration changes for theme and locale.&#10;- **Feature Enhancements**:&#10;    - **Decks**: Added the ability to delete decks from both the `DecksScreen` and `FlashcardListScreen` via a confirmation dialog and dropdown menu.&#10;    - **Journal**:&#10;        - Implemented deck-linking for journal entries, allowing users to associate specific study decks with their entries via a new `FilterChip` UI.&#10;        - Refactored `JournalViewModel` to fetch both journal and deck data.&#10;        - Improved date parsing and formatting for journal entry display.&#10;    - **Achievements**: Refactored the `AchievementScreen` to use Material 3 components and standardized XP progress calculation.&#10;- **Data &amp; Configuration**:&#10;    - Transitioned `FlashcardRepository` and `JournalRepository` to use `firebase_uid` instead of local IDs for user identification.&#10;    - Updated `ViewModelFactory` with a cleaner `when` structure to handle multi-repository dependency injection.&#10;    - Updated `strings.xml` and localized variants (Afrikaans, isiZulu) with new navigation labels, goal formats, and plural definitions.&#10;    - Added a `study_reminders` key to `PreferenceManager`.">
+      <option name="closed" value="true" />
+      <created>1788954024557</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1788954024557</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Refactor UI for localization and improve layout responsiveness&#10;&#10;- **Localization &amp; Internationalization**:&#10;    - Externalized hardcoded strings across all screens, including Achievements, AI Assist, Decks, Journal, and Settings.&#10;    - Updated `strings.xml` with new keys and placeholders for dynamic content.&#10;    - Provided comprehensive Afrikaans (`values-af`) and isiZulu (`values-zu`) translations for the entire application.&#10;- **UI/UX Refinement**:&#10;    - **Achievements**: Refactored `AchievementScreen` to use `LazyColumn` instead of a grid for the primary layout, improving scroll performance and layout flexibility.&#10;    - **Main Dashboard**: Wrapped the main activity layout in a `ScrollView` to prevent clipping on smaller screens.&#10;    - **Auth Screens**: Enhanced `LoginScreen` and `RegisterScreen` with improved typography, bold labels, and consistent field styling; removed the placeholder &quot;Forgot Password&quot; link.&#10;    - **Journal**: Added localized mood names and improved the &quot;New Entry&quot; screen with better text styling and dynamic date formatting.&#10;    - **Settings**: Simplified the settings menu by removing the unused Security section and externalizing status labels (e.g., &quot;Dark&quot;, &quot;Warm&quot;, &quot;On/Off&quot;).&#10;- **Feature Enhancements**:&#10;    - **Progress Tracking**: Implemented logic in `IVU.kt` to reset daily review progress in the UI when a new day is detected based on `lastActiveDate`.&#10;    - **AI Assist**: Added localized suggestion chips and typing indicators.&#10;- **Technical Improvements**:&#10;    - Added debug logging to `ViewModelFactory` to track ViewModel instantiation.&#10;    - Standardized string formatting for streaks and level labels using `%1$d` placeholders.">
+      <option name="closed" value="true" />
+      <created>1789127028692</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1789127028692</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="dfb8e415-3cdd-4e85-aa11-204db6dc2543" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="dfb8e415-3cdd-4e85-aa11-204db6dc2543">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Setup Room database and implement core expense tracking architecture&#10;&#10;- Configure Room, KSP, and Navigation dependencies in `build.gradle.kts`.&#10;- Define data entities for User, Category, Expense, Goal, Achievement, and CurrencyRate.&#10;- Implement DAOs and a central `AppDatabase` with a singleton `DatabaseProvider`.&#10;- Add repository classes and ViewModels for Achievements, Expenses, and Authentication.&#10;- Create placeholder Compose screens for Dashboard, Expenses, Goals, Achievements, and Login.&#10;- Update `MainActivity` to initialize the database, seed initial achievements, and handle test data." />
+    <MESSAGE value="Refine data layer and enhance achievement logic&#10;&#10;- Implement `CurrencyRepository` and `GoalRepository` to abstract DAO operations.&#10;- Update `Expense` entity with a foreign key relationship to `Category` and add supporting indices.&#10;- Simplify achievement initialization in `MainActivity` using a list-based insertion approach.&#10;- Refactor `AchievementRepository` and `MainActivity` to unify achievement unlocking logic.&#10;- Clean up unused imports and redundant whitespace across DAO, Entity, and Database classes.&#10;- Add documentation comments to repository classes for better code clarity." />
+    <MESSAGE value="Implement authentication, splash screen, and real-time dashboard updates&#10;&#10;- **Authentication &amp; User Management**: Added a `password` field to the `User` entity, implemented login logic in `MainActivity`, and created a functional `RegisterActivity`.&#10;- **Navigation &amp; Lifecycle**: Introduced `SplashActivity` as the new entry point with a 2-second delay. Updated `AndroidManifest.xml` to reflect activity name changes and launcher configurations.&#10;- **Data Layer**: &#10;    - Updated `ExpenseDao` to return `Flow` for total spending, category summaries, and expense counts to support real-time UI updates.&#10;    - Incremented `AppDatabase` version to `2` and enabled `fallbackToDestructiveMigration`.&#10;    - Added `getUserByName` to `UserDao` and updated `ExpenseRepository` and `ExpenseViewModel` to expose new spending and summary flows.&#10;- **UI &amp; UX**:&#10;    - Redesigned `activity_dashboard.xml` using `ConstraintLayout` and `CardView` for a modern look.&#10;    - Updated `AddExpenseActivity` (formerly `AddExpensesActivityActivity`) to persist actual expense data to the database.&#10;    - Refined `bg_card` drawable and updated the app theme to use `AppCompat.DayNight`.&#10;    - Replaced default launcher icons with a custom logo.&#10;- **Cleanup**: Removed Compose-based test logic from `MainActivity` in favor of XML-based Activity logic." />
+    <MESSAGE value="Revitalize UI/UX and enhance data layer with real-time updates&#10;&#10;- Implement a modern, reusable bottom navigation bar across all main activities.&#10;- Refactor `Dashboard` to use `ExpenseViewModel` and support real-time data updates via Flows.&#10;- Integrate Jetpack Compose into XML layouts to render dynamic charts for spending breakdowns and goals.&#10;- Redesign `Dashboard`, `AddExpense`, `Goals`, and `Reports` layouts with improved styling, card-based UI, and rounded headers.&#10;- Enhance `SplashActivity` with fade-in/slide-up animations and a Coroutine-based transition.&#10;- Update `ExpenseDao` and `ExpenseRepository` to support fetching recent transactions and improve naming consistency.&#10;- Implement a `RoomDatabase.Callback` in `DatabaseProvider` to pre-populate default categories on database creation.&#10;- Add specific color resources and custom drawables for a unified design language." />
+    <MESSAGE value="Enhance data persistence and expand core features for goals, expenses, and reporting&#10;&#10;- **Data Layer Improvements**:&#10;    - Update `AppDatabase` to version 3 and implement thread-safe singleton initialization with `@Volatile` and `synchronized`.&#10;    - Refactor `Goal` entity to include `name`, `targetAmount`, and `currentAmount` fields.&#10;    - Expand `GoalDao` and `GoalRepository` with methods for deletion, updates, and Flow-based queries (all goals and top goals).&#10;    - Update `CategoryDao` to include a one-shot fetch for categories and use `IGNORE` conflict strategy.&#10;    - Improve database pre-population logic to check for existing categories on database open.&#10;&#10;- **Expense Management**:&#10;    - Enhance `AddExpenseActivity` with `DatePickerDialog` and `TimePickerDialog` for precise entry.&#10;    - Add photo attachment support to expenses using `ActivityResultContracts.GetContent`.&#10;    - Update expense saving logic to capture date, time, and photo URI.&#10;&#10;- **Dashboard &amp; Reporting**:&#10;    - Integrate real goal data into the Dashboard's Compose-based charts with progress tracking.&#10;    - Implement real-time data observation in `ReportsActivity`, displaying total, average, highest, and lowest spending.&#10;    - Add category and time period filters (Spinners) to the Reports screen.&#10;    - Refactor `LineChart` styling to match the application's green theme.&#10;&#10;- **UI/UX Refinement**:&#10;    - Redesign `SetGoalsActivity` layout to focus on creating specific savings goals rather than general budget limits.&#10;    - Update various layout files (`add_expenses_activity.xml`, `goals.xml`, `reports.xml`) for improved spacing, better labeling, and consistent color themes.&#10;    - Remove redundant &quot;Vision&quot; text from the splash screen." />
+    <MESSAGE value="Revamp UI/UX and enhance core feature set&#10;&#10;- **UI/UX Overhaul**:&#10;    - Introduced a consistent `common_header` layout and a unified `nav_bar` component across all screens.&#10;    - Updated `activity_main` and `activity_register` with a clean, card-based design and improved typography.&#10;    - Redesigned the Dashboard with an extended green header, modern card elevations, and a revamped XP progress bar.&#10;    - Standardized input fields and buttons using new `rounded_edittext` and `rounded_button` drawables.&#10;&#10;- **Feature Enhancements**:&#10;    - Added a &quot;Custom Category&quot; option in `AddExpenseActivity` to allow user-defined spending categories.&#10;    - Enhanced Goal tracking in `Dashboard` with an interactive &quot;Edit Amount&quot; feature via a Compose-based dialog.&#10;    - Expanded the `Goal` entity and UI to support `minTargetAmount` and `maxTargetAmount`.&#10;    - Implemented PDF report exportation in `ReportsActivity`.&#10;    - Improved data visualization in Reports with dynamic line charts and category/time-period filtering.&#10;&#10;- **Technical Updates**:&#10;    - Incremented `AppDatabase` version to 4 to accommodate schema changes in the `Goal` entity.&#10;    - Refactored navigation logic across `Dashboard`, `AddExpenseActivity`, `GoalsActivity`, and `ReportsActivity` for better consistency.&#10;    - Updated `Expense` entity with a default null value for `photoPath`." />
+    <MESSAGE value="Update SplashActivity animations and transition logic&#10;&#10;- Replace `androidx.appcompat` slide animation with standard `android.R.anim.slide_in_left`.&#10;- Explicitly set `pbLoading` visibility to `VISIBLE` during the splash delay.&#10;- Add `overridePendingTransition` with a deprecation suppression for the activity transition.&#10;- Clean up XML header in `.idea/misc.xml`." />
+    <MESSAGE value="Implement multi-user support, budget tracking, and gamified achievements&#10;&#10;- **Data Layer Enhancements**:&#10;    - Update `User`, `Expense`, `Category`, `Goal`, and `Achievement` entities to include `userId` for multi-user data isolation.&#10;    - Implement foreign key relationships and indices across entities to ensure data integrity.&#10;    - Expand `ExpenseDao` and `GoalDao` with queries for category summaries, date-range filtering, and budget-specific tracking.&#10;    - Increment database version to 6.&#10;&#10;- **New Features &amp; Gamification**:&#10;    - Implement an `AchievementRepository` with logic to unlock rewards for milestones like first expenses, daily streaks, and staying under budget.&#10;    - Add a `ChatViewModel` and `ChatBottomSheetFragment` to provide a &quot;Pocket Eye Assistant&quot; chatbot for financial tips and balance queries.&#10;    - Integrate a currency converter with real-time conversion logic in `CurrencyViewModel`.&#10;    - Support receipt photo attachments for expenses, including a full-screen photo viewer dialog.&#10;&#10;- **UI &amp; UX Improvements**:&#10;    - Refactor `Dashboard` with Jetpack Compose charts for &quot;Savings Goals&quot; progress and &quot;Spending Breakdown.&quot;&#10;    - Implement a new &quot;Budget Tracker&quot; component to visualize spending against category-specific limits.&#10;    - Redesign the main navigation with a `BottomAppBar` and a radial floating action button (FAB) menu for quick actions.&#10;    - Add `ManageCategoriesActivity` to allow users to customize their expense categories.&#10;    - Update `SplashActivity` to handle persistent user sessions via `SharedPreferences`.&#10;&#10;- **Technical Updates**:&#10;    - Integrate `MPAndroidChart` for reporting and visualization.&#10;    - Apply consistent Material Design 3 styling and color schemes across all activities and layouts.&#10;    - Add `windowSoftInputMode` configurations to `AndroidManifest.xml` for better keyboard handling in forms." />
+    <MESSAGE value="Implement PDF export preview and refine UI layouts&#10;&#10;- Add `FileProvider` configuration to `AndroidManifest.xml` and define file paths for secure PDF sharing.&#10;- Enhance PDF export in `ReportsActivity` with a success dialog and an option to open the file using a `FileProvider` URI.&#10;- Update `goals.xml` to use `NestedScrollView` for better scroll performance and add text labels to the radial FAB menu.&#10;- Refactor `ReportsActivity` to clean up redundant comments and ensure consistent category coloring across charts and lists.&#10;- Improve receipt thumbnail handling in the expenses adapter with better fallback logic." />
+    <MESSAGE value="Implement unit testing suite and refine reports logic&#10;&#10;- Add test dependencies for MockK, Coroutines, Turbine, and AndroidX Arch Core.&#10;- Implement comprehensive unit tests for `AuthViewModel`, `AchievementViewModel`, `ExpenseViewModel`, `ChatViewModel`, and `CurrencyViewModel`.&#10;- Add unit tests for `AchievementRepository` to verify achievement unlocking logic.&#10;- Update `ReportsActivity` to improve image URI handling and fix photo dialog layout issues.&#10;- Refine date filtering and average spending calculations in `ReportsActivity`.&#10;- Update expense list UI in reports to include consistent tinting for placeholder receipt icons." />
+    <MESSAGE value="Implement gamification achievements and enhance UI/UX across the core application architecture.&#10;&#10;- **Achievements System**: Introduce `AchievementsActivity` with a RecyclerView and `AchievementAdapter` to display unlocked and locked badges.&#10;- **Data &amp; Logic**: Implement `AchievementViewModel` and integrate with `AchievementRepository` to track user progress and unlock status.&#10;- **UI Enhancements**:&#10;    - Add `item_achievement.xml` and `activity_achievements.xml` layouts with custom animations.&#10;    - Update `Dashboard` with an interactive XP card to navigate to Achievements.&#10;    - Refactor `GoalsActivity` navigation and simplify layout logic.&#10;- **Infrastructure**:&#10;    - Configure **GitHub Actions** CI/CD pipeline in `.github/workflows/build.yml` for automated builds and unit testing.&#10;    - Update `README.md` with comprehensive project details, including CI/CD status, tech stack, and custom AI features.&#10;- **Resource Updates**: Add new string resources for achievements and goals; register `AchievementsActivity` in the manifest.&#10;- **Code Quality**: Clean up unused imports and redundant comments in `Dashboard.kt` and `GoalsActivity.kt`." />
+    <MESSAGE value="Implement achievement system and CI/CD workflow&#10;&#10;- Implement `AchievementsActivity` and `AchievementAdapter` to display user milestones.&#10;- Create `activity_achievements.xml` and `item_achievement.xml` layouts with lock/unlock states.&#10;- Add GitHub Actions workflow in `.github/workflows/build.yml` for automated builds and unit testing.&#10;- Integrate achievement navigation into the `Dashboard` via the XP card and update the radial FAB menu logic.&#10;- Refactor `SetGoalsActivity` to improve category loading, edit mode handling, and navigation consistency.&#10;- Update `README.md` with comprehensive project details, including feature descriptions, tech stack, and CI/CD status.&#10;- Add `nav_achievements` and other supporting string resources to `strings.xml`.&#10;- Register `AchievementsActivity` in the `AndroidManifest.xml`." />
+    <MESSAGE value="Enhance achievement system and implement leveling celebrations&#10;&#10;- Update `Achievement` entity to include `isNotified` field and increment database version to 7.&#10;- Refactor `AchievementRepository` to return newly unlocked achievements and improve budget tracking logic.&#10;- Expand `AchievementDao` with queries to handle unnotified achievements and fetch records once.&#10;- Update `ExpenseViewModel` to track levels (now every 5 expenses) and emit `ExpenseEvent` for level-ups and new achievements.&#10;- Implement celebration dialogs in `Dashboard` to notify users of level-ups and earned badges.&#10;- Enhance `AchievementsActivity` with automatic seeding of initial achievements and mapping achievement icons to visual assets.&#10;- Adjust `ChatViewModel` logic to align with the updated XP and leveling thresholds." />
+    <MESSAGE value="Update README documentation with detailed project information&#10;&#10;- Add project description, feature highlights, and technical overview.&#10;- Elaborate on the AI Chat Assistant, Multi-Currency Converter, and Gamified Experience (XP and Leveling system).&#10;- Expand technical details regarding MVVM architecture, hybrid Jetpack Compose/XML UI, and Room database usage.&#10;- Update installation instructions and list key project dependencies.&#10;- Improve accessibility by adding alt text to placeholder images." />
+    <MESSAGE value="Enhance codebase with comprehensive logging, documentation, and architectural refinements&#10;&#10;- **Logging &amp; Observability**: Integrated extensive `Log` statements across all Activities, ViewModels, and Repositories to track lifecycle events, database operations, user authentication, and navigation flows.&#10;- **Documentation**: Added class-level KDoc comments and function-level documentation to core components like `Dashboard`, `ReportsActivity`, and `ExpenseRepository` explaining their purpose and logic.&#10;- **Architectural Refinements**:&#10;    - Centralized data access in `ExpenseRepository` and `AchievementRepository` with reactive `Flow` logging.&#10;    - Updated `ExpenseViewModel` to handle gamification events (Level Up, Achievement Unlocked) via `SharedFlow`.&#10;    - Refined `Dashboard` UI logic to dynamically hide navigation bars when the keyboard is active to maximize screen space.&#10;- **Bug Fixes &amp; Stability**: &#10;    - Added safety checks for user session validation across all major activities.&#10;    - Improved bitmap handling in `ReportsActivity` with downsampling and persistable URI permission handling for receipt photos.&#10;    - Fixed potential null pointer issues in `CurrencyViewModel` by improving input parsing.&#10;- **Documentation Update**: Overhauled `README.md` to include detailed sections on purpose, technical design decisions, MVVM architecture, and CI/CD integration.&#10;- **Redundancy**: Created a duplicate `ExpenseRepository.kt` in a top-level directory (likely for organizational cleanup)." />
+    <MESSAGE value="Creation of new project" />
+    <MESSAGE value="Deprecate legacy Expense Tracker components and externalize strings in `activity_main.xml`&#10;&#10;- **Deprecation**: Marked several core activities and UI components as deprecated, including `AddExpenseActivity`, `SplashActivity`, `RegisterActivity`, `ManageCategoriesActivity`, `AchievementsActivity`, `GoalsActivity`, `ReportsActivity`, and the `Chat` UI components, in favor of the new `IVU` architecture.&#10;- **Localization &amp; Clean-up**:&#10;    - Refactored `activity_main.xml` to use string resources instead of hardcoded text for labels, hints, and content descriptions.&#10;    - Added `autofillHints` to email and password fields for better user experience.&#10;    - Updated `strings.xml` with new keys for the authentication screens.&#10;- **Refactoring**: Redirected legacy `Dashboard.kt` to the updated `IVU.kt` component." />
+    <MESSAGE value="Implement network synchronization and refactor application architecture to MVVM&#10;&#10;- **Networking**: Integrated Retrofit and OkHttp for API communication, including an `AuthInterceptor` to attach Firebase ID tokens to requests.&#10;- **MVVM Architecture**:&#10;    - Introduced `Repository` and `ViewModel` layers for `Deck`, `Flashcard`, and `Journal` components to manage data flow between local Room database and remote API.&#10;    - Implemented `ViewModelFactory` to handle dependency injection for the new ViewModels.&#10;- **Data Persistence**:&#10;    - Updated `Deck`, `Flashcard`, and `JournalEntry` entities to include `remoteId` for backend synchronization.&#10;    - Incremented database version to 9.&#10;- **Feature Enhancements**:&#10;    - **Decks &amp; Journal**: Added background refresh logic to sync local data with the server on activity start.&#10;    - **Flashcards**: Refactored `ReviewActivity` to submit card ratings to the backend and updated `AddEditCardActivity` with remote create/delete capabilities.&#10;    - **UI/UX**: Added a delete action to the card editor and externalized several UI strings for better localization.&#10;- **Configuration**:&#10;    - Added `INTERNET` permission to `AndroidManifest.xml`.&#10;    - Updated `build.gradle.kts` with dependencies for Retrofit, OkHttp, Coil, and Firebase Auth." />
+    <MESSAGE value="Integrate Firebase Authentication and Google Sign-In&#10;&#10;- **Authentication**:&#10;    - Implemented Google Sign-In using the `androidx.credentials` API and `CredentialManager` in `MainActivity` and `RegisterActivity`.&#10;    - Integrated Firebase Authentication to handle Google ID tokens and manage user sessions.&#10;- **Local Synchronization**:&#10;    - Added logic to sync Firebase-authenticated users with the local Room database.&#10;    - Implemented automatic local user profile creation and achievement initialization for first-time Google sign-ins.&#10;- **Configuration**:&#10;    - Added `google-services.json` for Firebase project configuration.&#10;    - Applied the Google Services plugin to `app/build.gradle.kts`.&#10;    - Externalized the Google Web Client ID to `strings.xml` and a new `Constants` object.&#10;- **Dependencies**:&#10;    - Added Firebase BoM, Auth, and Analytics dependencies.&#10;    - Included `androidx.credentials` and `googleid` libraries.&#10;    - Updated Kotlin to version 2.1.10 and KSP to 2.1.10-1.0.30.&#10;- **Cleanup**: Removed unused `appcompat` dependency and cleaned up manual context references in `MainActivity` and `RegisterActivity`." />
+    <MESSAGE value="Refactor UI resources for localization and upgrade build configuration to JDK 17&#10;&#10;- **Localization &amp; String Management**:&#10;    - Externalized hardcoded strings across all layout files (`achievements`, `decks`, `journal`, `settings`, etc.) to `strings.xml`.&#10;    - Introduced `plurals` for achievements, due cards, and day formats to handle grammatical variations.&#10;    - Marked non-translatable strings (formatting, IDs) with `translatable=&quot;false&quot;`.&#10;- **UI &amp; Accessibility**:&#10;    - Added `contentDescription` to image-based views across the application for improved accessibility.&#10;    - Enhanced input fields in `RegisterActivity` and `AddEditCardActivity` with appropriate `inputType`, `autofillHints`, and `importantForAutofill` attributes.&#10;    - Simplified `item_badge.xml` by using `drawableTop` instead of nested views.&#10;    - Added a missing back button to the Journal screen.&#10;- **Build System &amp; Dependencies**:&#10;    - Upgraded `sourceCompatibility`, `targetCompatibility`, and `jvmToolchain` from version 11 to 17.&#10;    - Migrated remaining direct dependency strings in `build.gradle.kts` to Version Catalog (`libs.versions.toml`).&#10;    - Updated Gradle Wrapper to version 9.5.0 and refined bytecode target levels in project configuration.&#10;- **Performance &amp; Logic**:&#10;    - Refactored `ChatAdapter` to use `DiffUtil` for efficient RecyclerView updates instead of `notifyDataSetChanged()`.&#10;    - Updated Google Sign-In logic in `MainActivity` and `RegisterActivity` to support `TYPE_GOOGLE_ID_TOKEN_SIWG_CREDENTIAL`.&#10;- **Cleanup**:&#10;    - Removed redundant background color definitions from layout roots to rely on theme-level styling.&#10;    - Updated `CalendarDayLabel` style for better padding distribution." />
+    <MESSAGE value="Implement plural string resources for UI components&#10;&#10;- **UI Localization**:&#10;    - Updated `AchievementScreen` to use `pluralStringResource` for displaying the current streak, ensuring proper grammatical formatting for day counts.&#10;    - Updated `DecksScreen` to use `pluralStringResource` for the card count display in deck items.&#10;- **IDE Configuration**: Updated internal planning mode state in `.idea/planningMode.xml`." />
+    <MESSAGE value="Refactor gamification system and finalize application UI/UX for IVU study hub&#10;&#10;- **Achievements &amp; Gamification**:&#10;    - Replaced the legacy achievement system with a new `Badge` framework and `UserStats` model to track XP, levels, and streaks.&#10;    - Implemented sophisticated streak logic (current and longest) and daily activity tracking.&#10;    - Redesigned `AchievementScreen` with a progress dashboard, weekly activity bar chart, and an interactive badge grid with unlock feedback.&#10;    - Added a badge unlock notification dialog to the Flashcard and Journal workflows.&#10;- **Authentication &amp; Session Management**:&#10;    - Transitioned all repositories, DAOs, and entities to use Firebase UIDs (`String`) instead of local `Long` IDs for user identification.&#10;    - Polished `LoginScreen` and `RegisterScreen` with consistent branding, improved form validation UI, and Google Sign-In styling.&#10;    - Updated `MainActivity` to manage session persistence using `firebase_uid`.&#10;- **Feature Enhancements**:&#10;    - **Flashcards**: Integrated review sessions with the achievement system and added a session progress indicator to `FlashcardReviewScreen`.&#10;    - **Journal**: Replaced the new entry dialog with a dedicated `NewJournalEntryScreen` featuring mood selection and deck linking.&#10;    - **AI Assistant**: Overhauled the `AiAssistScreen` UI with colored message bubbles, typing indicators, and suggestion chips.&#10;- **Architecture &amp; Data Persistence**:&#10;    - Incremented database version to 12 and added `TypeConverters` for `List&lt;String&gt;` to support badge storage.&#10;    - Removed all deprecated `expensetracker` legacy components, including DAOs, entities, and ViewModels.&#10;    - Consolidated `ViewModelFactory` to handle the new `String`-based user identifiers.&#10;- **UI/UX &amp; Branding**:&#10;    - Established `IVUTheme` and applied it across all Compose screens for visual consistency.&#10;    - Refactored XML layouts (`activity_ivu.xml`, `layout_bottom_nav.xml`) to use theme-aware color attributes.&#10;    - Updated the splash screen logic to initialize demo data and user stats for new Firebase users.&#10;- **Configuration &amp; CI**:&#10;    - Updated GitHub Actions workflow to use latest `actions/checkout@v4` and `setup-java@v4`.&#10;    - Set `AchievementsActivity` to `exported=&quot;true&quot;` in `AndroidManifest.xml`." />
+    <MESSAGE value="Implement unified UI components, dark theme support, and enhanced deck management&#10;&#10;- **Navigation &amp; UI Architecture**:&#10;    - Replaced legacy XML bottom navigation with a shared Compose `BottomNavigationBar` across `IVU`, `DecksActivity`, `JournalActivity`, `AchievementsActivity`, and `SettingsActivity`.&#10;    - Integrated `Scaffold` into several screens to manage layout, bars, and floating action buttons consistently.&#10;    - Updated `IVUTheme` to include specific light/dark surface and text color definitions.&#10;- **Theme &amp; Language Management**:&#10;    - Integrated `PreferenceManager` across all activities to observe and apply dark theme and app language settings dynamically.&#10;    - Added a language selection dialog and a study reminders toggle in the `SettingsScreen`.&#10;    - Implemented `AppCompatDelegate` observers in the main activity to handle configuration changes for theme and locale.&#10;- **Feature Enhancements**:&#10;    - **Decks**: Added the ability to delete decks from both the `DecksScreen` and `FlashcardListScreen` via a confirmation dialog and dropdown menu.&#10;    - **Journal**:&#10;        - Implemented deck-linking for journal entries, allowing users to associate specific study decks with their entries via a new `FilterChip` UI.&#10;        - Refactored `JournalViewModel` to fetch both journal and deck data.&#10;        - Improved date parsing and formatting for journal entry display.&#10;    - **Achievements**: Refactored the `AchievementScreen` to use Material 3 components and standardized XP progress calculation.&#10;- **Data &amp; Configuration**:&#10;    - Transitioned `FlashcardRepository` and `JournalRepository` to use `firebase_uid` instead of local IDs for user identification.&#10;    - Updated `ViewModelFactory` with a cleaner `when` structure to handle multi-repository dependency injection.&#10;    - Updated `strings.xml` and localized variants (Afrikaans, isiZulu) with new navigation labels, goal formats, and plural definitions.&#10;    - Added a `study_reminders` key to `PreferenceManager`." />
+    <MESSAGE value="Refactor UI for localization and improve layout responsiveness&#10;&#10;- **Localization &amp; Internationalization**:&#10;    - Externalized hardcoded strings across all screens, including Achievements, AI Assist, Decks, Journal, and Settings.&#10;    - Updated `strings.xml` with new keys and placeholders for dynamic content.&#10;    - Provided comprehensive Afrikaans (`values-af`) and isiZulu (`values-zu`) translations for the entire application.&#10;- **UI/UX Refinement**:&#10;    - **Achievements**: Refactored `AchievementScreen` to use `LazyColumn` instead of a grid for the primary layout, improving scroll performance and layout flexibility.&#10;    - **Main Dashboard**: Wrapped the main activity layout in a `ScrollView` to prevent clipping on smaller screens.&#10;    - **Auth Screens**: Enhanced `LoginScreen` and `RegisterScreen` with improved typography, bold labels, and consistent field styling; removed the placeholder &quot;Forgot Password&quot; link.&#10;    - **Journal**: Added localized mood names and improved the &quot;New Entry&quot; screen with better text styling and dynamic date formatting.&#10;    - **Settings**: Simplified the settings menu by removing the unused Security section and externalizing status labels (e.g., &quot;Dark&quot;, &quot;Warm&quot;, &quot;On/Off&quot;).&#10;- **Feature Enhancements**:&#10;    - **Progress Tracking**: Implemented logic in `IVU.kt` to reset daily review progress in the UI when a new day is detected based on `lastActiveDate`.&#10;    - **AI Assist**: Added localized suggestion chips and typing indicators.&#10;- **Technical Improvements**:&#10;    - Added debug logging to `ViewModelFactory` to track ViewModel instantiation.&#10;    - Standardized string formatting for streaks and level labels using `%1$d` placeholders." />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor UI for localization and improve layout responsiveness&#10;&#10;- **Localization &amp; Internationalization**:&#10;    - Externalized hardcoded strings across all screens, including Achievements, AI Assist, Decks, Journal, and Settings.&#10;    - Updated `strings.xml` with new keys and placeholders for dynamic content.&#10;    - Provided comprehensive Afrikaans (`values-af`) and isiZulu (`values-zu`) translations for the entire application.&#10;- **UI/UX Refinement**:&#10;    - **Achievements**: Refactored `AchievementScreen` to use `LazyColumn` instead of a grid for the primary layout, improving scroll performance and layout flexibility.&#10;    - **Main Dashboard**: Wrapped the main activity layout in a `ScrollView` to prevent clipping on smaller screens.&#10;    - **Auth Screens**: Enhanced `LoginScreen` and `RegisterScreen` with improved typography, bold labels, and consistent field styling; removed the placeholder &quot;Forgot Password&quot; link.&#10;    - **Journal**: Added localized mood names and improved the &quot;New Entry&quot; screen with better text styling and dynamic date formatting.&#10;    - **Settings**: Simplified the settings menu by removing the unused Security section and externalizing status labels (e.g., &quot;Dark&quot;, &quot;Warm&quot;, &quot;On/Off&quot;).&#10;- **Feature Enhancements**:&#10;    - **Progress Tracking**: Implemented logic in `IVU.kt` to reset daily review progress in the UI when a new day is detected based on `lastActiveDate`.&#10;    - **AI Assist**: Added localized suggestion chips and typing indicators.&#10;- **Technical Improvements**:&#10;    - Added debug logging to `ViewModelFactory` to track ViewModel instantiation.&#10;    - Standardized string formatting for streaks and level labels using `%1$d` placeholders." />
+  </component>
+  <component name="play_dynamic_filters_status">
+    <option name="appIdToCheckInfo">
+      <map>
+        <entry key="com.ntando.expensetracker">
+          <value>
+            <CheckInfo lastCheckTimestamp="1786470209610" />
+          </value>
+        </entry>
+        <entry key="com.ntando.expensetracker.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1786470209598" />
+          </value>
+        </entry>
+        <entry key="com.ntando.ivu">
+          <value>
+            <CheckInfo lastCheckTimestamp="1789122174298" />
+          </value>
+        </entry>
+        <entry key="com.ntando.ivu.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1789122174297" />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

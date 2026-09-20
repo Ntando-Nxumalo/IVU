@@ -3,12 +3,16 @@ package com.ntando.ivu.ui.journal
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +29,7 @@ import com.ntando.ivu.R
 import com.ntando.ivu.network.JournalEntry
 import com.ntando.ivu.viewmodel.JournalUiState
 import com.ntando.ivu.viewmodel.JournalViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -120,7 +125,7 @@ fun JournalCalendarScreen(
                 text = stringResource(R.string.label_entries_this_week),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3D2B1F),
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(16.dp)
             )
             
@@ -166,23 +171,42 @@ fun CalendarView(
     val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
     val daysOfWeek = listOf("S", "M", "T", "W", "T", "F", "S")
     
-    val calendar = remember(selectedDate) {
-        val cal = selectedDate.clone() as Calendar
-        cal.set(Calendar.DAY_OF_MONTH, 1)
-        cal
-    }
-    
-    val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
-    val maxDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+    // Use a large initial page count for the pager
+    val initialPage = 500
+    val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 1000 })
+    val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = monthFormat.format(calendar.time),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val calendarForMonth = Calendar.getInstance().apply {
+                add(Calendar.MONTH, pagerState.currentPage - initialPage)
+            }
+            
+            IconButton(onClick = { 
+                coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+            }) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Prev Month", tint = Color(0xFFE88A68))
+            }
+            
+            Text(
+                text = monthFormat.format(calendarForMonth.time),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            IconButton(onClick = { 
+                coroutineScope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+            }) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next Month", tint = Color(0xFFE88A68))
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
         
         Row(modifier = Modifier.fillMaxWidth()) {
             daysOfWeek.forEach { day ->
@@ -199,47 +223,65 @@ fun CalendarView(
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        var currentDay = 1
-        for (i in 0 until 6) {
-            if (currentDay > maxDays) break
-            Row(modifier = Modifier.fillMaxWidth()) {
-                for (j in 0 until 7) {
-                    val isDayInMonth = (i > 0 || j >= firstDayOfWeek) && currentDay <= maxDays
-                    if (isDayInMonth) {
-                        val dayDate = (calendar.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, currentDay) }
-                        val isSelected = isSameDay(dayDate, selectedDate)
-                        val hasEntry = entries.any { isSameDay(it.date, dayDate) }
-                        
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f)
-                                .padding(2.dp)
-                                .clip(CircleShape)
-                                .background(if (isSelected) Color(0xFFE88A68) else Color.Transparent)
-                                .clickable { onDateSelected(dayDate) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = currentDay.toString(),
-                                    color = if (isSelected) Color.White else Color(0xFF3D2B1F),
-                                    fontSize = 14.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                                if (hasEntry) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(4.dp)
-                                            .clip(CircleShape)
-                                            .background(if (isSelected) Color.White else Color(0xFFE88A68))
-                                    )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) { page ->
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.DAY_OF_MONTH, 1)
+                add(Calendar.MONTH, page - initialPage)
+            }
+            
+            val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
+            val maxDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+            
+            Column {
+                var currentDay = 1
+                for (i in 0 until 6) {
+                    if (currentDay > maxDays) break
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        for (j in 0 until 7) {
+                            val isDayInMonth = (i > 0 || j >= firstDayOfWeek) && currentDay <= maxDays
+                            if (isDayInMonth) {
+                                val dayNum = currentDay
+                                val dayDateFinal = (calendar.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, dayNum) }
+                                
+                                val isSelected = isSameDay(dayDateFinal, selectedDate)
+                                val hasEntry = entries.any { isSameDay(it.date, dayDateFinal) }
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(1f)
+                                        .padding(2.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) Color(0xFFE88A68) else Color.Transparent)
+                                        .clickable { onDateSelected(dayDateFinal) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = dayNum.toString(),
+                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onBackground,
+                                            fontSize = 14.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                        if (hasEntry) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(4.dp)
+                                                    .clip(CircleShape)
+                                                    .background(if (isSelected) Color.White else Color(0xFFE88A68))
+                                            )
+                                        }
+                                    }
                                 }
+                                currentDay++
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
-                        currentDay++
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -252,7 +294,7 @@ fun JournalEntryItem(entry: JournalEntry) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -287,7 +329,7 @@ fun JournalEntryItem(entry: JournalEntry) {
                     text = "$dateText — Feeling ${entry.mood.lowercase()}",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF3D2B1F)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = if (entry.linkedDeckId != null) stringResource(R.string.label_linked_to_deck) else stringResource(R.string.label_no_deck_linked),

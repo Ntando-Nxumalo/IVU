@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +59,7 @@ fun NewJournalEntryScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFE88A68))
             )
         },
-        containerColor = Color(0xFFFFF8F0)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -71,7 +72,7 @@ fun NewJournalEntryScreen(
                 text = stringResource(R.string.label_how_feel),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3D2B1F)
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -99,7 +100,7 @@ fun NewJournalEntryScreen(
                         Text(
                             text = moodNames[m] ?: m,
                             fontSize = 14.sp,
-                            color = Color(0xFF3D2B1F)
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -116,15 +117,16 @@ fun NewJournalEntryScreen(
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                placeholder = { Text("Struggled with verb conjugation but got the greetings down well...", color = Color.LightGray.copy(alpha = 0.5f)) },
+                placeholder = { Text(stringResource(R.string.hint_message), color = Color.Gray.copy(alpha = 0.5f)) },
                 modifier = Modifier.fillMaxWidth().height(180.dp),
                 shape = RoundedCornerShape(12.dp),
-                textStyle = LocalTextStyle.current.copy(fontWeight = FontWeight.Bold, color = Color.Black),
+                textStyle = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedBorderColor = Color.LightGray,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedBorderColor = Color(0xFFE88A68),
+                    unfocusedBorderColor = Color.LightGray,
+                    cursorColor = Color(0xFFE88A68)
                 )
             )
 
@@ -134,7 +136,7 @@ fun NewJournalEntryScreen(
                 text = stringResource(R.string.label_link_to_today),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF3D2B1F),
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             FlowRow(
@@ -160,7 +162,8 @@ fun NewJournalEntryScreen(
                         label = { Text(deck.title) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFFF2E6D3),
-                            selectedLabelColor = Color(0xFF3D2B1F)
+                            selectedLabelColor = Color(0xFF3D2B1F),
+                            labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                         ),
                         shape = RoundedCornerShape(16.dp)
                     )
