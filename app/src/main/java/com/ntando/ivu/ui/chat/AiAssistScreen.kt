@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.chat
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -26,6 +27,20 @@ import com.ntando.ivu.data.model.ChatMessage
 import com.ntando.ivu.viewmodel.ChatViewModel
 import kotlinx.coroutines.launch
 
+private const val TAG = "AiAssistScreen"
+
+/**
+ * Composable screen providing an interactive AI study assistant chat interface.
+ *
+ * Layout Structure:
+ * - [Scaffold] with a custom top app bar displaying IVU AI branding and study buddy subtitle.
+ * - [LazyColumn] rendering user and bot message bubbles ([ChatBubble]) and an animated typing indicator.
+ * - Horizontal scrollable/wrapped row of preset [SuggestionChip] options ("Quiz me", "Explain").
+ * - Sticky bottom input bar with an [OutlinedTextField] and a circular [FloatingActionButton] for sending messages.
+ *
+ * @param viewModel ViewModel handling AI chat communication flow and message history state.
+ * @param onBack Navigation callback invoked when the back button is pressed.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiAssistScreen(
@@ -39,6 +54,7 @@ fun AiAssistScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(messages.size) {
+        Log.d(TAG, "Chat message list updated, current message count: ${messages.size}")
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
         }
@@ -54,7 +70,10 @@ fun AiAssistScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Navigating back from AiAssistScreen")
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
@@ -101,8 +120,22 @@ fun AiAssistScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SuggestionChip(text = stringResource(R.string.label_suggestion_quiz), onClick = { viewModel.sendMessage("Quiz me") })
-                SuggestionChip(text = stringResource(R.string.label_suggestion_explain), onClick = { /* ... */ })
+                val quizText = stringResource(R.string.label_suggestion_quiz)
+                SuggestionChip(
+                    text = quizText,
+                    onClick = {
+                        Log.i(TAG, "Suggestion chip tapped: $quizText")
+                        viewModel.sendMessage(quizText)
+                    }
+                )
+                val explainText = stringResource(R.string.label_suggestion_explain)
+                SuggestionChip(
+                    text = explainText,
+                    onClick = {
+                        Log.i(TAG, "Suggestion chip tapped: $explainText")
+                        viewModel.sendMessage(explainText)
+                    }
+                )
             }
 
             // Input Area
@@ -137,8 +170,11 @@ fun AiAssistScreen(
                     FloatingActionButton(
                         onClick = {
                             if (textInput.isNotBlank()) {
+                                Log.i(TAG, "Sending chat message: $textInput")
                                 viewModel.sendMessage(textInput)
                                 textInput = ""
+                            } else {
+                                Log.w(TAG, "Send button clicked with empty message")
                             }
                         },
                         containerColor = Color(0xFFE88A68),
@@ -154,6 +190,12 @@ fun AiAssistScreen(
     }
 }
 
+/**
+ * Clickable pill-shaped suggestion chip used to prefill or directly send prompt commands to the AI model.
+ *
+ * @param text The text prompt displayed inside the chip.
+ * @param onClick Callback triggered when the chip is tapped.
+ */
 @Composable
 fun SuggestionChip(text: String, onClick: () -> Unit) {
     Surface(
@@ -168,6 +210,12 @@ fun SuggestionChip(text: String, onClick: () -> Unit) {
     }
 }
 
+/**
+ * Message bubble UI component rendered in the chat stream.
+ * Formats alignment (Right for user, Left for AI bot) and color schemes accordingly.
+ *
+ * @param message The [ChatMessage] model object containing message text and ownership flag (`isUser`).
+ */
 @Composable
 fun ChatBubble(message: ChatMessage) {
     val isUser = message.isUser

@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.decks
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,25 @@ import com.ntando.ivu.viewmodel.DecksViewModel
 import com.ntando.ivu.viewmodel.FlashcardViewModel
 import com.ntando.ivu.viewmodel.FlashcardUiState
 
+private const val TAG = "DecksScreen"
+
+/**
+ * Main management screen for displaying, creating, reviewing, and deleting flashcard decks.
+ *
+ * Layout Structure:
+ * - [Scaffold] containing top bar, bottom navigation, and a floating action button for adding decks.
+ * - State handling via [DecksUiState]: Loading spinner, error display with retry button, or empty state message / [LazyColumn].
+ * - Card list displaying [DeckItem] components with metadata, language tag, mastery progress bar, and action buttons.
+ * - [CreateDeckDialog] overlay for creating new decks with title and target language selection.
+ * - [AddFlashcardDialog] overlay for creating flashcards within a selected deck.
+ * - [AlertDialog] confirmation for deleting a deck.
+ *
+ * @param viewModel ViewModel handling deck listing, deck creation, and deletion operations.
+ * @param flashcardViewModel ViewModel managing individual flashcard additions.
+ * @param onDeckClick Callback triggered when tapping a deck card to start a review session: `(deckId) -> Unit`.
+ * @param onViewCards Callback triggered to navigate to the detailed flashcard list screen: `(deckId, deckTitle) -> Unit`.
+ * @param onNavigate Navigation callback triggered when selecting a bottom navigation tab.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DecksScreen(
@@ -42,6 +62,10 @@ fun DecksScreen(
     var selectedDeckForAddCard by remember { mutableStateOf<String?>(null) }
     var deckToDelete by remember { mutableStateOf<Deck?>(null) }
 
+    LaunchedEffect(uiState) {
+        Log.d(TAG, "Observed DecksUiState change: $uiState")
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -54,12 +78,18 @@ fun DecksScreen(
         bottomBar = {
             com.ntando.ivu.ui.components.BottomNavigationBar(
                 currentScreen = "decks",
-                onNavigate = onNavigate
+                onNavigate = { route ->
+                    Log.d(TAG, "Navigating from DecksScreen to route: $route")
+                    onNavigate(route)
+                }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddDeckDialog = true },
+                onClick = {
+                    Log.d(TAG, "FAB clicked to show CreateDeckDialog")
+                    showAddDeckDialog = true
+                },
                 containerColor = Color(0xFFE88A68),
                 contentColor = Color.White,
                 shape = androidx.compose.foundation.shape.CircleShape
@@ -79,7 +109,13 @@ fun DecksScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = state.message, color = Color.Red)
-                        Button(onClick = { viewModel.loadDecks() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))) {
+                        Button(
+                            onClick = {
+                                Log.i(TAG, "Retry button clicked to reload decks")
+                                viewModel.loadDecks()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
+                        ) {
                             Text(stringResource(R.string.retry))
                         }
                     }
@@ -100,10 +136,26 @@ fun DecksScreen(
                             items(state.decks) { deck ->
                                 DeckItem(
                                     deck = deck, 
-                                    onClick = { deck.deckId?.let { onDeckClick(it) } },
-                                    onAddCard = { selectedDeckForAddCard = deck.deckId },
-                                    onViewCards = { deck.deckId?.let { onViewCards(it, deck.title) } },
-                                    onDelete = { deckToDelete = deck }
+                                    onClick = {
+                                        deck.deckId?.let { id ->
+                                            Log.d(TAG, "Deck clicked for review session: id=$id, title=${deck.title}")
+                                            onDeckClick(id)
+                                        }
+                                    },
+                                    onAddCard = {
+                                        Log.d(TAG, "Add card button clicked for deckId: ${deck.deckId}")
+                                        selectedDeckForAddCard = deck.deckId
+                                    },
+                                    onViewCards = {
+                                        deck.deckId?.let { id ->
+                                            Log.d(TAG, "View cards button clicked for deckId: $id, title: ${deck.title}")
+                                            onViewCards(id, deck.title)
+                                        }
+                                    },
+                                    onDelete = {
+                                        Log.d(TAG, "Delete deck action triggered for deck: ${deck.title}")
+                                        deckToDelete = deck
+                                    }
                                 )
                             }
                         }
@@ -115,8 +167,12 @@ fun DecksScreen(
 
     if (showAddDeckDialog) {
         CreateDeckDialog(
-            onDismiss = { showAddDeckDialog = false },
+            onDismiss = {
+                Log.d(TAG, "Dismissing CreateDeckDialog")
+                showAddDeckDialog = false
+            },
             onConfirm = { title, language ->
+                Log.i(TAG, "Creating deck with title='$title', language='$language'")
                 viewModel.createNewDeck(title, language)
                 showAddDeckDialog = false
             }
@@ -125,12 +181,20 @@ fun DecksScreen(
 
     if (selectedDeckForAddCard != null) {
         AddFlashcardDialog(
-            onDismiss = { selectedDeckForAddCard = null },
+            onDismiss = {
+                Log.d(TAG, "Dismissing AddFlashcardDialog")
+                selectedDeckForAddCard = null
+            },
             onConfirm = { front, back ->
-                flashcardViewModel.createFlashcard(selectedDeckForAddCard!!, front, back) { success ->
+                val deckId = selectedDeckForAddCard!!
+                Log.i(TAG, "Creating card in deckId=$deckId with front='$front'")
+                flashcardViewModel.createFlashcard(deckId, front, back) { success ->
                     if (success) {
+                        Log.d(TAG, "Flashcard created successfully, reloading decks")
                         selectedDeckForAddCard = null
                         viewModel.loadDecks() // Refresh to update counts
+                    } else {
+                        Log.w(TAG, "Flashcard creation failed")
                     }
                 }
             },
@@ -141,13 +205,19 @@ fun DecksScreen(
 
     if (deckToDelete != null) {
         AlertDialog(
-            onDismissRequest = { deckToDelete = null },
+            onDismissRequest = {
+                Log.d(TAG, "Dismissing delete deck confirmation dialog")
+                deckToDelete = null
+            },
             title = { Text(stringResource(R.string.delete_deck_title)) },
             text = { Text(stringResource(R.string.delete_deck_confirm, deckToDelete?.title ?: "")) },
             confirmButton = {
                 Button(
                     onClick = {
-                        deckToDelete?.deckId?.let { viewModel.deleteDeck(it) }
+                        deckToDelete?.deckId?.let { id ->
+                            Log.w(TAG, "Confirmed deletion of deckId: $id")
+                            viewModel.deleteDeck(id)
+                        }
                         deckToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
@@ -156,7 +226,10 @@ fun DecksScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { deckToDelete = null }) {
+                TextButton(onClick = {
+                    Log.d(TAG, "Canceled deck deletion dialog")
+                    deckToDelete = null
+                }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -164,8 +237,24 @@ fun DecksScreen(
     }
 }
 
+/**
+ * Card UI representing a single deck item in the list.
+ * Shows language tags, action icons (view cards, add card, delete deck), title, progress indicator, and card counts.
+ *
+ * @param deck The [Deck] model object containing deck metadata.
+ * @param onClick Event listener for clicking on the card body to enter review mode.
+ * @param onAddCard Event listener for tapping the add card icon.
+ * @param onViewCards Event listener for tapping the view cards icon.
+ * @param onDelete Event listener for tapping the delete deck icon.
+ */
 @Composable
-fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards: () -> Unit, onDelete: () -> Unit) {
+fun DeckItem(
+    deck: Deck,
+    onClick: () -> Unit,
+    onAddCard: () -> Unit,
+    onViewCards: () -> Unit,
+    onDelete: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -242,6 +331,12 @@ fun DeckItem(deck: Deck, onClick: () -> Unit, onAddCard: () -> Unit, onViewCards
     }
 }
 
+/**
+ * Modal dialog for inputting new deck details (Title and Target Language).
+ *
+ * @param onDismiss Callback to dismiss the dialog.
+ * @param onConfirm Callback submitting the title and language string code: `(title, languageCode) -> Unit`.
+ */
 @Composable
 fun CreateDeckDialog(
     onDismiss: () -> Unit,
@@ -280,6 +375,7 @@ fun CreateDeckDialog(
                             DropdownMenuItem(
                                 text = { Text(name) },
                                 onClick = {
+                                    Log.d(TAG, "Selected language option: $name ($code)")
                                     language = code
                                     expanded = false
                                 }

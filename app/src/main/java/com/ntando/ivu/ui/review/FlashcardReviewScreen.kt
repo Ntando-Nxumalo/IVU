@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.review
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -23,6 +24,22 @@ import com.ntando.ivu.R
 import com.ntando.ivu.viewmodel.FlashcardReviewUiState
 import com.ntando.ivu.viewmodel.FlashcardReviewViewModel
 
+private const val TAG = "FlashcardReviewScreen"
+
+/**
+ * Screen facilitating spaced repetition review sessions for flashcards in a selected deck.
+ *
+ * Layout Structure:
+ * - [Scaffold] with a top bar showing current card progress ([LinearProgressIndicator] and "X/Y" text counter).
+ * - Animated 3D card flip UI ([ReviewContent]) supporting front/back view transitions.
+ * - Spaced repetition rating button row ("Again", "Hard", "Good", "Easy") revealed when card is flipped.
+ * - Session completion summary view when all due cards are reviewed.
+ * - [AlertDialog] displaying celebratory feedback when an achievement badge is unlocked during review.
+ *
+ * @param viewModel ViewModel orchestrating flashcard loading, review submission, SRS scheduling algorithms, and badge state.
+ * @param deckId Unique identifier of the deck currently being reviewed.
+ * @param onBack Callback invoked when exiting the review session.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardReviewScreen(
@@ -34,22 +51,29 @@ fun FlashcardReviewScreen(
     var badgeToShow by remember { mutableStateOf<com.ntando.ivu.data.entity.Badge?>(null) }
 
     LaunchedEffect(deckId) {
+        Log.d(TAG, "LaunchedEffect loading due cards for deckId: $deckId")
         viewModel.loadDueCards(deckId)
     }
 
     // Handle badge unlock feedback
     LaunchedEffect(uiState) {
+        Log.d(TAG, "Observed FlashcardReviewUiState: $uiState")
         val state = uiState
         if (state is FlashcardReviewUiState.Success && state.newlyUnlockedBadges.isNotEmpty()) {
-            badgeToShow = state.newlyUnlockedBadges.first()
+            val unlocked = state.newlyUnlockedBadges.first()
+            Log.i(TAG, "Badge unlocked during session: ${unlocked.displayName}")
+            badgeToShow = unlocked
         } else if (state is FlashcardReviewUiState.SessionComplete && state.newlyUnlockedBadges.isNotEmpty()) {
-            badgeToShow = state.newlyUnlockedBadges.first()
+            val unlocked = state.newlyUnlockedBadges.first()
+            Log.i(TAG, "Badge unlocked at session completion: ${unlocked.displayName}")
+            badgeToShow = unlocked
         }
     }
 
     if (badgeToShow != null) {
         AlertDialog(
             onDismissRequest = { 
+                Log.d(TAG, "Dismissing review badge unlock dialog")
                 badgeToShow = null 
                 viewModel.clearUnlockedBadges()
             },
@@ -65,6 +89,7 @@ fun FlashcardReviewScreen(
             confirmButton = {
                 Button(
                     onClick = { 
+                        Log.d(TAG, "Confirmed review badge unlock dialog")
                         badgeToShow = null 
                         viewModel.clearUnlockedBadges()
                     },
@@ -105,7 +130,10 @@ fun FlashcardReviewScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Back navigation requested in review screen")
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
@@ -132,7 +160,10 @@ fun FlashcardReviewScreen(
                         Text(text = state.message, color = Color.Red, textAlign = TextAlign.Center)
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            onClick = { viewModel.loadDueCards(deckId) },
+                            onClick = {
+                                Log.i(TAG, "Retrying due cards load for deckId: $deckId")
+                                viewModel.loadDueCards(deckId)
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
                         ) {
                             Text(stringResource(R.string.retry))
@@ -144,8 +175,14 @@ fun FlashcardReviewScreen(
                         cards = state.cards,
                         currentIndex = state.currentIndex,
                         isFlipped = state.isFlipped,
-                        onFlip = { viewModel.flipCard() },
-                        onRate = { viewModel.submitReview(it) }
+                        onFlip = {
+                            Log.d(TAG, "Card flip triggered for card index: ${state.currentIndex}")
+                            viewModel.flipCard()
+                        },
+                        onRate = { rating ->
+                            Log.i(TAG, "Submitting rating '$rating' for card index ${state.currentIndex}")
+                            viewModel.submitReview(rating)
+                        }
                     )
                 }
                 is FlashcardReviewUiState.SessionComplete -> {
@@ -175,7 +212,10 @@ fun FlashcardReviewScreen(
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
-                            onClick = onBack,
+                            onClick = {
+                                Log.d(TAG, "Session complete screen exiting back to decks")
+                                onBack()
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68)),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -188,6 +228,15 @@ fun FlashcardReviewScreen(
     }
 }
 
+/**
+ * Interactive card component managing 3D flip animation using [graphicsLayer] rotationY and rendering card rating actions.
+ *
+ * @param cards Complete list of due [com.ntando.ivu.network.Flashcard] objects for this session.
+ * @param currentIndex Index of the flashcard currently displayed.
+ * @param isFlipped Flag indicating whether the card back (answer) is visible.
+ * @param onFlip Event callback triggered when tapping the card face to toggle flip state.
+ * @param onRate Event callback submitting the user's difficulty evaluation ("again", "hard", "good", "easy").
+ */
 @Composable
 fun ReviewContent(
     cards: List<com.ntando.ivu.network.Flashcard>,
@@ -295,6 +344,16 @@ fun ReviewContent(
     }
 }
 
+/**
+ * Spaced repetition rating button column component displaying difficulty label, estimated next interval time, and triggering rating callbacks.
+ *
+ * @param label Text label describing rating difficulty ("Again", "Hard", "Good", "Easy").
+ * @param time Next review interval estimate text ("1m", "6m", "1d", "4d").
+ * @param rating Internal rating key string passed to the SRS scheduling engine.
+ * @param color Background color tint for the rating button.
+ * @param modifier Layout modifier applied to the column.
+ * @param onRate Callback invoked when this rating button is pressed.
+ */
 @Composable
 fun RatingButtonCol(
     label: String,
@@ -311,7 +370,10 @@ fun RatingButtonCol(
         Text(label, fontSize = 12.sp, color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { onRate(rating) },
+            onClick = {
+                Log.d(TAG, "Rating button clicked: rating=$rating, label=$label, time=$time")
+                onRate(rating)
+            },
             modifier = Modifier.fillMaxWidth().height(48.dp),
             colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = Color(0xFF3D2B1F)),
             shape = RoundedCornerShape(24.dp),

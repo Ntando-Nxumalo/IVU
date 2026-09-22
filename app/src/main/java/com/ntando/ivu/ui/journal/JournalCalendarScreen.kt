@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.journal
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,6 +34,22 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "JournalCalendarScreen"
+
+/**
+ * Interactive calendar and journal overview screen.
+ *
+ * Layout Structure:
+ * - [Scaffold] with [TopAppBar], [com.ntando.ivu.ui.components.BottomNavigationBar], and a [FloatingActionButton] to create new entries.
+ * - Custom [CalendarView] containing month navigation controls and an infinite [HorizontalPager] for monthly date grids.
+ * - [LazyColumn] rendering [JournalEntryItem] entries filtered specifically for the currently selected date.
+ * - [AlertDialog] displaying celebratory feedback when a new badge is unlocked upon saving an entry.
+ *
+ * @param viewModel ViewModel handling journal entry retrieval and badge unlock flows.
+ * @param onBack Callback triggered when tapping the back navigation arrow.
+ * @param onAddEntry Callback navigating to the entry creation screen for a given date: `(Calendar) -> Unit`.
+ * @param onNavigate Navigation callback triggered when switching bottom bar screens.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JournalCalendarScreen(
@@ -47,15 +64,19 @@ fun JournalCalendarScreen(
 
     // Handle badge unlock feedback
     LaunchedEffect(uiState) {
+        Log.d(TAG, "Observed JournalUiState update: $uiState")
         val state = uiState
         if (state is JournalUiState.Success && state.newlyUnlockedBadges.isNotEmpty()) {
-            badgeToShow = state.newlyUnlockedBadges.first()
+            val newlyUnlocked = state.newlyUnlockedBadges.first()
+            Log.i(TAG, "Newly unlocked badge detected: ${newlyUnlocked.displayName}")
+            badgeToShow = newlyUnlocked
         }
     }
 
     if (badgeToShow != null) {
         AlertDialog(
             onDismissRequest = { 
+                Log.d(TAG, "Dismissing badge unlock dialog")
                 badgeToShow = null 
                 viewModel.clearUnlockedBadges()
             },
@@ -71,6 +92,7 @@ fun JournalCalendarScreen(
             confirmButton = {
                 Button(
                     onClick = { 
+                        Log.d(TAG, "Badge unlock confirmation button clicked")
                         badgeToShow = null 
                         viewModel.clearUnlockedBadges()
                     },
@@ -87,7 +109,10 @@ fun JournalCalendarScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_my_calendar), fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Top bar back button clicked")
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = Color.White)
                     }
                 },
@@ -99,12 +124,18 @@ fun JournalCalendarScreen(
         bottomBar = {
             com.ntando.ivu.ui.components.BottomNavigationBar(
                 currentScreen = "journal",
-                onNavigate = onNavigate
+                onNavigate = { route ->
+                    Log.d(TAG, "Navigating from JournalCalendarScreen to route: $route")
+                    onNavigate(route)
+                }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onAddEntry(selectedDate) },
+                onClick = {
+                    Log.d(TAG, "FAB clicked to add journal entry for selected date: ${selectedDate.time}")
+                    onAddEntry(selectedDate)
+                },
                 containerColor = Color(0xFFE88A68),
                 contentColor = Color.White,
                 shape = CircleShape
@@ -118,7 +149,10 @@ fun JournalCalendarScreen(
             CalendarView(
                 selectedDate = selectedDate,
                 entries = (uiState as? JournalUiState.Success)?.entries ?: emptyList(),
-                onDateSelected = { selectedDate = it }
+                onDateSelected = { newDate ->
+                    Log.d(TAG, "Date selected in CalendarView: ${newDate.time}")
+                    selectedDate = newDate
+                }
             )
             
             Text(
@@ -162,6 +196,14 @@ fun JournalCalendarScreen(
     }
 }
 
+/**
+ * Calendar grid component rendering month navigation controls, day of week labels, and a month page view.
+ * Highlights dates that contain recorded journal entries with small dot indicators.
+ *
+ * @param selectedDate Currently active [Calendar] date selection.
+ * @param entries Complete list of [JournalEntry] items used to mark days with recorded entries.
+ * @param onDateSelected Callback invoked when a user taps a date cell in the month grid.
+ */
 @Composable
 fun CalendarView(
     selectedDate: Calendar,
@@ -289,6 +331,11 @@ fun CalendarView(
     }
 }
 
+/**
+ * Card component displaying summary details of a single [JournalEntry] (mood indicator, formatted date, deck link indicator).
+ *
+ * @param entry The [JournalEntry] model object to display.
+ */
 @Composable
 fun JournalEntryItem(entry: JournalEntry) {
     Card(
@@ -341,6 +388,9 @@ fun JournalEntryItem(entry: JournalEntry) {
     }
 }
 
+/**
+ * Helper function checking if a formatted date string ("yyyy-MM-dd") represents the same calendar day as a [Calendar] instance.
+ */
 private fun isSameDay(dateStr: String, calendar: Calendar): Boolean {
     return try {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -353,6 +403,9 @@ private fun isSameDay(dateStr: String, calendar: Calendar): Boolean {
     }
 }
 
+/**
+ * Helper function checking if two [Calendar] instances represent the exact same calendar day.
+ */
 private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
     return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
             cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)

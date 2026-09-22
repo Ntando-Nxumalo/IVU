@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
 
+private const val TAG = "BottomNav"
+
+/**
+ * Reusable primary bottom navigation bar component supporting route switching across primary app sections.
+ *
+ * Layout Structure:
+ * - [Surface] container with 8.dp tonal/shadow elevation.
+ * - Evenly spaced [Row] displaying four [BottomNavItem] instances: Home, Decks, Journal, and Profile.
+ *
+ * @param currentScreen The string route identifier of the currently active screen (e.g. "home", "decks", "journal", "profile").
+ * @param onNavigate Navigation callback triggered with the target route identifier string when an item is selected.
+ */
 @Composable
 fun BottomNavigationBar(
     currentScreen: String,
@@ -42,26 +55,47 @@ fun BottomNavigationBar(
                 label = stringResource(R.string.nav_home),
                 icon = Icons.Default.Home,
                 isSelected = currentScreen == "home",
-            ) { onNavigate("home") }
+            ) {
+                Log.d(TAG, "Navigating to home screen")
+                onNavigate("home")
+            }
             BottomNavItem(
                 label = stringResource(R.string.nav_decks),
                 icon = Icons.AutoMirrored.Filled.List,
                 isSelected = currentScreen == "decks",
-            ) { onNavigate("decks") }
+            ) {
+                Log.d(TAG, "Navigating to decks screen")
+                onNavigate("decks")
+            }
             BottomNavItem(
                 label = stringResource(R.string.nav_journal),
                 icon = Icons.Default.DateRange,
                 isSelected = currentScreen == "journal",
-            ) { onNavigate("journal") }
+            ) {
+                Log.d(TAG, "Navigating to journal screen")
+                onNavigate("journal")
+            }
             BottomNavItem(
                 label = stringResource(R.string.nav_profile),
                 icon = Icons.Default.Person,
                 isSelected = currentScreen == "profile",
-            ) { onNavigate("profile") }
+            ) {
+                Log.d(TAG, "Navigating to profile screen")
+                onNavigate("profile")
+            }
         }
     }
 }
 
+/**
+ * Individual navigation tab displaying an icon and descriptive text label.
+ * Applies highlighted color background alpha and bold typography when [isSelected] is true.
+ *
+ * @param label Localization string label describing the target destination.
+ * @param icon Vector graphic icon associated with the tab destination.
+ * @param isSelected Selection flag indicating if this tab represents the current route.
+ * @param onClick Click event callback triggered when the user taps this navigation item.
+ */
 @Composable
 fun BottomNavItem(
     label: String,
@@ -73,7 +107,10 @@ fun BottomNavItem(
     Column(
         modifier = Modifier
             .clip(CircleShape)
-            .clickable { onClick() }
+            .clickable {
+                Log.d(TAG, "BottomNavItem clicked: $label (isSelected=$isSelected)")
+                onClick()
+            }
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center

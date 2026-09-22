@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +18,26 @@ import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
 import com.ntando.ivu.viewmodel.SettingsViewModel
 
+private const val TAG = "SettingsScreen"
+
+/**
+ * Screen providing user profile overview, application preferences (theme, language, notification reminders, sync), and sign-out controls.
+ *
+ * Layout Structure:
+ * - [Scaffold] with a [TopAppBar] and [com.ntando.ivu.ui.components.BottomNavigationBar].
+ * - Profile header section displaying user name and email in a white rounded card.
+ * - Preferences section ([SettingsCard]) holding configurable [SettingsItem] rows:
+ *   1. App language selection dialog trigger.
+ *   2. Dark/Light theme toggle invoking [SettingsViewModel.setTheme].
+ *   3. Study reminders toggle invoking [SettingsViewModel.setRemindersEnabled].
+ *   4. Sync settings preview row.
+ * - Logout text button invoking [SettingsViewModel.signOut] and executing [onSignOut].
+ *
+ * @param viewModel ViewModel providing settings preference flows and auth logout actions.
+ * @param onBack Navigation callback invoked when popping the settings screen.
+ * @param onSignOut Callback invoked after user session termination to redirect to the authentication screen.
+ * @param onNavigate Navigation callback triggered when switching bottom bar screens.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -32,9 +53,16 @@ fun SettingsScreen(
     val userName = viewModel.userName
     var showLanguageDialog by remember { mutableStateOf(value = false) }
 
+    LaunchedEffect(isDarkTheme, appLanguage, isRemindersEnabled) {
+        Log.d(TAG, "Observed settings update: darkTheme=$isDarkTheme, language=$appLanguage, reminders=$isRemindersEnabled")
+    }
+
     if (showLanguageDialog) {
         AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
+            onDismissRequest = {
+                Log.d(TAG, "Language selection dialog dismissed")
+                showLanguageDialog = false
+            },
             title = { Text(stringResource(R.string.select_language)) },
             text = {
                 Column {
@@ -42,6 +70,7 @@ fun SettingsScreen(
                     languages.forEach { (code, name) ->
                         TextButton(
                             onClick = {
+                                Log.i(TAG, "Changing application language to: $name ($code)")
                                 viewModel.setLanguage(code)
                                 showLanguageDialog = false
                             },
@@ -53,7 +82,10 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
+                TextButton(onClick = {
+                    Log.d(TAG, "Cancel button clicked in language dialog")
+                    showLanguageDialog = false
+                }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -65,7 +97,10 @@ fun SettingsScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_settings), fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Back arrow button clicked in SettingsScreen")
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = Color.White)
                     }
                 },
@@ -77,7 +112,10 @@ fun SettingsScreen(
         bottomBar = {
             com.ntando.ivu.ui.components.BottomNavigationBar(
                 currentScreen = "profile",
-                onNavigate = onNavigate
+                onNavigate = { route ->
+                    Log.d(TAG, "Navigating from SettingsScreen to route: $route")
+                    onNavigate(route)
+                }
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -125,22 +163,36 @@ fun SettingsScreen(
                         "af" -> stringResource(R.string.label_afrikaans)
                         else -> stringResource(R.string.label_english)
                     },
-                ) { showLanguageDialog = true }
+                    onClick = {
+                        Log.d(TAG, "Opening language selection dialog")
+                        showLanguageDialog = true
+                    }
+                )
                 SettingsItem(
                     label = stringResource(R.string.label_theme),
                     value = if (isDarkTheme) stringResource(R.string.label_theme_dark) else stringResource(R.string.label_theme_light),
-                    onClick = { viewModel.setTheme(!isDarkTheme) }
+                    onClick = {
+                        val targetTheme = !isDarkTheme
+                        Log.i(TAG, "Toggling app theme preference to darkTheme=$targetTheme")
+                        viewModel.setTheme(targetTheme)
+                    }
                 )
                 SettingsItem(
                     label = stringResource(R.string.label_reminders),
                     value = if (isRemindersEnabled) stringResource(R.string.label_reminders_on) else stringResource(R.string.label_reminders_off),
-                    onClick = { viewModel.setRemindersEnabled(!isRemindersEnabled) }
+                    onClick = {
+                        val targetReminders = !isRemindersEnabled
+                        Log.i(TAG, "Toggling reminders preference to enabled=$targetReminders")
+                        viewModel.setRemindersEnabled(targetReminders)
+                    }
                 )
                 SettingsItem(
                     label = stringResource(R.string.label_sync),
                     value = "Wi-Fi only",
                     showDivider = false,
-                    onClick = { /* ... */ }
+                    onClick = {
+                        Log.d(TAG, "Sync setting item clicked")
+                    }
                 )
             }
 
@@ -148,6 +200,7 @@ fun SettingsScreen(
 
             TextButton(
                 onClick = {
+                    Log.i(TAG, "Sign out requested by user")
                     viewModel.signOut()
                     onSignOut()
                 },
@@ -159,6 +212,11 @@ fun SettingsScreen(
     }
 }
 
+/**
+ * Text header formatting category section titles in the settings layout.
+ *
+ * @param text Section header title string.
+ */
 @Composable
 fun SectionHeader(text: String) {
     Text(
@@ -170,6 +228,11 @@ fun SectionHeader(text: String) {
     )
 }
 
+/**
+ * Card container wrapping group settings items in a rounded white surface with elevation.
+ *
+ * @param content Slot layout containing [SettingsItem] rows.
+ */
 @Composable
 fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
@@ -181,6 +244,14 @@ fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     )
 }
 
+/**
+ * Single interactive settings item row displaying a label, current selected value, and an optional bottom divider line.
+ *
+ * @param label Descriptive string title for the setting preference.
+ * @param value Current value or state string displayed on the right.
+ * @param showDivider Whether to render a horizontal divider line beneath this row.
+ * @param onClick Event listener executed when tapping this row.
+ */
 @Composable
 fun SettingsItem(
     label: String,

@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.decks
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +25,21 @@ import com.ntando.ivu.viewmodel.FlashcardListViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "FlashcardListScreen"
+
+/**
+ * Screen displaying a scrollable list of all individual flashcards belonging to a given deck.
+ *
+ * Layout Structure:
+ * - [Scaffold] with a [TopAppBar] showing the deck title, back navigation button, and an overflow options menu (e.g. Delete Deck).
+ * - Body handling [FlashcardListUiState]: Loading indicator, error message text, empty list indicator, or a [LazyColumn] of [FlashcardListItem] cards.
+ *
+ * @param viewModel ViewModel fetching and managing cards for the deck.
+ * @param deckId Unique identifier of the selected deck.
+ * @param deckTitle Display title of the deck shown in the app bar.
+ * @param onBack Navigation callback invoked to return to the previous screen.
+ * @param onDeleteDeck Callback invoked when the user confirms deck deletion from the options menu.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardListScreen(
@@ -37,7 +53,12 @@ fun FlashcardListScreen(
     var showMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(deckId) {
+        Log.d(TAG, "LaunchedEffect loading cards for deckId: $deckId")
         viewModel.loadCards(deckId)
+    }
+
+    LaunchedEffect(uiState) {
+        Log.d(TAG, "Observed FlashcardListUiState: $uiState")
     }
 
     Scaffold(
@@ -45,7 +66,10 @@ fun FlashcardListScreen(
             TopAppBar(
                 title = { Text(deckTitle, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Navigating back from FlashcardListScreen")
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -61,6 +85,7 @@ fun FlashcardListScreen(
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.delete_deck_title), color = Color.Red) },
                                 onClick = {
+                                    Log.w(TAG, "Delete deck requested from top bar options menu for deckId: $deckId")
                                     showMenu = false
                                     onDeleteDeck()
                                 }
@@ -86,9 +111,15 @@ fun FlashcardListScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(state.cards) { card ->
-                                FlashcardListItem(card = card, onDelete = { 
-                                    card.cardId?.let { viewModel.deleteCard(deckId, it) }
-                                })
+                                FlashcardListItem(
+                                    card = card,
+                                    onDelete = { 
+                                        card.cardId?.let { cardId ->
+                                            Log.w(TAG, "Deleting card with id: $cardId from deckId: $deckId")
+                                            viewModel.deleteCard(deckId, cardId)
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
@@ -98,6 +129,12 @@ fun FlashcardListScreen(
     }
 }
 
+/**
+ * Card component rendering front and back text of a single flashcard alongside its due status tag and a delete action button.
+ *
+ * @param card The [Flashcard] entity containing prompt, answer, and scheduling timestamps.
+ * @param onDelete Event listener executed when tapping the delete icon button.
+ */
 @Composable
 fun FlashcardListItem(card: Flashcard, onDelete: () -> Unit) {
     Card(
@@ -138,6 +175,12 @@ fun FlashcardListItem(card: Flashcard, onDelete: () -> Unit) {
     }
 }
 
+/**
+ * Utility function calculating human-readable due date status strings based on millisecond epoch timestamps.
+ *
+ * @param dueDate Epoc time in milliseconds indicating when the card is next scheduled for review.
+ * @return Formatted string: "New", "Overdue", "Due today", or "Due: d MMM".
+ */
 fun formatDueDate(dueDate: Long): String {
     if (dueDate == 0L) return "New"
     

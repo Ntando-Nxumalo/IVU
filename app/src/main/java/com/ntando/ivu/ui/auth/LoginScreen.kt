@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.auth
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,6 +19,27 @@ import com.ntando.ivu.R
 import com.ntando.ivu.viewmodel.LoginUiState
 import com.ntando.ivu.viewmodel.LoginViewModel
 
+private const val TAG = "LoginScreen"
+
+/**
+ * Composable screen for user authentication using email/password or Google Sign-In.
+ *
+ * Layout Structure:
+ * - [Scaffold] with a [CenterAlignedTopAppBar] formatted with custom orange background.
+ * - Column with centered content:
+ *   1. Email input text field with rounded corner styling.
+ *   2. Password input text field with password visual transformation.
+ *   3. Dynamic error message / loading indicator display based on [LoginUiState].
+ *   4. Login submit button invoking [LoginViewModel.loginWithEmail].
+ *   5. Horizontal divider for alternative sign-in options.
+ *   6. Google Sign-In button invoking [onGoogleSignInClick].
+ *   7. Navigation text button redirecting to registration via [onNavigateToRegister].
+ *
+ * @param viewModel ViewModel handling login logic and UI state updates.
+ * @param onLoginSuccess Callback triggered upon successful authentication.
+ * @param onNavigateToRegister Callback to navigate to the Registration screen.
+ * @param onGoogleSignInClick Callback to trigger Google One-Tap or OAuth sign-in flow.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
@@ -31,8 +53,12 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState) {
+        Log.d(TAG, "Observed LoginUiState change: $uiState")
         if (uiState is LoginUiState.Success) {
+            Log.i(TAG, "Login successful. Triggering onLoginSuccess callback.")
             onLoginSuccess()
+        } else if (uiState is LoginUiState.Error) {
+            Log.w(TAG, "Login failed with error: ${(uiState as LoginUiState.Error).message}")
         }
     }
 
@@ -48,7 +74,9 @@ fun LoginScreen(
                     ) 
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle back if needed, or just stay */ }) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Top bar back navigation clicked")
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_desc_back),
@@ -145,7 +173,10 @@ fun LoginScreen(
                 Button(
                     onClick = { 
                         if (email.isNotBlank() && password.isNotBlank()) {
+                            Log.i(TAG, "Attempting email login for: $email")
                             viewModel.loginWithEmail(email, password)
+                        } else {
+                            Log.w(TAG, "Login attempted with blank email or password")
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -167,7 +198,10 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedButton(
-                onClick = onGoogleSignInClick,
+                onClick = {
+                    Log.i(TAG, "Google Sign-In button clicked")
+                    onGoogleSignInClick()
+                },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE88A68))),
@@ -186,7 +220,10 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(onClick = onNavigateToRegister) {
+            TextButton(onClick = {
+                Log.d(TAG, "Navigating to registration screen")
+                onNavigateToRegister()
+            }) {
                 Text(stringResource(R.string.new_here_register), color = Color(0xFFE88A68))
             }
         }

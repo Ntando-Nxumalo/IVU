@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.auth
 
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +20,27 @@ import com.ntando.ivu.R
 import com.ntando.ivu.viewmodel.RegisterUiState
 import com.ntando.ivu.viewmodel.RegisterViewModel
 
+private const val TAG = "RegisterScreen"
+
+/**
+ * Composable screen enabling new users to create an account using name, email, and password, or via Google Sign-In.
+ *
+ * Layout Structure:
+ * - [Scaffold] with a [CenterAlignedTopAppBar] and back navigation button.
+ * - Form column with validation:
+ *   1. Full Name input text field with real-time field validation.
+ *   2. Email input text field validated against pattern matching [Patterns.EMAIL_ADDRESS].
+ *   3. Password input text field validated for minimum length (8 characters).
+ *   4. Inline red error messages for failed validations or server errors.
+ *   5. Registration submit button triggering [RegisterViewModel.registerUser].
+ *   6. Google Sign-In alternative option.
+ *   7. Navigation button redirecting to login via [onNavigateToLogin].
+ *
+ * @param viewModel ViewModel handling registration operations and state publishing.
+ * @param onRegisterSuccess Callback executed when registration completes successfully.
+ * @param onNavigateToLogin Callback navigating back to the Login screen.
+ * @param onGoogleSignInClick Callback initiating Google authentication flow.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -42,8 +64,12 @@ fun RegisterScreen(
     val passwordLengthErr = stringResource(R.string.error_password_length)
 
     LaunchedEffect(uiState) {
+        Log.d(TAG, "Observed RegisterUiState change: $uiState")
         if (uiState is RegisterUiState.Success) {
+            Log.i(TAG, "Registration succeeded. Triggering onRegisterSuccess callback.")
             onRegisterSuccess()
+        } else if (uiState is RegisterUiState.Error) {
+            Log.w(TAG, "Registration failed with error: ${(uiState as RegisterUiState.Error).message}")
         }
     }
 
@@ -59,7 +85,10 @@ fun RegisterScreen(
                     ) 
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateToLogin) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Navigating back to Login screen via top app bar icon")
+                        onNavigateToLogin()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.content_desc_back),
@@ -203,7 +232,10 @@ fun RegisterScreen(
                         if (!isPasswordValid) passwordError = passwordLengthErr
                         
                         if (isNameValid && isEmailValid && isPasswordValid) {
+                            Log.i(TAG, "Submitting registration request for name: $name, email: $email")
                             viewModel.registerUser(name, email, password)
+                        } else {
+                            Log.w(TAG, "Registration validation failed: nameValid=$isNameValid, emailValid=$isEmailValid, passwordValid=$isPasswordValid")
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -225,7 +257,10 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedButton(
-                onClick = onGoogleSignInClick,
+                onClick = {
+                    Log.i(TAG, "Google Sign-In button clicked on RegisterScreen")
+                    onGoogleSignInClick()
+                },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE88A68))),
@@ -244,7 +279,10 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(onClick = onNavigateToLogin) {
+            TextButton(onClick = {
+                Log.d(TAG, "Navigating to Login screen via text button")
+                onNavigateToLogin()
+            }) {
                 Text(stringResource(R.string.already_have_account_login), color = Color(0xFFE88A68))
             }
         }

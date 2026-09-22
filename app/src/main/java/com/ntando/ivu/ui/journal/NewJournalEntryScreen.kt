@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.journal
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,6 +22,24 @@ import com.ntando.ivu.R
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "NewJournalEntryScreen"
+
+/**
+ * Screen providing controls for composing and saving new study journal entries.
+ *
+ * Layout Structure:
+ * - [Scaffold] with [TopAppBar] displaying title and formatted [initialDate].
+ * - Row of clickable mood options ("great", "okay", "tough") rendered as circular colored icons.
+ * - [OutlinedTextField] for writing reflection notes.
+ * - [FlowRow] displaying [FilterChip]s allowing optional association of the entry with a specific deck.
+ * - Save button invoking [onConfirm] when input text is non-blank.
+ *
+ * @param onDismiss Callback invoked when the user dismisses the entry creation flow.
+ * @param onConfirm Callback invoked to save entry: `(dateString, mood, text, optionalLinkedDeckId) -> Unit`.
+ * @param decks Available list of user [com.ntando.ivu.network.Deck] items for deck linkage selection.
+ * @param initialDate Target [Calendar] date for which the entry is created.
+ * @param isLoading State flag disabling the save button while saving request is pending.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NewJournalEntryScreen(
@@ -52,7 +71,10 @@ fun NewJournalEntryScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onDismiss) {
+                    IconButton(onClick = {
+                        Log.d(TAG, "Back button clicked in NewJournalEntryScreen")
+                        onDismiss()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
@@ -88,7 +110,10 @@ fun NewJournalEntryScreen(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .clickable { mood = m },
+                                .clickable {
+                                    Log.d(TAG, "Mood selected: $m")
+                                    mood = m
+                                },
                             color = if (mood == m) color else color.copy(alpha = 0.3f),
                             shape = CircleShape
                         ) {
@@ -146,7 +171,10 @@ fun NewJournalEntryScreen(
             ) {
                 FilterChip(
                     selected = selectedDeckId == null,
-                    onClick = { selectedDeckId = null },
+                    onClick = {
+                        Log.d(TAG, "Unlinking entry from deck (calendar option selected)")
+                        selectedDeckId = null
+                    },
                     label = { Text(stringResource(R.string.label_calendar)) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = Color(0xFF7FB6A7),
@@ -158,7 +186,10 @@ fun NewJournalEntryScreen(
                 decks.forEach { deck ->
                     FilterChip(
                         selected = selectedDeckId == deck.deckId,
-                        onClick = { selectedDeckId = deck.deckId },
+                        onClick = {
+                            Log.d(TAG, "Linked deck selected: ${deck.deckId} (${deck.title})")
+                            selectedDeckId = deck.deckId
+                        },
                         label = { Text(deck.title) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = Color(0xFFF2E6D3),
@@ -175,6 +206,7 @@ fun NewJournalEntryScreen(
             Button(
                 onClick = { 
                     val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(initialDate.time)
+                    Log.i(TAG, "Saving new journal entry: date=$dateStr, mood=$mood, textLength=${text.length}, linkedDeckId=$selectedDeckId")
                     onConfirm(dateStr, mood, text, selectedDeckId) 
                 },
                 enabled = text.isNotBlank() && !isLoading,

@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.achievements
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,25 @@ import com.ntando.ivu.R
 import com.ntando.ivu.data.entity.Badge
 import com.ntando.ivu.viewmodel.AchievementViewModel
 
+private const val TAG = "AchievementScreen"
+
+/**
+ * Composable screen that displays user progress, streak metrics, XP levels, weekly activity,
+ * and unlocked/locked achievement badges.
+ *
+ * Layout Structure:
+ * - Scaffold containing a [com.ntando.ivu.ui.components.BottomNavigationBar].
+ * - [LazyColumn] displaying:
+ *   1. Screen Header ("Progress").
+ *   2. Large Streak icon and current streak / level indicators.
+ *   3. XP LinearProgressIndicator displaying progress towards the next level threshold.
+ *   4. "This Week" bar chart visualization of study consistency.
+ *   5. Badges section rendered as a 2-column grid of [BadgeItem] cards.
+ * - [AlertDialog] displaying detailed info when a badge is tapped.
+ *
+ * @param viewModel The [AchievementViewModel] managing user statistics and badge unlocked states.
+ * @param onNavigate Navigation callback triggered when switching bottom bar screens.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AchievementScreen(
@@ -32,11 +52,18 @@ fun AchievementScreen(
     val stats by viewModel.userStats.collectAsState()
     var selectedBadge by remember { mutableStateOf<Badge?>(null) }
 
+    LaunchedEffect(stats) {
+        Log.d(TAG, "AchievementScreen observed userStats update: streak=${stats?.currentStreak}, level=${stats?.level}, xp=${stats?.xp}, badges=${stats?.badges}")
+    }
+
     Scaffold(
         bottomBar = {
             com.ntando.ivu.ui.components.BottomNavigationBar(
                 currentScreen = "profile",
-                onNavigate = onNavigate
+                onNavigate = { route ->
+                    Log.d(TAG, "Navigating from AchievementScreen to route: $route")
+                    onNavigate(route)
+                }
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -98,7 +125,7 @@ fun AchievementScreen(
                         .fillMaxWidth()
                         .height(12.dp)
                         .clip(CircleShape),
-                    color = Color(0xFFE8C07C),
+                    color = Color(0xFFE88A68),
                     trackColor = Color(0xFFEEEEEE)
                 )
                 Text(
@@ -171,7 +198,10 @@ fun AchievementScreen(
                             BadgeItem(
                                 badge = badge,
                                 isUnlocked = isUnlocked,
-                                onClick = { selectedBadge = badge }
+                                onClick = {
+                                    Log.d(TAG, "Badge selected: ${badge.displayName} (id=${badge.id}, isUnlocked=$isUnlocked)")
+                                    selectedBadge = badge
+                                }
                             )
                         }
                     }
@@ -187,7 +217,10 @@ fun AchievementScreen(
     selectedBadge?.let { badge ->
         val isUnlocked = stats?.badges?.contains(badge.id) == true
         AlertDialog(
-            onDismissRequest = { selectedBadge = null },
+            onDismissRequest = {
+                Log.d(TAG, "Dismissing badge dialog for badge: ${badge.id}")
+                selectedBadge = null
+            },
             title = { Text(badge.displayName) },
             text = { 
                 Column {
@@ -199,7 +232,10 @@ fun AchievementScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { selectedBadge = null }) {
+                TextButton(onClick = {
+                    Log.d(TAG, "Closing badge dialog confirm button clicked for badge: ${badge.id}")
+                    selectedBadge = null
+                }) {
                     Text(stringResource(R.string.btn_close))
                 }
             }
@@ -207,6 +243,14 @@ fun AchievementScreen(
     }
 }
 
+/**
+ * Card UI component representing an individual achievement badge.
+ * Displays a star emoji if unlocked or a lock emoji if locked, along with custom badge color backgrounds.
+ *
+ * @param badge The [Badge] metadata object containing id, name, and description.
+ * @param isUnlocked Whether the current user has unlocked this badge.
+ * @param onClick Event listener triggered when the user taps on the badge card.
+ */
 @Composable
 fun BadgeItem(badge: Badge, isUnlocked: Boolean, onClick: () -> Unit) {
     val badgeColors = mapOf(

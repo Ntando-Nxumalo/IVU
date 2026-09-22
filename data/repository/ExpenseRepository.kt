@@ -9,8 +9,11 @@ import com.ntando.expensetracker.data.entity.Expense
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Repository class that abstracts access to multiple data sources (ExpenseDao and CategoryDao).
- * It provides a clean API for the rest of the application to interact with expense-related data.
+ * Repository class that abstracts access to multiple local Room data sources ([ExpenseDao] and [CategoryDao]).
+ * It provides a clean API for the UI and ViewModel layers to interact with expense and category data.
+ *
+ * @property expenseDao DAO handling operations on the [Expense] database table.
+ * @property categoryDao DAO handling operations on the [Category] database table.
  */
 class ExpenseRepository(
     private val expenseDao: ExpenseDao,
@@ -18,50 +21,143 @@ class ExpenseRepository(
 ) {
     private val TAG = "ExpenseRepository"
 
-    // Queries returning Flows for reactive UI updates
-    fun getAllExpenses(userId: Long): Flow<List<Expense>> = expenseDao.getAllExpenses(userId)
-    fun getAllCategories(userId: Long): Flow<List<Category>> = categoryDao.getAllCategories(userId)
-    fun getTotalSpending(userId: Long): Flow<Double?> = expenseDao.getTotalSpendingFlow(userId)
-    fun getCategorySummary(userId: Long): Flow<List<CategorySummary>> = expenseDao.getCategorySummary(userId)
-    fun getRecentExpenses(userId: Long): Flow<List<Expense>> = expenseDao.getRecentExpenses(userId)
-    fun getExpenseCount(userId: Long): Flow<Int> = expenseDao.getExpenseCount(userId)
+    /**
+     * Retrieves a reactive stream of all expenses recorded for a specific user.
+     *
+     * @param userId Unique database identifier of the user.
+     * @return [Flow] emitting a list of [Expense] items.
+     */
+    fun getAllExpenses(userId: Long): Flow<List<Expense>> {
+        Log.d(TAG, "getAllExpenses: Fetching all expenses for userId=$userId")
+        return expenseDao.getAllExpenses(userId)
+    }
 
     /**
-     * Inserts a new expense into the database.
+     * Retrieves a reactive stream of all expense categories associated with a user.
+     *
+     * @param userId Unique database identifier of the user.
+     * @return [Flow] emitting a list of [Category] items.
+     */
+    fun getAllCategories(userId: Long): Flow<List<Category>> {
+        Log.d(TAG, "getAllCategories: Fetching categories for userId=$userId")
+        return categoryDao.getAllCategories(userId)
+    }
+
+    /**
+     * Retrieves a reactive stream of total aggregated spending amount for a user.
+     *
+     * @param userId Unique database identifier of the user.
+     * @return [Flow] emitting the sum of expenses as [Double] or `null` if no expenses exist.
+     */
+    fun getTotalSpending(userId: Long): Flow<Double?> {
+        Log.d(TAG, "getTotalSpending: Querying total spending flow for userId=$userId")
+        return expenseDao.getTotalSpendingFlow(userId)
+    }
+
+    /**
+     * Retrieves a reactive stream of expense breakdown summarized by category.
+     *
+     * @param userId Unique database identifier of the user.
+     * @return [Flow] emitting a list of [CategorySummary] items.
+     */
+    fun getCategorySummary(userId: Long): Flow<List<CategorySummary>> {
+        Log.d(TAG, "getCategorySummary: Querying category spending summary for userId=$userId")
+        return expenseDao.getCategorySummary(userId)
+    }
+
+    /**
+     * Retrieves a reactive stream of recently recorded expenses for a user.
+     *
+     * @param userId Unique database identifier of the user.
+     * @return [Flow] emitting recent [Expense] records.
+     */
+    fun getRecentExpenses(userId: Long): Flow<List<Expense>> {
+        Log.d(TAG, "getRecentExpenses: Querying recent expenses for userId=$userId")
+        return expenseDao.getRecentExpenses(userId)
+    }
+
+    /**
+     * Retrieves a reactive stream of total expense count recorded for a user.
+     *
+     * @param userId Unique database identifier of the user.
+     * @return [Flow] emitting total count of expenses as [Int].
+     */
+    fun getExpenseCount(userId: Long): Flow<Int> {
+        Log.d(TAG, "getExpenseCount: Querying expense count for userId=$userId")
+        return expenseDao.getExpenseCount(userId)
+    }
+
+    /**
+     * Inserts a new expense record into the local database.
+     *
+     * @param expense The [Expense] entity to insert.
      */
     suspend fun insertExpense(expense: Expense) {
-        Log.d(TAG, "Inserting expense: ${expense.amount} for user ${expense.userId}")
-        expenseDao.insertExpense(expense)
+        Log.d(TAG, "insertExpense: Inserting expense amount=${expense.amount}, categoryId=${expense.categoryId} for userId=${expense.userId}")
+        try {
+            expenseDao.insertExpense(expense)
+            Log.i(TAG, "insertExpense: Expense successfully inserted for userId=${expense.userId}")
+        } catch (e: Exception) {
+            Log.e(TAG, "insertExpense: Failed to insert expense for userId=${expense.userId}", e)
+            throw e
+        }
     }
 
     /**
-     * Deletes an expense from the database.
+     * Deletes an existing expense record from the local database.
+     *
+     * @param expense The [Expense] entity to delete.
      */
     suspend fun deleteExpense(expense: Expense) {
-        Log.d(TAG, "Deleting expense ID: ${expense.id}")
-        expenseDao.deleteExpense(expense)
+        Log.d(TAG, "deleteExpense: Deleting expense ID=${expense.id}")
+        try {
+            expenseDao.deleteExpense(expense)
+            Log.i(TAG, "deleteExpense: Expense ID=${expense.id} deleted successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "deleteExpense: Failed to delete expense ID=${expense.id}", e)
+            throw e
+        }
     }
 
     /**
-     * Adds a new category.
+     * Adds a new expense category to the database.
+     *
+     * @param category The [Category] entity to insert.
      */
     suspend fun insertCategory(category: Category) {
-        Log.d(TAG, "Inserting category: ${category.name}")
-        categoryDao.insertCategory(category)
+        Log.d(TAG, "insertCategory: Inserting category name='${category.name}'")
+        try {
+            categoryDao.insertCategory(category)
+            Log.i(TAG, "insertCategory: Category '${category.name}' inserted successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "insertCategory: Failed to insert category '${category.name}'", e)
+            throw e
+        }
     }
 
     /**
-     * Retrieves total spending within a specific date range.
+     * Retrieves total spending sum within a specified date range for a user.
+     *
+     * @param userId Unique database identifier of the user.
+     * @param startDate Start date of the range (formatted string).
+     * @param endDate End date of the range (formatted string).
+     * @return [Flow] emitting total spending in range as [Double] or `null`.
      */
     fun getTotalExpensesInRange(userId: Long, startDate: String, endDate: String): Flow<Double?> {
-        Log.v(TAG, "Getting total expenses in range: $startDate to $endDate")
+        Log.d(TAG, "getTotalExpensesInRange: Querying total expenses in range $startDate to $endDate for userId=$userId")
         return expenseDao.getTotalExpensesInRange(userId, startDate, endDate)
     }
 
     /**
-     * Retrieves category-wise summaries within a specific date range.
+     * Retrieves category-wise expense summaries within a specified date range.
+     *
+     * @param userId Unique database identifier of the user.
+     * @param startDate Start date of the range (formatted string).
+     * @param endDate End date of the range (formatted string).
+     * @return [Flow] emitting a list of [CategorySummary] items for the range.
      */
     fun getCategorySummaryInRange(userId: Long, startDate: String, endDate: String): Flow<List<CategorySummary>> {
+        Log.d(TAG, "getCategorySummaryInRange: Querying category summary in range $startDate to $endDate for userId=$userId")
         return expenseDao.getCategorySummaryInRange(userId, startDate, endDate)
     }
 }

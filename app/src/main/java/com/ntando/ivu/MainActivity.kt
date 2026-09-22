@@ -27,7 +27,13 @@ import com.ntando.ivu.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
 
 /**
- * MainActivity serves as the Login screen for the IVU application.
+ * [MainActivity] serves as the Login screen for the IVU application.
+ *
+ * Responsibilities:
+ * - Manages user authentication using email/password and Google Sign-In via Android [CredentialManager].
+ * - Synchronizes authenticated user state with the local Room database (`User` entity).
+ * - Saves active user session keys (`current_user_id` and `firebase_uid`) in [android.content.SharedPreferences].
+ * - Redirects successfully authenticated users to [IVU] home dashboard.
  */
 class MainActivity : ComponentActivity() {
 
@@ -40,8 +46,15 @@ class MainActivity : ComponentActivity() {
         ViewModelFactory(authRepository)
     }
 
+    /**
+     * Called when the activity is starting. Initializes FirebaseAuth, CredentialManager,
+     * and displays the Jetpack Compose [LoginScreen].
+     *
+     * @param savedInstanceState Saved instance bundle.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(tag, "onCreate: Initializing MainActivity (Login)")
         auth = FirebaseAuth.getInstance()
         credentialManager = CredentialManager.create(this)
 
@@ -50,29 +63,54 @@ class MainActivity : ComponentActivity() {
                 LoginScreen(
                     viewModel = viewModel,
                     onLoginSuccess = { 
-                        Log.d(tag, "onLoginSuccess (Success State) triggered")
+                        Log.d(tag, "onLoginSuccess callback triggered")
                         handleSuccessfulAuth() 
                     },
                     onNavigateToRegister = {
+                        Log.i(tag, "Navigating from Login to RegisterActivity")
                         startActivity(Intent(this, RegisterActivity::class.java))
                     },
-                    onGoogleSignInClick = { signInWithGoogle() }
+                    onGoogleSignInClick = {
+                        Log.i(tag, "Google Sign-In button clicked")
+                        signInWithGoogle()
+                    }
                 )
             }
         }
     }
 
+    /**
+     * Called when the activity becomes visible.
+     */
+    override fun onStart() {
+        super.onStart()
+        Log.d(tag, "onStart: MainActivity visible")
+    }
+
+    /**
+     * Called before the activity is destroyed.
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(tag, "onDestroy: MainActivity destroyed")
+    }
+
+    /**
+     * Handles post-authentication sync upon successful login.
+     * Checks local Room database for user profile matching [firebaseUser.email], creates a record if missing,
+     * updates [android.content.SharedPreferences] session data, and redirects to [IVU].
+     */
     private fun handleSuccessfulAuth() {
         val firebaseUser = auth.currentUser
         if (firebaseUser == null) {
-            Log.e(tag, "handleSuccessfulAuth: firebaseUser is NULL")
+            Log.e(tag, "handleSuccessfulAuth error: firebaseUser is NULL")
             Toast.makeText(this, "Authentication state error", Toast.LENGTH_SHORT).show()
             viewModel.resetState()
             return
         }
 
         val email = firebaseUser.email ?: ""
-        Log.d(tag, "handleSuccessfulAuth for: $email")
+        Log.d(tag, "handleSuccessfulAuth started for email: $email, UID: ${firebaseUser.uid}")
         Toast.makeText(this, "Syncing your profile...", Toast.LENGTH_SHORT).show()
         
         lifecycleScope.launch {
@@ -81,7 +119,7 @@ class MainActivity : ComponentActivity() {
                 var user = db.userDao().getUserByEmail(email)
                 
                 if (user == null) {
-                    Log.d(tag, "User $email not found in local DB, creating new profile...")
+                    Log.i(tag, "User $email not found in local DB. Creating new profile record...")
                     val newUserId = db.userDao().insertUser(
                         User(
                             name = firebaseUser.displayName ?: "IVU Learner",
@@ -100,7 +138,7 @@ class MainActivity : ComponentActivity() {
                         putString("firebase_uid", firebaseUser.uid)
                         commit()
                     }
-                    Log.d(tag, "Session saved: $isSaved. Redirecting to Home...")
+                    Log.i(tag, "Session saved successfully: $isSaved. Redirecting to Home (IVU)...")
                     Toast.makeText(this@MainActivity, "Welcome, ${it.name}!", Toast.LENGTH_SHORT).show()
                     
                     val intent = Intent(this@MainActivity, IVU::class.java)
@@ -116,8 +154,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Initiates Google Sign-In using Android [CredentialManager] and [GetGoogleIdOption].
+     */
     private fun signInWithGoogle() {
-        Log.d(tag, "signInWithGoogle: Requesting credentials")
+        Log.d(tag, "signInWithGoogle: Building GetGoogleIdOption request")
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
             .setServerClientId(getString(R.string.default_web_client_id))
@@ -129,21 +170,28 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             try {
+                Log.d(tag, "Calling credentialManager.getCredential")
                 val result = credentialManager.getCredential(
                     request = request,
                     context = this@MainActivity,
                 )
-                Log.d(tag, "credentialManager.getCredential: Success")
+                Log.d(tag, "credentialManager.getCredential: Received response")
                 handleGoogleSignInResult(result.credential)
             } catch (e: GetCredentialException) {
-                Log.e(tag, "Google Sign-In failed: ${e.message}")
+                Log.e(tag, "Google Sign-In failed with GetCredentialException", e)
                 viewModel.onSignInError("Google Sign-In cancelled or failed")
             }
         }
     }
 
+    /**
+     * Processes the [androidx.credentials.Credential] returned by [CredentialManager], extracts Google ID Token,
+     * and signs in to [FirebaseAuth] using [GoogleAuthProvider].
+     *
+     * @param credential The credential returned from Google Sign-In flow.
+     */
     private fun handleGoogleSignInResult(credential: androidx.credentials.Credential) {
-        Log.d(tag, "handleGoogleSignInResult: Type = ${credential.type}")
+        Log.d(tag, "handleGoogleSignInResult: Credential Type = ${credential.type}")
         
         val googleIdTokenCredential = try {
             when (credential) {
@@ -159,28 +207,27 @@ class MainActivity : ComponentActivity() {
                 else -> null
             }
         } catch (e: GoogleIdTokenParsingException) {
-            Log.e(tag, "Failed to parse Google ID Token", e)
+            Log.e(tag, "Failed to parse Google ID Token from credential data", e)
             null
         }
 
         if (googleIdTokenCredential != null) {
-            Log.d(tag, "handleGoogleSignInResult: Received ID Token")
+            Log.d(tag, "Successfully parsed GoogleIdTokenCredential. Authenticating with Firebase...")
             val googleIdToken = googleIdTokenCredential.idToken
             val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
             
             auth.signInWithCredential(firebaseCredential)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        Log.i(tag, "Firebase Auth with Google: Success")
+                        Log.i(tag, "Firebase Auth with Google credential successful")
                         viewModel.onGoogleSignInSuccess()
-                        // handleSuccessfulAuth() is called via LaunchedEffect in LoginScreen
                     } else {
-                        Log.e(tag, "Firebase Auth with Google: FAILED", task.exception)
+                        Log.e(tag, "Firebase Auth with Google FAILED", task.exception)
                         viewModel.onSignInError("Firebase authentication failed")
                     }
                 }
         } else {
-            Log.e(tag, "handleGoogleSignInResult: Unexpected or null credential: ${credential.type}")
+            Log.e(tag, "handleGoogleSignInResult: Unexpected or null credential type: ${credential.type}")
             viewModel.onSignInError("Google Sign-In failed: Incorrect credential type")
         }
     }

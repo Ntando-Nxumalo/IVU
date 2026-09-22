@@ -1,5 +1,6 @@
 package com.ntando.ivu.ui.decks
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +12,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ntando.ivu.R
 
+private const val TAG = "AddFlashcardDialog"
+
+/**
+ * Modal alert dialog composable for creating and adding new flashcards to a specific deck.
+ *
+ * Layout Structure:
+ * - [AlertDialog] container wrapping a vertically scrollable column.
+ * - Outlined text input for the card front (prompt / term).
+ * - Outlined text input for the card back (definition / translation).
+ * - Optional red error text if request fails.
+ * - [LinearProgressIndicator] displayed while [isLoading] is true.
+ * - Action buttons: Confirm (disabled if input blank or loading) and Cancel.
+ *
+ * @param onDismiss Callback invoked when the user requests dialog dismissal or taps Cancel.
+ * @param onConfirm Callback invoked when valid front/back text is submitted: `(frontText, backText) -> Unit`.
+ * @param isLoading State flag displaying a loading progress bar and disabling confirm button during network requests.
+ * @param errorMessage Optional error string displayed if flashcard creation fails.
+ */
 @Composable
 fun AddFlashcardDialog(
     onDismiss: () -> Unit,
@@ -22,7 +41,10 @@ fun AddFlashcardDialog(
     var backText by remember { mutableStateOf("") }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            Log.d(TAG, "AddFlashcardDialog onDismissRequest triggered")
+            onDismiss()
+        },
         title = { Text(stringResource(R.string.add_card_title)) },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -61,7 +83,10 @@ fun AddFlashcardDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(frontText, backText) },
+                onClick = {
+                    Log.i(TAG, "Submitting new flashcard with front length=${frontText.length}, back length=${backText.length}")
+                    onConfirm(frontText, backText)
+                },
                 enabled = frontText.isNotBlank() && backText.isNotBlank() && !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
             ) {
@@ -69,7 +94,13 @@ fun AddFlashcardDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isLoading) {
+            TextButton(
+                onClick = {
+                    Log.d(TAG, "Cancel button clicked in AddFlashcardDialog")
+                    onDismiss()
+                },
+                enabled = !isLoading
+            ) {
                 Text(stringResource(R.string.cancel))
             }
         }
