@@ -6,61 +6,48 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * Data Access Object (DAO) for managing [Flashcard] database persistence.
- *
- * Configured with queries for fetching cards by deck, filtering due cards, and updating SM-2 algorithm variables.
  */
 @Dao
 interface FlashcardDao {
-    /**
-     * Inserts or replaces a flashcard entry in the database.
-     *
-     * @param flashcard The [Flashcard] instance to insert.
-     * @return Generated primary key card ID.
-     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFlashcard(flashcard: Flashcard): Long
 
-    /**
-     * Updates an existing flashcard (e.g. updating SM-2 parameters after study review).
-     *
-     * @param flashcard The updated [Flashcard] entity.
-     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFlashcards(flashcards: List<Flashcard>): List<Long>
+
     @Update
     suspend fun updateFlashcard(flashcard: Flashcard)
 
-    /**
-     * Deletes a flashcard from the database.
-     *
-     * @param flashcard The [Flashcard] entity to remove.
-     */
     @Delete
     suspend fun deleteFlashcard(flashcard: Flashcard)
 
-    /**
-     * Streams flashcards belonging to a specific deck, sorted by due date ascending.
-     *
-     * @param deckId Primary key ID of parent deck.
-     * @return A [Flow] emitting lists of [Flashcard] entities.
-     */
+    @Query("DELETE FROM flashcards WHERE cardId = :cardId")
+    suspend fun deleteFlashcardById(cardId: Long)
+
+    @Query("SELECT * FROM flashcards WHERE deckId = :deckId AND ownerUserId = :ownerUserId ORDER BY dueDate ASC")
+    fun getFlashcardsByDeckAndOwner(deckId: Long, ownerUserId: String): Flow<List<Flashcard>>
+
+    @Query("SELECT * FROM flashcards WHERE deckId = :deckId AND ownerUserId = :ownerUserId ORDER BY dueDate ASC")
+    suspend fun getFlashcardListByDeckAndOwner(deckId: Long, ownerUserId: String): List<Flashcard>
+
     @Query("SELECT * FROM flashcards WHERE deckId = :deckId ORDER BY dueDate ASC")
     fun getFlashcardsByDeck(deckId: Long): Flow<List<Flashcard>>
 
-    /**
-     * Fetches a flashcard by its unique card ID.
-     *
-     * @param cardId Primary key card ID.
-     * @return The [Flashcard] entity, or `null` if not found.
-     */
     @Query("SELECT * FROM flashcards WHERE cardId = :cardId")
     suspend fun getFlashcardById(cardId: Long): Flashcard?
 
-    /**
-     * Streams flashcards within a deck that are due for review on or before specified timestamp.
-     *
-     * @param deckId Primary key ID of deck.
-     * @param currentTime Current epoch timestamp in milliseconds.
-     * @return A [Flow] emitting lists of due [Flashcard] entities.
-     */
+    @Query("SELECT * FROM flashcards WHERE remoteId = :remoteId AND ownerUserId = :ownerUserId LIMIT 1")
+    suspend fun getFlashcardByRemoteId(remoteId: String, ownerUserId: String): Flashcard?
+
+    @Query("SELECT * FROM flashcards WHERE deckId = :deckId AND dueDate <= :currentTime AND ownerUserId = :ownerUserId ORDER BY dueDate ASC")
+    fun getDueFlashcardsByOwner(deckId: Long, currentTime: Long, ownerUserId: String): Flow<List<Flashcard>>
+
     @Query("SELECT * FROM flashcards WHERE deckId = :deckId AND dueDate <= :currentTime")
     fun getDueFlashcards(deckId: Long, currentTime: Long): Flow<List<Flashcard>>
+
+    @Query("SELECT COUNT(*) FROM flashcards WHERE ownerUserId = :ownerUserId AND (syncState = 'PENDING_CREATE' OR syncState = 'PENDING_UPDATE')")
+    fun getPendingFlashcardCountFlow(ownerUserId: String): Flow<Int>
+
+    @Query("DELETE FROM flashcards WHERE deckId = :deckId AND ownerUserId = :ownerUserId AND syncState = 'SYNCED' AND remoteId NOT IN (:serverRemoteIds)")
+    suspend fun deleteSyncedFlashcardsNotIn(deckId: Long, serverRemoteIds: List<String>, ownerUserId: String)
 }

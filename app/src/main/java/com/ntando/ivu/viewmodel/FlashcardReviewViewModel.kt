@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntando.ivu.data.entity.Badge
+import com.ntando.ivu.data.entity.Flashcard
 import com.ntando.ivu.data.repository.FlashcardRepository
-import com.ntando.ivu.network.Flashcard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,12 +60,14 @@ sealed class FlashcardReviewUiState {
  * ViewModel managing flashcard review workflows, SRS (Spaced Repetition System) rating submissions,
  * card flipping state, and unlocked achievement badges.
  *
- * Interacts with [FlashcardRepository] and exposes state via [FlashcardReviewUiState].
+ * Observes local Room database flows from [FlashcardRepository] for offline-first reviews.
  *
  * @property repository The repository handling flashcard review submissions and due card queries.
+ * @property ownerUserId Firebase UID string of user.
  */
 class FlashcardReviewViewModel(
-    private val repository: FlashcardRepository
+    private val repository: FlashcardRepository,
+    private var ownerUserId: String = ""
 ) : ViewModel() {
 
     companion object {
@@ -89,34 +91,47 @@ class FlashcardReviewViewModel(
     }
 
     /**
-     * Fetches due flashcards for review for a given [deckId].
+     * Updates current user ID.
+     *
+     * @param userId Firebase UID string.
+     */
+    fun setOwnerUserId(userId: String) {
+        if (ownerUserId != userId) {
+            Log.d(TAG, "setOwnerUserId updated to '$userId'")
+            ownerUserId = userId
+        }
+    }
+
+    /**
+     * Fetches due flashcards for review for a given [deckId] from Room database.
      *
      * @param deckId Identifier of the deck to review.
      */
     fun loadDueCards(deckId: String) {
-        Log.d(TAG, "loadDueCards started for deckId: $deckId")
+        Log.d(TAG, "loadDueCards started for deckId: $deckId, ownerUserId: '$ownerUserId'")
         currentDeckId = deckId
         reviewedCards.clear()
         sessionUnlockedBadges.clear()
         _uiState.value = FlashcardReviewUiState.Loading
 
+        val deckLocalId = deckId.toLongOrNull() ?: 0L
+
         viewModelScope.launch {
-            val result = repository.fetchDueCards(deckId)
-            result.onSuccess { cards ->
-                Log.i(TAG, "loadDueCards fetched ${cards.size} due cards for deck $deckId")
+            repository.getDueCards(deckLocalId, ownerUserId).collect { cards ->
+                Log.i(TAG, "Observed ${cards.size} due cards in Room for deck $deckId")
                 if (cards.isEmpty()) {
-                    _uiState.value = FlashcardReviewUiState.SessionComplete(0, 0)
+                    _uiState.value = FlashcardReviewUiState.SessionComplete(reviewedCards.size, calculateDueTomorrow(reviewedCards), sessionUnlockedBadges)
                 } else {
                     _uiState.value = FlashcardReviewUiState.Success(
                         cards = cards,
                         remainingCount = cards.size
                     )
                 }
-            }.onFailure { throwable ->
-                val errorMsg = throwable.message ?: "Failed to load cards"
-                Log.e(TAG, "loadDueCards failed for deck $deckId: $errorMsg", throwable)
-                _uiState.value = FlashcardReviewUiState.Error(errorMsg)
             }
+        }
+
+        viewModelScope.launch {
+            repository.refreshCards(deckLocalId, deckId, ownerUserId)
         }
     }
 
@@ -139,7 +154,7 @@ class FlashcardReviewViewModel(
      *
      * Advances to the next card or completes the session if all cards are reviewed.
      *
-     * @param rating Rating assigned by the user (e.g. "AGAIN", "HARD", "GOOD", "EASY").
+     * @param rating Rating assigned by the user (e.g. "again", "hard", "good", "easy").
      */
     fun submitReview(rating: String) {
         if (isSubmitting) {
@@ -156,19 +171,15 @@ class FlashcardReviewViewModel(
 
         if (state is FlashcardReviewUiState.Success) {
             val currentCard = state.cards[state.currentIndex]
-            val cardId = currentCard.cardId
-            if (cardId == null) {
-                Log.e(TAG, "submitReview failed: current cardId is null at index ${state.currentIndex}")
-                return
-            }
+            val cardLocalId = currentCard.cardId
 
-            Log.i(TAG, "submitReview submitted for cardId $cardId in deck $deckId with rating: $rating")
+            Log.i(TAG, "submitReview submitted for cardLocalId $cardLocalId in deck $deckId with rating: $rating")
             isSubmitting = true
             viewModelScope.launch {
-                val result = repository.submitReview(deckId, cardId, rating)
+                val result = repository.submitReview(cardLocalId, deckId, rating, ownerUserId)
                 isSubmitting = false
                 result.onSuccess { (updatedCard, newlyUnlocked) ->
-                    Log.i(TAG, "submitReview succeeded for cardId $cardId, newly unlocked badges count: ${newlyUnlocked.size}")
+                    Log.i(TAG, "submitReview succeeded for cardLocalId $cardLocalId, newly unlocked badges count: ${newlyUnlocked.size}")
                     reviewedCards.add(updatedCard)
                     sessionUnlockedBadges.addAll(newlyUnlocked)
 
@@ -190,7 +201,7 @@ class FlashcardReviewViewModel(
                         )
                     }
                 }.onFailure { throwable ->
-                    Log.e(TAG, "submitReview failed for cardId $cardId: ${throwable.message}", throwable)
+                    Log.e(TAG, "submitReview failed for cardLocalId $cardLocalId: ${throwable.message}", throwable)
                 }
             }
         } else {
@@ -209,12 +220,6 @@ class FlashcardReviewViewModel(
         }
     }
 
-    /**
-     * Calculates the number of reviewed cards scheduled for review on the next calendar day.
-     *
-     * @param cards List of reviewed cards.
-     * @return Number of cards due tomorrow.
-     */
     private fun calculateDueTomorrow(cards: List<Flashcard>): Int {
         val tomorrow = java.util.Calendar.getInstance().apply {
             add(java.util.Calendar.DAY_OF_YEAR, 1)

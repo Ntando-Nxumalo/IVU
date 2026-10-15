@@ -124,8 +124,22 @@ fun SettingsScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp)
         ) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val sharedPref = context.getSharedPreferences("IVUPrefs", android.content.Context.MODE_PRIVATE)
+            val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
+
+            val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+            val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = !isOnline)
+            com.ntando.ivu.ui.components.PendingSyncBanner(ownerUserId = firebaseUid)
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
             // PROFILE SECTION
             SectionHeader(stringResource(R.string.section_profile))
             Card(
@@ -210,6 +224,7 @@ fun SettingsScreen(
             }
         }
     }
+}
 }
 
 /**

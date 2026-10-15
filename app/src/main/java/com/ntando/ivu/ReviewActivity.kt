@@ -18,14 +18,6 @@ import com.ntando.ivu.viewmodel.ViewModelFactory
 
 /**
  * [ReviewActivity] provides an interactive flashcard review session for a specific deck.
- *
- * Intent Parameters:
- * - `deck_id` (String): The ID of the deck to review (Required).
- *
- * Features:
- * - Hosts [FlashcardReviewScreen] in Jetpack Compose.
- * - Tracks user review answers, updates streak/XP stats upon completion via [AchievementRepository].
- * - Supports theme configuration from [PreferenceManager].
  */
 class ReviewActivity : ComponentActivity() {
 
@@ -41,18 +33,16 @@ class ReviewActivity : ComponentActivity() {
             db.userStatsDao(),
             db.journalDao()
         )
-        ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid))
+        ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid, this))
     }
 
-    /**
-     * Initializes activity lifecycle, validates intent parameter (`deck_id`),
-     * and sets up the Compose review screen.
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: Starting ReviewActivity")
+
+        val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
+        val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
+        viewModel.setOwnerUserId(firebaseUid)
 
         val deckId = intent.getStringExtra("deck_id") ?: ""
         Log.d(TAG, "Extracted intent parameter - deck_id: '$deckId'")
@@ -80,17 +70,11 @@ class ReviewActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Called when the activity becomes visible.
-     */
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "onStart: ReviewActivity visible")
     }
 
-    /**
-     * Called before the activity is destroyed.
-     */
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: ReviewActivity destroyed")

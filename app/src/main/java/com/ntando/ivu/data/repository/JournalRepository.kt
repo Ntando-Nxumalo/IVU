@@ -1,105 +1,267 @@
 package com.ntando.ivu.data.repository
 
+import android.content.Context
 import android.util.Log
-import com.ntando.ivu.network.ApiClient
-import com.ntando.ivu.network.JournalEntry
-import com.ntando.ivu.network.CreateJournalRequest
-import com.ntando.ivu.network.ApiResponse
+import com.ntando.ivu.data.dao.JournalDao
+import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.Badge
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.ntando.ivu.data.entity.JournalEntry
+import com.ntando.ivu.data.entity.Mood
+import com.ntando.ivu.data.entity.SyncState
+import com.ntando.ivu.network.ApiClient
+import com.ntando.ivu.network.CreateJournalRequest
+import com.ntando.ivu.network.NetworkMonitor
+import com.ntando.ivu.sync.SyncManager
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
- * Repository responsible for managing user journal entries.
- * Facilitates fetching journal records and creating new journal entries via the network API.
- * Integrates with [AchievementRepository] to record journal creation activities and award gamification badges.
+ * Offline-first repository managing user journal reflection entries.
  *
- * @property achievementRepository Optional [AchievementRepository] to record journal entries for user achievements.
- * @property userId Unique identifier for the current user.
+ * Reads: Streamed directly from local Room database ([JournalDao]).
+ * Writes: Immediate local insertion with [SyncState.PENDING_CREATE], followed by async sync attempt.
  */
 class JournalRepository(
+    private var journalDao: JournalDao? = null,
     private val achievementRepository: AchievementRepository? = null,
-    private val userId: String = ""
+    private val userId: String = "",
+    private var networkMonitor: NetworkMonitor? = null,
+    private val appContext: Context? = null
 ) {
     private val TAG = "JournalRepository"
 
+    constructor(context: Context, achievementRepository: AchievementRepository? = null) : this(
+        journalDao = DatabaseProvider.getDatabase(context).journalDao(),
+        achievementRepository = achievementRepository,
+        userId = "",
+        networkMonitor = NetworkMonitor(context),
+        appContext = context
+    )
+
+    constructor(achievementRepository: AchievementRepository?, userId: String) : this(
+        journalDao = null,
+        achievementRepository = achievementRepository,
+        userId = userId,
+        networkMonitor = null,
+        appContext = null
+    )
+
+    constructor(achievementRepository: AchievementRepository?, userId: String, context: Context) : this(
+        journalDao = DatabaseProvider.getDatabase(context).journalDao(),
+        achievementRepository = achievementRepository,
+        userId = userId,
+        networkMonitor = NetworkMonitor(context),
+        appContext = context
+    )
+
+    init {
+        if (appContext != null) {
+            if (journalDao == null) journalDao = DatabaseProvider.getDatabase(appContext).journalDao()
+            if (networkMonitor == null) networkMonitor = NetworkMonitor(appContext)
+        }
+    }
+
     /**
-     * Fetches all journal entries for the current authenticated user from the backend server.
+     * Observes user journal reflection entries from local Room database.
      *
-     * @return [Result] wrapping a list of [JournalEntry] objects on success, or an [Exception] on error.
+     * @param ownerUserId Firebase UID string of user.
+     * @return [Flow] emitting list of [JournalEntry] objects.
      */
-    suspend fun fetchEntries(): Result<List<JournalEntry>> {
-        Log.d(TAG, "fetchEntries: Requesting user journal entries")
+    fun getJournalEntries(ownerUserId: String): Flow<List<JournalEntry>> {
+        Log.d(TAG, "getJournalEntries: Observing entries for ownerUserId='$ownerUserId'")
+        return journalDao?.getEntriesByOwnerUserId(ownerUserId) ?: flowOf(emptyList())
+    }
+
+    /**
+     * Refreshes journal entries from the remote backend server when online.
+     *
+     * Does NOT overwrite local records with pending changes (`syncState != SYNCED`).
+     * Deletes local synced entries that no longer exist on the server.
+     *
+     * @param ownerUserId Firebase UID string of user.
+     * @return [Result] wrapping [Unit].
+     */
+    suspend fun refreshEntries(ownerUserId: String): Result<Unit> {
+        val dao = journalDao ?: return Result.failure(IllegalStateException("JournalDao not initialized"))
+        Log.d(TAG, "refreshEntries: Initiating journal entries refresh for ownerUserId='$ownerUserId'")
         return try {
             val response = ApiClient.apiService.getJournalEntries()
-            Log.d(TAG, "fetchEntries: Received response code=${response.code()}")
             if (response.isSuccessful) {
                 val body = response.body()
-                if (body?.success == true) {
-                    val entries = body.data ?: emptyList()
-                    Log.i(TAG, "fetchEntries: Successfully fetched ${entries.size} journal entries")
-                    Result.success(entries)
+                if (body?.success == true && body.data != null) {
+                    val remoteEntries = body.data
+                    val serverRemoteIds = mutableListOf<String>()
+
+                    for (remote in remoteEntries) {
+                        val remoteId = remote.entryId ?: continue
+                        serverRemoteIds.add(remoteId)
+
+                        val existing = dao.getEntryByRemoteId(remoteId, ownerUserId)
+                        val moodVal = parseMood(remote.mood)
+                        val dateMillis = parseDateStringToMillis(remote.date)
+
+                        if (existing == null) {
+                            val newEntry = JournalEntry(
+                                remoteId = remoteId,
+                                userId = ownerUserId,
+                                ownerUserId = ownerUserId,
+                                date = dateMillis,
+                                mood = moodVal,
+                                text = remote.text,
+                                syncState = SyncState.SYNCED,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            dao.insertEntry(newEntry)
+                        } else if (existing.syncState == SyncState.SYNCED) {
+                            val updated = existing.copy(
+                                date = dateMillis,
+                                mood = moodVal,
+                                text = remote.text,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            dao.updateEntry(updated)
+                        }
+                    }
+
+                    dao.deleteSyncedJournalEntriesNotIn(serverRemoteIds, ownerUserId)
+                    Result.success(Unit)
                 } else {
-                    val errorMessage = body?.error ?: "Unknown error"
-                    Log.w(TAG, "fetchEntries: API error response - $errorMessage")
-                    Result.failure(Exception(errorMessage))
+                    Result.failure(Exception(body?.error ?: "Unknown error"))
                 }
             } else {
-                val errorBody = response.errorBody()?.string()
-                Log.e(TAG, "fetchEntries: HTTP ${response.code()} error - $errorBody")
-                val parsedError = try {
-                    val type = object : TypeToken<ApiResponse<Any>>() {}.type
-                    val apiResponse: ApiResponse<Any> = Gson().fromJson(errorBody, type)
-                    apiResponse.error ?: "Network error: ${response.code()}"
-                } catch (e: Exception) {
-                    Log.w(TAG, "fetchEntries: Failed to parse error response body", e)
-                    "Network error: ${response.code()}"
-                }
-                Result.failure(Exception(parsedError))
+                Result.failure(Exception("HTTP ${response.code()} error"))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "fetchEntries: Exception caught while fetching journal entries", e)
+            Log.w(TAG, "refreshEntries: Network exception caught during journal refresh (swallowed for offline mode)", e)
             Result.failure(e)
         }
     }
 
     /**
-     * Creates a new journal entry with mood tracking and optional deck linking.
-     * Triggers badge progress tracking upon successful creation.
-     *
-     * @param date Date string for the entry.
-     * @param mood Recorded mood string ("great", "okay", "tough").
-     * @param text Journal content text.
-     * @param linkedDeckId Optional identifier of a deck linked to this journal entry.
-     * @return [Result] containing a [Pair] of the created [JournalEntry] and a list of newly unlocked [Badge] instances.
+     * Creates a new journal entry locally in Room with `PENDING_CREATE` and the correct selected date.
+     * Enqueues immediate online submission if connected; returns newly unlocked badges.
      */
-    suspend fun createEntry(date: String, mood: String, text: String, linkedDeckId: String?): Result<Pair<JournalEntry, List<Badge>>> {
-        Log.d(TAG, "createEntry: Creating journal entry for date='$date', mood='$mood', linkedDeckId=$linkedDeckId")
-        return try {
-            val request = CreateJournalRequest(date, mood, text, linkedDeckId)
-            val response = ApiClient.apiService.createJournalEntry(request)
-            Log.d(TAG, "createEntry: Received response code=${response.code()}")
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.success == true && body.data != null) {
-                    Log.i(TAG, "createEntry: Journal entry created successfully with entryId=${body.data.entryId}")
-                    val unlockedBadges = achievementRepository?.recordJournalEntry(userId) ?: emptyList()
-                    if (unlockedBadges.isNotEmpty()) {
-                        Log.i(TAG, "createEntry: Unlocked ${unlockedBadges.size} badges after journal creation")
-                    }
-                    Result.success(Pair(body.data, unlockedBadges))
-                } else {
-                    val errorMsg = body?.error ?: "Failed to create entry"
-                    Log.w(TAG, "createEntry: API error creating entry - $errorMsg")
-                    Result.failure(Exception(errorMsg))
+    suspend fun createEntry(
+        date: String,
+        mood: String,
+        text: String,
+        linkedDeckId: String?,
+        ownerUserId: String
+    ): Result<Pair<JournalEntry, List<Badge>>> {
+        val dao = journalDao ?: return Result.failure(IllegalStateException("JournalDao not initialized"))
+        Log.d(TAG, "createEntry: Creating offline-first journal entry for date='$date', mood='$mood'")
+        val dateMillis = parseDateStringToMillis(date)
+        val moodVal = parseMood(mood)
+        val linkedDeckLocalId = linkedDeckId?.toLongOrNull()
+
+        var localEntry = JournalEntry(
+            userId = ownerUserId,
+            ownerUserId = ownerUserId,
+            date = dateMillis,
+            mood = moodVal,
+            text = text,
+            linkedDeckId = linkedDeckLocalId,
+            syncState = SyncState.PENDING_CREATE,
+            updatedAt = System.currentTimeMillis()
+        )
+
+        val newId = dao.insertEntry(localEntry)
+        localEntry = localEntry.copy(entryId = newId)
+        Log.i(TAG, "createEntry: Inserted journal entry locally in Room with entryId=$newId, syncState=PENDING_CREATE")
+
+        // Trigger SyncWorker
+        appContext?.let { SyncManager.enqueueSync(it) }
+
+        val unlockedBadges = achievementRepository?.recordJournalEntry(ownerUserId) ?: emptyList()
+
+        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
+        if (isOnline) {
+            try {
+                val request = CreateJournalRequest(
+                    date = date,
+                    mood = mood,
+                    text = text,
+                    linkedDeckId = linkedDeckId
+                )
+                val response = ApiClient.apiService.createJournalEntry(request)
+                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                    val serverData = response.body()!!.data!!
+                    localEntry = localEntry.copy(
+                        remoteId = serverData.entryId,
+                        syncState = SyncState.SYNCED,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    dao.updateEntry(localEntry)
+                    Log.i(TAG, "createEntry: Immediate online creation succeeded with remoteId=${serverData.entryId}")
                 }
+            } catch (e: Exception) {
+                Log.w(TAG, "createEntry: Immediate online sync failed. Kept entry as PENDING_CREATE locally.", e)
+            }
+        }
+
+        return Result.success(Pair(localEntry, unlockedBadges))
+    }
+
+    // --- Legacy compatibility bridge ---
+
+    suspend fun fetchEntries(ownerUserId: String = ""): Result<List<com.ntando.ivu.network.JournalEntry>> {
+        refreshEntries(ownerUserId)
+        return try {
+            val response = ApiClient.apiService.getJournalEntries()
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()?.data ?: emptyList())
             } else {
-                Log.e(TAG, "createEntry: Server error HTTP ${response.code()}")
-                Result.failure(Exception("Network error: ${response.code()}"))
+                Result.success(emptyList())
             }
         } catch (e: Exception) {
-            Log.e(TAG, "createEntry: Exception caught while creating journal entry", e)
-            Result.failure(e)
+            Result.success(emptyList())
+        }
+    }
+
+    suspend fun createEntry(
+        date: String,
+        mood: String,
+        text: String,
+        linkedDeckId: String?
+    ): Result<Pair<com.ntando.ivu.network.JournalEntry, List<Badge>>> {
+        val result = createEntry(date, mood, text, linkedDeckId, ownerUserId = userId)
+        return if (result.isSuccess) {
+            val (localEntry, badges) = result.getOrThrow()
+            val netEntry = com.ntando.ivu.network.JournalEntry(
+                entryId = localEntry.remoteId ?: localEntry.entryId.toString(),
+                userId = localEntry.userId,
+                date = date,
+                mood = mood,
+                text = localEntry.text,
+                linkedDeckId = linkedDeckId
+            )
+            Result.success(Pair(netEntry, badges))
+        } else {
+            Result.failure(result.exceptionOrNull() ?: Exception("Failed to create journal entry"))
+        }
+    }
+
+    private fun parseMood(moodStr: String): Mood {
+        return try {
+            Mood.valueOf(moodStr.uppercase())
+        } catch (e: Exception) {
+            Mood.GREAT
+        }
+    }
+
+    private fun parseDateStringToMillis(dateStr: String): Long {
+        return try {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val date = sdf.parse(dateStr)
+            date?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            try {
+                dateStr.toLong()
+            } catch (e2: Exception) {
+                System.currentTimeMillis()
+            }
         }
     }
 }

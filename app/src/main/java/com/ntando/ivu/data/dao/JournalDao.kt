@@ -6,51 +6,45 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * Data Access Object (DAO) for managing [JournalEntry] persistence in the Room database.
- *
- * Supports creating, updating, removing, and querying user reflection entries.
  */
 @Dao
 interface JournalDao {
-    /**
-     * Inserts or replaces a journal reflection entry.
-     *
-     * @param entry The [JournalEntry] object to save.
-     * @return Auto-generated primary key entry ID.
-     */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntry(entry: JournalEntry): Long
 
-    /**
-     * Updates an existing journal reflection entry.
-     *
-     * @param entry The updated [JournalEntry] entity.
-     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntries(entries: List<JournalEntry>): List<Long>
+
     @Update
     suspend fun updateEntry(entry: JournalEntry)
 
-    /**
-     * Deletes a journal entry from the database.
-     *
-     * @param entry The [JournalEntry] entity to remove.
-     */
     @Delete
     suspend fun deleteEntry(entry: JournalEntry)
 
-    /**
-     * Streams journal entries belonging to a specific user ID, ordered newest first.
-     *
-     * @param userId Identifier string of owner user.
-     * @return A [Flow] emitting lists of [JournalEntry] entities.
-     */
+    @Query("DELETE FROM journal_entries WHERE entryId = :entryId")
+    suspend fun deleteEntryById(entryId: Long)
+
+    @Query("SELECT * FROM journal_entries WHERE ownerUserId = :ownerUserId ORDER BY date DESC")
+    fun getEntriesByOwnerUserId(ownerUserId: String): Flow<List<JournalEntry>>
+
+    @Query("SELECT * FROM journal_entries WHERE ownerUserId = :ownerUserId ORDER BY date DESC")
+    suspend fun getEntriesListByOwnerUserId(ownerUserId: String): List<JournalEntry>
+
+    @Query("SELECT * FROM journal_entries WHERE ownerUserId = :ownerUserId AND (syncState = 'PENDING_CREATE' OR syncState = 'PENDING_UPDATE') ORDER BY date ASC")
+    suspend fun getPendingJournalEntries(ownerUserId: String): List<JournalEntry>
+
+    @Query("SELECT COUNT(*) FROM journal_entries WHERE ownerUserId = :ownerUserId AND (syncState = 'PENDING_CREATE' OR syncState = 'PENDING_UPDATE')")
+    fun getPendingJournalEntriesCountFlow(ownerUserId: String): Flow<Int>
+
     @Query("SELECT * FROM journal_entries WHERE userId = :userId ORDER BY date DESC")
     fun getEntriesByUser(userId: String): Flow<List<JournalEntry>>
 
-    /**
-     * Fetches a single journal reflection entry by its primary key ID.
-     *
-     * @param entryId Primary key entry ID.
-     * @return The [JournalEntry] entity, or `null` if not found.
-     */
     @Query("SELECT * FROM journal_entries WHERE entryId = :entryId")
     suspend fun getEntryById(entryId: Long): JournalEntry?
+
+    @Query("SELECT * FROM journal_entries WHERE remoteId = :remoteId AND ownerUserId = :ownerUserId LIMIT 1")
+    suspend fun getEntryByRemoteId(remoteId: String, ownerUserId: String): JournalEntry?
+
+    @Query("DELETE FROM journal_entries WHERE ownerUserId = :ownerUserId AND syncState = 'SYNCED' AND remoteId NOT IN (:serverRemoteIds)")
+    suspend fun deleteSyncedJournalEntriesNotIn(serverRemoteIds: List<String>, ownerUserId: String)
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
+import com.ntando.ivu.data.entity.Deck
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,26 +27,13 @@ private const val TAG = "NewJournalEntryScreen"
 
 /**
  * Screen providing controls for composing and saving new study journal entries.
- *
- * Layout Structure:
- * - [Scaffold] with [TopAppBar] displaying title and formatted [initialDate].
- * - Row of clickable mood options ("great", "okay", "tough") rendered as circular colored icons.
- * - [OutlinedTextField] for writing reflection notes.
- * - [FlowRow] displaying [FilterChip]s allowing optional association of the entry with a specific deck.
- * - Save button invoking [onConfirm] when input text is non-blank.
- *
- * @param onDismiss Callback invoked when the user dismisses the entry creation flow.
- * @param onConfirm Callback invoked to save entry: `(dateString, mood, text, optionalLinkedDeckId) -> Unit`.
- * @param decks Available list of user [com.ntando.ivu.network.Deck] items for deck linkage selection.
- * @param initialDate Target [Calendar] date for which the entry is created.
- * @param isLoading State flag disabling the save button while saving request is pending.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NewJournalEntryScreen(
     onDismiss: () -> Unit,
     onConfirm: (String, String, String, String?) -> Unit,
-    decks: List<com.ntando.ivu.network.Deck> = emptyList(),
+    decks: List<Deck> = emptyList(),
     initialDate: Calendar = Calendar.getInstance(),
     isLoading: Boolean = false
 ) {
@@ -86,135 +74,147 @@ fun NewJournalEntryScreen(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
-                .padding(24.dp),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = stringResource(R.string.label_how_feel),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+            val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = !isOnline)
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.Start
             ) {
-                moods.forEach { (m, emoji) ->
-                    val color = moodColors[m] ?: Color.Gray
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Surface(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .clickable {
-                                    Log.d(TAG, "Mood selected: $m")
-                                    mood = m
-                                },
-                            color = if (mood == m) color else color.copy(alpha = 0.3f),
-                            shape = CircleShape
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(emoji, fontSize = 32.sp)
+                Text(
+                    text = stringResource(R.string.label_how_feel),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    moods.forEach { (m, emoji) ->
+                        val color = moodColors[m] ?: Color.Gray
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Surface(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        Log.d(TAG, "Mood selected: $m")
+                                        mood = m
+                                    },
+                                color = if (mood == m) color else color.copy(alpha = 0.3f),
+                                shape = CircleShape
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(emoji, fontSize = 32.sp)
+                                }
                             }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = moodNames[m] ?: m,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = moodNames[m] ?: m,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = stringResource(R.string.label_notes),
-                fontSize = 14.sp,
-                color = Color.LightGray,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                placeholder = { Text(stringResource(R.string.hint_message), color = Color.Gray.copy(alpha = 0.5f)) },
-                modifier = Modifier.fillMaxWidth().height(180.dp),
-                shape = RoundedCornerShape(12.dp),
-                textStyle = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedBorderColor = Color(0xFFE88A68),
-                    unfocusedBorderColor = Color.LightGray,
-                    cursorColor = Color(0xFFE88A68)
+                Text(
+                    text = stringResource(R.string.label_notes),
+                    fontSize = 14.sp,
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = stringResource(R.string.label_link_to_today),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = selectedDeckId == null,
-                    onClick = {
-                        Log.d(TAG, "Unlinking entry from deck (calendar option selected)")
-                        selectedDeckId = null
-                    },
-                    label = { Text(stringResource(R.string.label_calendar)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF7FB6A7),
-                        selectedLabelColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(16.dp)
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text(stringResource(R.string.hint_message), color = Color.Gray.copy(alpha = 0.5f)) },
+                    modifier = Modifier.fillMaxWidth().height(180.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    textStyle = TextStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = Color(0xFFE88A68),
+                        unfocusedBorderColor = Color.LightGray,
+                        cursorColor = Color(0xFFE88A68)
+                    )
                 )
-                
-                decks.forEach { deck ->
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = stringResource(R.string.label_link_to_today),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     FilterChip(
-                        selected = selectedDeckId == deck.deckId,
+                        selected = selectedDeckId == null,
                         onClick = {
-                            Log.d(TAG, "Linked deck selected: ${deck.deckId} (${deck.title})")
-                            selectedDeckId = deck.deckId
+                            Log.d(TAG, "Unlinking entry from deck (calendar option selected)")
+                            selectedDeckId = null
                         },
-                        label = { Text(deck.title) },
+                        label = { Text(stringResource(R.string.label_calendar)) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFFF2E6D3),
-                            selectedLabelColor = Color(0xFF3D2B1F),
-                            labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                            selectedContainerColor = Color(0xFF7FB6A7),
+                            selectedLabelColor = Color.White
                         ),
                         shape = RoundedCornerShape(16.dp)
                     )
+                    
+                    decks.forEach { deck ->
+                        val deckIdStr = deck.deckId.toString()
+                        FilterChip(
+                            selected = selectedDeckId == deckIdStr,
+                            onClick = {
+                                Log.d(TAG, "Linked deck selected: $deckIdStr (${deck.title})")
+                                selectedDeckId = deckIdStr
+                            },
+                            label = { Text(deck.title) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFFF2E6D3),
+                                selectedLabelColor = Color(0xFF3D2B1F),
+                                labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
-            Button(
-                onClick = { 
-                    val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(initialDate.time)
-                    Log.i(TAG, "Saving new journal entry: date=$dateStr, mood=$mood, textLength=${text.length}, linkedDeckId=$selectedDeckId")
-                    onConfirm(dateStr, mood, text, selectedDeckId) 
-                },
-                enabled = text.isNotBlank() && !isLoading,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68)),
-                shape = RoundedCornerShape(28.dp)
-            ) {
-                Text(stringResource(R.string.save_entry), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = { 
+                        val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(initialDate.time)
+                        Log.i(TAG, "Saving new journal entry: date=$dateStr, mood=$mood, textLength=${text.length}, linkedDeckId=$selectedDeckId")
+                        onConfirm(dateStr, mood, text, selectedDeckId) 
+                    },
+                    enabled = text.isNotBlank() && !isLoading,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68)),
+                    shape = RoundedCornerShape(28.dp)
+                ) {
+                    Text(stringResource(R.string.save_entry), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

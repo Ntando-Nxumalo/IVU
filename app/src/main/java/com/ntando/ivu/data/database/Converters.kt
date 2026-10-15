@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.room.TypeConverter
 import com.ntando.ivu.data.entity.Language
 import com.ntando.ivu.data.entity.Mood
+import com.ntando.ivu.data.entity.SyncState
 
 private const val TAG = "RoomConverters"
 
@@ -59,6 +60,34 @@ class Converters {
     fun toMood(value: String): Mood {
         Log.v(TAG, "toMood: $value")
         return enumValueOf<Mood>(value)
+    }
+
+    /**
+     * Converts a [SyncState] enum value into string representation for database persistence.
+     *
+     * @param value The [SyncState] enum instance.
+     * @return The string name of the enum constant.
+     */
+    @TypeConverter
+    fun fromSyncState(value: SyncState): String {
+        Log.v(TAG, "fromSyncState: $value -> ${value.name}")
+        return value.name
+    }
+
+    /**
+     * Restores a [SyncState] enum instance from stored database string name.
+     *
+     * @param value The stored string name.
+     * @return Reconstructed [SyncState] enum constant.
+     */
+    @TypeConverter
+    fun toSyncState(value: String): SyncState {
+        Log.v(TAG, "toSyncState: $value")
+        return try {
+            SyncState.valueOf(value)
+        } catch (e: Exception) {
+            SyncState.SYNCED
+        }
     }
 
     /**

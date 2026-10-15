@@ -89,6 +89,11 @@ fun AiAssistScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+            val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = !isOnline)
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier

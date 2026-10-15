@@ -140,11 +140,22 @@ fun FlashcardReviewScreen(
             )
         }
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val sharedPref = context.getSharedPreferences("IVUPrefs", android.content.Context.MODE_PRIVATE)
+            val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
+
+            val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+            val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = !isOnline)
+            com.ntando.ivu.ui.components.PendingSyncBanner(ownerUserId = firebaseUid)
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
             when (val state = uiState) {
                 is FlashcardReviewUiState.Loading -> {
                     CircularProgressIndicator(
@@ -227,6 +238,7 @@ fun FlashcardReviewScreen(
         }
     }
 }
+}
 
 /**
  * Interactive card component managing 3D flip animation using [graphicsLayer] rotationY and rendering card rating actions.
@@ -239,7 +251,7 @@ fun FlashcardReviewScreen(
  */
 @Composable
 fun ReviewContent(
-    cards: List<com.ntando.ivu.network.Flashcard>,
+    cards: List<com.ntando.ivu.data.entity.Flashcard>,
     currentIndex: Int,
     isFlipped: Boolean,
     onFlip: () -> Unit,

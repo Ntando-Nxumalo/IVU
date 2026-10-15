@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
-import com.ntando.ivu.network.Deck
+import com.ntando.ivu.data.entity.Deck
 import com.ntando.ivu.viewmodel.DecksUiState
 import com.ntando.ivu.viewmodel.DecksViewModel
 import com.ntando.ivu.viewmodel.FlashcardViewModel
@@ -31,20 +31,6 @@ private const val TAG = "DecksScreen"
 
 /**
  * Main management screen for displaying, creating, reviewing, and deleting flashcard decks.
- *
- * Layout Structure:
- * - [Scaffold] containing top bar, bottom navigation, and a floating action button for adding decks.
- * - State handling via [DecksUiState]: Loading spinner, error display with retry button, or empty state message / [LazyColumn].
- * - Card list displaying [DeckItem] components with metadata, language tag, mastery progress bar, and action buttons.
- * - [CreateDeckDialog] overlay for creating new decks with title and target language selection.
- * - [AddFlashcardDialog] overlay for creating flashcards within a selected deck.
- * - [AlertDialog] confirmation for deleting a deck.
- *
- * @param viewModel ViewModel handling deck listing, deck creation, and deletion operations.
- * @param flashcardViewModel ViewModel managing individual flashcard additions.
- * @param onDeckClick Callback triggered when tapping a deck card to start a review session: `(deckId) -> Unit`.
- * @param onViewCards Callback triggered to navigate to the detailed flashcard list screen: `(deckId, deckTitle) -> Unit`.
- * @param onNavigate Navigation callback triggered when selecting a bottom navigation tab.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +41,11 @@ fun DecksScreen(
     onViewCards: (String, String) -> Unit,
     onNavigate: (String) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+    val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+    val isOffline = !isOnline
+
     val uiState by viewModel.uiState.collectAsState()
     val flashcardUiState by flashcardViewModel.uiState.collectAsState()
     
@@ -98,65 +89,69 @@ fun DecksScreen(
             }
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
-            when (val state = uiState) {
-                is DecksUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFE88A68))
-                }
-                is DecksUiState.Error -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = state.message, color = Color.Red)
-                        Button(
-                            onClick = {
-                                Log.i(TAG, "Retry button clicked to reload decks")
-                                viewModel.loadDecks()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            val sharedPref = context.getSharedPreferences("IVUPrefs", android.content.Context.MODE_PRIVATE)
+            val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
+
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = isOffline)
+            com.ntando.ivu.ui.components.PendingSyncBanner(ownerUserId = firebaseUid)
+
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                when (val state = uiState) {
+                    is DecksUiState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFE88A68))
+                    }
+                    is DecksUiState.Error -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(stringResource(R.string.retry))
+                            Text(text = state.message, color = Color.Red)
+                            Button(
+                                onClick = {
+                                    Log.i(TAG, "Retry button clicked to reload decks")
+                                    viewModel.loadDecks()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE88A68))
+                            ) {
+                                Text(stringResource(R.string.retry))
+                            }
                         }
                     }
-                }
-                is DecksUiState.Success -> {
-                    if (state.decks.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.no_decks_msg),
-                            modifier = Modifier.align(Alignment.Center),
-                            color = Color.Gray
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(state.decks) { deck ->
-                                DeckItem(
-                                    deck = deck, 
-                                    onClick = {
-                                        deck.deckId?.let { id ->
-                                            Log.d(TAG, "Deck clicked for review session: id=$id, title=${deck.title}")
-                                            onDeckClick(id)
+                    is DecksUiState.Success -> {
+                        if (state.decks.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.no_decks_msg),
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color.Gray
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(state.decks) { deck ->
+                                    DeckItem(
+                                        deck = deck, 
+                                        onClick = {
+                                            Log.d(TAG, "Deck clicked for review session: id=${deck.deckId}, title=${deck.title}")
+                                            onDeckClick(deck.deckId.toString())
+                                        },
+                                        onAddCard = {
+                                            Log.d(TAG, "Add card button clicked for deckId: ${deck.deckId}")
+                                            selectedDeckForAddCard = deck.deckId.toString()
+                                        },
+                                        onViewCards = {
+                                            Log.d(TAG, "View cards button clicked for deckId: ${deck.deckId}, title: ${deck.title}")
+                                            onViewCards(deck.deckId.toString(), deck.title)
+                                        },
+                                        onDelete = {
+                                            Log.d(TAG, "Delete deck action triggered for deck: ${deck.title}")
+                                            deckToDelete = deck
                                         }
-                                    },
-                                    onAddCard = {
-                                        Log.d(TAG, "Add card button clicked for deckId: ${deck.deckId}")
-                                        selectedDeckForAddCard = deck.deckId
-                                    },
-                                    onViewCards = {
-                                        deck.deckId?.let { id ->
-                                            Log.d(TAG, "View cards button clicked for deckId: $id, title: ${deck.title}")
-                                            onViewCards(id, deck.title)
-                                        }
-                                    },
-                                    onDelete = {
-                                        Log.d(TAG, "Delete deck action triggered for deck: ${deck.title}")
-                                        deckToDelete = deck
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -192,7 +187,7 @@ fun DecksScreen(
                     if (success) {
                         Log.d(TAG, "Flashcard created successfully, reloading decks")
                         selectedDeckForAddCard = null
-                        viewModel.loadDecks() // Refresh to update counts
+                        viewModel.loadDecks()
                     } else {
                         Log.w(TAG, "Flashcard creation failed")
                     }
@@ -214,9 +209,9 @@ fun DecksScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        deckToDelete?.deckId?.let { id ->
-                            Log.w(TAG, "Confirmed deletion of deckId: $id")
-                            viewModel.deleteDeck(id)
+                        deckToDelete?.let { deck ->
+                            Log.w(TAG, "Confirmed deletion of deckId: ${deck.deckId}")
+                            viewModel.deleteDeck(deck.deckId.toString())
                         }
                         deckToDelete = null
                     },
@@ -239,13 +234,6 @@ fun DecksScreen(
 
 /**
  * Card UI representing a single deck item in the list.
- * Shows language tags, action icons (view cards, add card, delete deck), title, progress indicator, and card counts.
- *
- * @param deck The [Deck] model object containing deck metadata.
- * @param onClick Event listener for clicking on the card body to enter review mode.
- * @param onAddCard Event listener for tapping the add card icon.
- * @param onViewCards Event listener for tapping the view cards icon.
- * @param onDelete Event listener for tapping the delete deck icon.
  */
 @Composable
 fun DeckItem(
@@ -269,7 +257,7 @@ fun DeckItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val (tagName, tagColor) = when (deck.language.lowercase()) {
+                val (tagName, tagColor) = when (deck.language.name.lowercase()) {
                     "zu" -> stringResource(R.string.label_isizulu) to Color(0xFFE88A68)
                     "af" -> stringResource(R.string.label_afrikaans) to Color(0xFF7FB6A7)
                     else -> stringResource(R.string.label_english) to Color(0xFFE8C07C)
@@ -333,9 +321,6 @@ fun DeckItem(
 
 /**
  * Modal dialog for inputting new deck details (Title and Target Language).
- *
- * @param onDismiss Callback to dismiss the dialog.
- * @param onConfirm Callback submitting the title and language string code: `(title, languageCode) -> Unit`.
  */
 @Composable
 fun CreateDeckDialog(
@@ -395,7 +380,7 @@ fun CreateDeckDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = { onDismiss() }) {
                 Text(stringResource(R.string.cancel))
             }
         }

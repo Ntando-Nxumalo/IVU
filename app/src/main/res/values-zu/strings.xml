@@ -6,6 +6,7 @@
     <string name="nav_achievements">Mina</string>
     <string name="nav_profile">Mina</string>
     <string name="nav_report">Mina</string>
+    <string name="offline_banner_text">Imodi engaxhunyiwe ku-inthanethi – Ibonisa idatha egciniwe</string>
 
     <string name="welcome_back">Wamukelekile futhi</string>
     <string name="welcome_subtitle">Sawubona! Kuhle ukukubona.</string>

@@ -4,10 +4,10 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,7 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
-import com.ntando.ivu.network.JournalEntry
+import com.ntando.ivu.data.entity.Badge
+import com.ntando.ivu.data.entity.JournalEntry
 import com.ntando.ivu.viewmodel.JournalUiState
 import com.ntando.ivu.viewmodel.JournalViewModel
 import kotlinx.coroutines.launch
@@ -38,17 +39,6 @@ private const val TAG = "JournalCalendarScreen"
 
 /**
  * Interactive calendar and journal overview screen.
- *
- * Layout Structure:
- * - [Scaffold] with [TopAppBar], [com.ntando.ivu.ui.components.BottomNavigationBar], and a [FloatingActionButton] to create new entries.
- * - Custom [CalendarView] containing month navigation controls and an infinite [HorizontalPager] for monthly date grids.
- * - [LazyColumn] rendering [JournalEntryItem] entries filtered specifically for the currently selected date.
- * - [AlertDialog] displaying celebratory feedback when a new badge is unlocked upon saving an entry.
- *
- * @param viewModel ViewModel handling journal entry retrieval and badge unlock flows.
- * @param onBack Callback triggered when tapping the back navigation arrow.
- * @param onAddEntry Callback navigating to the entry creation screen for a given date: `(Calendar) -> Unit`.
- * @param onNavigate Navigation callback triggered when switching bottom bar screens.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,9 +50,8 @@ fun JournalCalendarScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedDate by remember { mutableStateOf(Calendar.getInstance()) }
-    var badgeToShow by remember { mutableStateOf<com.ntando.ivu.data.entity.Badge?>(null) }
+    var badgeToShow by remember { mutableStateOf<Badge?>(null) }
 
-    // Handle badge unlock feedback
     LaunchedEffect(uiState) {
         Log.d(TAG, "Observed JournalUiState update: $uiState")
         val state = uiState
@@ -146,6 +135,16 @@ fun JournalCalendarScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val sharedPref = context.getSharedPreferences("IVUPrefs", android.content.Context.MODE_PRIVATE)
+            val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
+
+            val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+            val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = !isOnline)
+            com.ntando.ivu.ui.components.PendingSyncBanner(ownerUserId = firebaseUid)
+
             CalendarView(
                 selectedDate = selectedDate,
                 entries = (uiState as? JournalUiState.Success)?.entries ?: emptyList(),
@@ -197,12 +196,7 @@ fun JournalCalendarScreen(
 }
 
 /**
- * Calendar grid component rendering month navigation controls, day of week labels, and a month page view.
- * Highlights dates that contain recorded journal entries with small dot indicators.
- *
- * @param selectedDate Currently active [Calendar] date selection.
- * @param entries Complete list of [JournalEntry] items used to mark days with recorded entries.
- * @param onDateSelected Callback invoked when a user taps a date cell in the month grid.
+ * Calendar grid component rendering month navigation controls and day grid.
  */
 @Composable
 fun CalendarView(
@@ -213,7 +207,6 @@ fun CalendarView(
     val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
     val daysOfWeek = listOf("S", "M", "T", "W", "T", "F", "S")
     
-    // Use a large initial page count for the pager
     val initialPage = 500
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 1000 })
     val coroutineScope = rememberCoroutineScope()
@@ -332,9 +325,7 @@ fun CalendarView(
 }
 
 /**
- * Card component displaying summary details of a single [JournalEntry] (mood indicator, formatted date, deck link indicator).
- *
- * @param entry The [JournalEntry] model object to display.
+ * Card component displaying summary details of a single [JournalEntry].
  */
 @Composable
 fun JournalEntryItem(entry: JournalEntry) {
@@ -348,7 +339,8 @@ fun JournalEntryItem(entry: JournalEntry) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val (_, moodColor) = when (entry.mood.lowercase()) {
+            val moodStr = entry.mood.name.lowercase()
+            val (moodEmoji, moodColor) = when (moodStr) {
                 "great" -> "😊" to Color(0xFF7FB6A7)
                 "okay" -> "😐" to Color(0xFFE8C07C)
                 "tough" -> "😔" to Color(0xFFE88A68)
@@ -359,21 +351,20 @@ fun JournalEntryItem(entry: JournalEntry) {
                 modifier = Modifier.size(48.dp),
                 shape = CircleShape,
                 color = moodColor.copy(alpha = 0.6f)
-            ) {}
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(moodEmoji, fontSize = 24.sp)
+                }
+            }
             
             Spacer(modifier = Modifier.width(16.dp))
             
             Column {
-                val inputSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val displaySdf = SimpleDateFormat("EEE d MMM", Locale.getDefault())
-                val dateText = try {
-                    val date = inputSdf.parse(entry.date)
-                    if (date != null) displaySdf.format(date) else entry.date
-                } catch (e: Exception) {
-                    entry.date
-                }
+                val displaySdf = SimpleDateFormat("EEE d MMM yyyy", Locale.getDefault())
+                val dateText = displaySdf.format(Date(entry.date))
+
                 Text(
-                    text = "$dateText — Feeling ${entry.mood.lowercase()}",
+                    text = "$dateText — Feeling $moodStr",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -383,28 +374,30 @@ fun JournalEntryItem(entry: JournalEntry) {
                     fontSize = 12.sp,
                     color = Color.LightGray
                 )
+                if (entry.text.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = entry.text,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                    )
+                }
             }
         }
     }
 }
 
 /**
- * Helper function checking if a formatted date string ("yyyy-MM-dd") represents the same calendar day as a [Calendar] instance.
+ * Checks if a timestamp in millis matches the specified calendar date.
  */
-private fun isSameDay(dateStr: String, calendar: Calendar): Boolean {
-    return try {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val date = sdf.parse(dateStr)
-        val cal = Calendar.getInstance().apply { time = date!! }
-        cal.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
-                cal.get(Calendar.DAY_OF_YEAR) == calendar.get(Calendar.DAY_OF_YEAR)
-    } catch (e: Exception) {
-        false
-    }
+private fun isSameDay(dateMillis: Long, calendar: Calendar): Boolean {
+    val entryCal = Calendar.getInstance().apply { timeInMillis = dateMillis }
+    return entryCal.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+            entryCal.get(Calendar.DAY_OF_YEAR) == calendar.get(Calendar.DAY_OF_YEAR)
 }
 
 /**
- * Helper function checking if two [Calendar] instances represent the exact same calendar day.
+ * Checks if two [Calendar] instances represent the exact same calendar day.
  */
 private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
     return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&

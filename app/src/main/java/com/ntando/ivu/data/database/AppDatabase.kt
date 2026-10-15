@@ -19,9 +19,10 @@ import com.ntando.ivu.data.entity.*
         Deck::class,
         Flashcard::class,
         JournalEntry::class,
-        UserStats::class
+        UserStats::class,
+        PendingReview::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -43,4 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     /** Abstract accessor for [UserStatsDao] operations. */
     abstract fun userStatsDao(): UserStatsDao
+
+    /** Abstract accessor for [PendingReviewDao] operations. */
+    abstract fun pendingReviewDao(): PendingReviewDao
 }

@@ -1,121 +1,221 @@
 package com.ntando.ivu.data.repository
 
+import android.content.Context
 import android.util.Log
+import com.ntando.ivu.data.dao.DeckDao
+import com.ntando.ivu.data.database.DatabaseProvider
+import com.ntando.ivu.data.entity.Deck
+import com.ntando.ivu.data.entity.Language
+import com.ntando.ivu.data.entity.SyncState
 import com.ntando.ivu.network.ApiClient
 import com.ntando.ivu.network.CreateDeckRequest
-import com.ntando.ivu.network.Deck
-import com.ntando.ivu.network.ApiResponse
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.ntando.ivu.network.NetworkMonitor
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
- * Repository responsible for managing flashcard decks.
- * Handles fetching existing decks, creating new decks, and deleting decks via [ApiClient.apiService].
+ * Offline-first repository responsible for flashcard deck management.
+ *
+ * Reads: Streamed directly from local Room database ([DeckDao]).
+ * Writes: Online-only operations for creation and deletion; refresh upserts server data to Room.
  */
-class DeckRepository {
+class DeckRepository(
+    private var deckDao: DeckDao? = null,
+    private var networkMonitor: NetworkMonitor? = null,
+    context: Context? = null
+) {
     private val TAG = "DeckRepository"
 
-    /**
-     * Fetches all flashcard decks associated with the authenticated user.
-     *
-     * @return [Result] containing a list of [Deck] objects on success, or an [Exception] on error.
-     */
-    suspend fun fetchDecks(): Result<List<Deck>> {
-        Log.d(TAG, "fetchDecks: Initiating request to fetch user decks")
-        return try {
-            val response = ApiClient.apiService.getDecks()
-            Log.d(TAG, "fetchDecks: Received response code=${response.code()}")
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.success == true) {
-                    val decks = body.data ?: emptyList()
-                    Log.i(TAG, "fetchDecks: Successfully fetched ${decks.size} decks")
-                    Result.success(decks)
-                } else {
-                    val errorMessage = body?.error ?: "Unknown error"
-                    Log.w(TAG, "fetchDecks: API returned failure response error='$errorMessage'")
-                    Result.failure(Exception(errorMessage))
-                }
-            } else {
-                val errorBody = response.errorBody()?.string()
-                Log.e(TAG, "fetchDecks: HTTP ${response.code()} error - $errorBody")
-                val parsedError = try {
-                    val type = object : TypeToken<ApiResponse<Any>>() {}.type
-                    val apiResponse: ApiResponse<Any> = Gson().fromJson(errorBody, type)
-                    apiResponse.error ?: "Network error: ${response.code()}"
-                } catch (e: Exception) {
-                    Log.w(TAG, "fetchDecks: Failed to parse error response body", e)
-                    "Network error: ${response.code()}"
-                }
-                Result.failure(Exception(parsedError))
+    constructor(context: Context) : this(
+        deckDao = DatabaseProvider.getDatabase(context).deckDao(),
+        networkMonitor = NetworkMonitor(context),
+        context = context
+    )
+
+    init {
+        if (context != null) {
+            if (deckDao == null) {
+                deckDao = DatabaseProvider.getDatabase(context).deckDao()
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "fetchDecks: Exception caught while fetching decks", e)
-            Result.failure(e)
+            if (networkMonitor == null) {
+                networkMonitor = NetworkMonitor(context)
+            }
         }
     }
 
     /**
-     * Creates a new flashcard deck with the specified title and target language.
+     * Observes user flashcard decks stored in local Room database.
      *
-     * @param title Title of the deck.
-     * @param language Language code for the deck (e.g., "en", "zu", "af").
-     * @return [Result] wrapping the newly created [Deck] on success, or an [Exception] on error.
+     * @param ownerUserId Firebase UID string of user.
+     * @return [Flow] emitting list of local [Deck] entities.
      */
-    suspend fun createDeck(title: String, language: String): Result<Deck> {
-        Log.d(TAG, "createDeck: Requesting deck creation with title='$title', language='$language'")
+    fun getDecks(ownerUserId: String): Flow<List<Deck>> {
+        Log.d(TAG, "getDecks: Observing decks Flow for ownerUserId='$ownerUserId'")
+        return deckDao?.getDecksByOwnerUserId(ownerUserId) ?: flowOf(emptyList())
+    }
+
+    /**
+     * Refreshes local Room decks from the remote backend REST API when online.
+     *
+     * Does NOT overwrite local rows that have pending changes (`syncState != SYNCED`).
+     * Deletes local synced rows that no longer exist on the server.
+     *
+     * @param ownerUserId Firebase UID string of user.
+     * @return [Result] containing [Unit] on success or caught network exception.
+     */
+    suspend fun refreshDecks(ownerUserId: String): Result<Unit> {
+        val dao = deckDao ?: return Result.failure(IllegalStateException("DeckDao not initialized"))
+        Log.d(TAG, "refreshDecks: Initiating server refresh for ownerUserId='$ownerUserId'")
         return try {
-            val request = CreateDeckRequest(title, language)
-            val response = ApiClient.apiService.createDeck(request)
-            Log.d(TAG, "createDeck: Received response code=${response.code()}")
+            val response = ApiClient.apiService.getDecks()
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body?.success == true && body.data != null) {
-                    Log.i(TAG, "createDeck: Successfully created deck with ID=${body.data.deckId}")
-                    Result.success(body.data)
+                    val remoteDecks = body.data
+                    Log.i(TAG, "refreshDecks: Successfully fetched ${remoteDecks.size} remote decks")
+
+                    val serverRemoteIds = mutableListOf<String>()
+
+                    for (remote in remoteDecks) {
+                        val remoteId = remote.deckId ?: continue
+                        serverRemoteIds.add(remoteId)
+
+                        val existing = dao.getDeckByRemoteId(remoteId, ownerUserId)
+                        val lang = parseLanguage(remote.language)
+
+                        if (existing == null) {
+                            val newDeck = Deck(
+                                remoteId = remoteId,
+                                ownerUserId = ownerUserId,
+                                title = remote.title,
+                                language = lang,
+                                cardCount = remote.cardCount,
+                                syncState = SyncState.SYNCED,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            dao.insertDeck(newDeck)
+                            Log.d(TAG, "refreshDecks: Inserted new deck '$remoteId' into Room")
+                        } else if (existing.syncState == SyncState.SYNCED) {
+                            val updatedDeck = existing.copy(
+                                title = remote.title,
+                                language = lang,
+                                cardCount = remote.cardCount,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                            dao.updateDeck(updatedDeck)
+                            Log.d(TAG, "refreshDecks: Updated synced deck '$remoteId' in Room")
+                        } else {
+                            Log.d(TAG, "refreshDecks: Skipped overwrite for deck '$remoteId' with pending local state: ${existing.syncState}")
+                        }
+                    }
+
+                    dao.deleteSyncedDecksNotIn(serverRemoteIds, ownerUserId)
+                    Result.success(Unit)
                 } else {
-                    val errorMessage = body?.error ?: "Failed to create deck"
-                    Log.w(TAG, "createDeck: API returned failure response error='$errorMessage'")
-                    Result.failure(Exception(errorMessage))
+                    val errorMsg = body?.error ?: "Unknown error"
+                    Log.w(TAG, "refreshDecks: API error response: '$errorMsg'")
+                    Result.failure(Exception(errorMsg))
                 }
             } else {
-                Log.e(TAG, "createDeck: HTTP ${response.code()} error during deck creation")
-                Result.failure(Exception("Network error: ${response.code()}"))
+                Log.e(TAG, "refreshDecks: HTTP ${response.code()} error")
+                Result.failure(Exception("HTTP ${response.code()} error"))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "createDeck: Exception caught while creating deck '$title'", e)
+            Log.w(TAG, "refreshDecks: Network exception caught during refresh (swallowed for offline mode)", e)
             Result.failure(e)
         }
     }
 
     /**
-     * Deletes a flashcard deck by its unique identifier.
-     *
-     * @param deckId Unique identifier of the deck to delete.
-     * @return [Result] containing [Unit] on success, or an [Exception] on error.
+     * Legacy fetch method bridge.
      */
-    suspend fun deleteDeck(deckId: String): Result<Unit> {
-        Log.d(TAG, "deleteDeck: Attempting to delete deckId=$deckId")
+    suspend fun fetchDecks(ownerUserId: String = ""): Result<List<com.ntando.ivu.network.Deck>> {
+        refreshDecks(ownerUserId)
         return try {
-            val response = ApiClient.apiService.deleteDeck(deckId)
-            Log.d(TAG, "deleteDeck: Received response code=${response.code()}")
+            val response = ApiClient.apiService.getDecks()
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()?.data ?: emptyList())
+            } else {
+                Result.success(emptyList())
+            }
+        } catch (e: Exception) {
+            Result.success(emptyList())
+        }
+    }
+
+    /**
+     * Creates a new deck online-only.
+     */
+    suspend fun createDeck(title: String, language: String, ownerUserId: String = ""): Result<com.ntando.ivu.network.Deck> {
+        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
+        if (!isOnline) {
+            Log.w(TAG, "createDeck rejected: Device is offline")
+            return Result.failure(IllegalStateException("You are offline. Creating decks requires an active internet connection."))
+        }
+
+        Log.d(TAG, "createDeck: Requesting online creation for title='$title', language='$language'")
+        return try {
+            val request = CreateDeckRequest(title, language)
+            val response = ApiClient.apiService.createDeck(request)
             if (response.isSuccessful) {
                 val body = response.body()
-                if (body?.success == true) {
-                    Log.i(TAG, "deleteDeck: Deck $deckId deleted successfully")
-                    Result.success(Unit)
+                if (body?.success == true && body.data != null) {
+                    val remote = body.data
+                    val localDeck = Deck(
+                        remoteId = remote.deckId,
+                        ownerUserId = ownerUserId,
+                        title = remote.title,
+                        language = parseLanguage(remote.language),
+                        cardCount = remote.cardCount,
+                        syncState = SyncState.SYNCED,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    deckDao?.insertDeck(localDeck)
+                    Result.success(remote)
                 } else {
-                    val errorMessage = body?.error ?: "Failed to delete deck"
-                    Log.w(TAG, "deleteDeck: API returned failure error='$errorMessage'")
-                    Result.failure(Exception(errorMessage))
+                    Result.failure(Exception(body?.error ?: "Failed to create deck"))
                 }
             } else {
-                Log.e(TAG, "deleteDeck: HTTP ${response.code()} error deleting deck $deckId")
                 Result.failure(Exception("Network error: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "deleteDeck: Exception caught while deleting deckId=$deckId", e)
+            Log.e(TAG, "createDeck: Exception thrown creating deck", e)
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Deletes a flashcard deck online-only.
+     */
+    suspend fun deleteDeck(deckId: String): Result<Unit> {
+        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
+        if (!isOnline) {
+            Log.w(TAG, "deleteDeck rejected: Device is offline")
+            return Result.failure(IllegalStateException("You are offline. Deleting decks requires an active internet connection."))
+        }
+
+        return try {
+            val response = ApiClient.apiService.deleteDeck(deckId)
+            if (response.isSuccessful && response.body()?.success == true) {
+                val deckLocalId = deckId.toLongOrNull()
+                if (deckLocalId != null) {
+                    deckDao?.deleteDeckById(deckLocalId)
+                }
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to delete deck on server"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "deleteDeck: Exception thrown deleting deck", e)
+            Result.failure(e)
+        }
+    }
+
+    private fun parseLanguage(code: String): Language {
+        return try {
+            Language.valueOf(code.uppercase())
+        } catch (e: Exception) {
+            Language.EN
         }
     }
 }

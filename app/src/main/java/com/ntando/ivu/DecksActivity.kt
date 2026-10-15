@@ -12,22 +12,15 @@ import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AchievementRepository
 import com.ntando.ivu.data.repository.DeckRepository
+import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.ui.decks.DecksScreen
 import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.DecksViewModel
-import com.ntando.ivu.viewmodel.ViewModelFactory
-import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.viewmodel.FlashcardViewModel
+import com.ntando.ivu.viewmodel.ViewModelFactory
 
 /**
  * [DecksActivity] manages and displays flashcard study decks for the current user.
- *
- * Features:
- * - Verifies user session (`current_user_id`) before rendering content. Redirects unauthenticated users to [MainActivity].
- * - Hosts [DecksScreen] written in Jetpack Compose.
- * - Integrates [DecksViewModel] for deck management and [FlashcardViewModel] for flashcard updates.
- * - Facilitates navigation to [ReviewActivity] for deck review sessions and [FlashcardListActivity] for deck editing.
- * - Handles bottom navigation bar routing across IVU sections.
  */
 class DecksActivity : ComponentActivity() {
 
@@ -36,7 +29,7 @@ class DecksActivity : ComponentActivity() {
     }
 
     private val viewModel: DecksViewModel by viewModels {
-        ViewModelFactory(DeckRepository())
+        ViewModelFactory(DeckRepository(this))
     }
     
     private val flashcardViewModel: FlashcardViewModel by viewModels {
@@ -47,23 +40,17 @@ class DecksActivity : ComponentActivity() {
             db.userStatsDao(),
             db.journalDao()
         )
-        ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid))
+        ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid, this))
     }
 
-    /**
-     * Initializes the activity lifecycle, validates user session, configures ViewModels,
-     * and sets up the Jetpack Compose UI content.
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: Starting DecksActivity")
 
-        // Verify session
         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
         val currentUserId = sharedPref.getLong("current_user_id", -1)
-        Log.d(TAG, "Extracted current_user_id: $currentUserId")
+        val firebaseUid = sharedPref.getString("firebase_uid", "") ?: ""
+        Log.d(TAG, "Extracted current_user_id: $currentUserId, firebaseUid: $firebaseUid")
 
         if (currentUserId == -1L) {
             Log.w(TAG, "No valid user session found. Redirecting to MainActivity.")
@@ -71,6 +58,8 @@ class DecksActivity : ComponentActivity() {
             finish()
             return
         }
+
+        viewModel.setOwnerUserId(firebaseUid)
 
         setContent {
             val preferenceManager = PreferenceManager(this)
@@ -109,17 +98,11 @@ class DecksActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Called when the activity becomes visible.
-     */
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "onStart: DecksActivity visible")
     }
 
-    /**
-     * Called before the activity is destroyed.
-     */
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: DecksActivity destroyed")

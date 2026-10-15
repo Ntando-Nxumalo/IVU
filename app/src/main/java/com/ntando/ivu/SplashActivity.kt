@@ -13,9 +13,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.database.DatabaseProvider
-import com.ntando.ivu.data.entity.Deck
-import com.ntando.ivu.data.entity.Language
-import com.ntando.ivu.data.entity.Flashcard
 import com.ntando.ivu.data.entity.UserStats
 import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AuthRepository
@@ -95,7 +92,7 @@ class SplashActivity : AppCompatActivity() {
         val firebaseUid = firebaseUser?.uid
         Log.d(TAG, "Session status - currentUserId: $currentUserId, firebaseUid: $firebaseUid")
 
-        // Ensure we have demo data and user stats initialized
+        // Initialize user stats if logged in
         lifecycleScope.launch {
             val db = DatabaseProvider.getDatabase(this@SplashActivity)
             
@@ -106,21 +103,6 @@ class SplashActivity : AppCompatActivity() {
                     Log.i(TAG, "Initializing UserStats record for $firebaseUid")
                     db.userStatsDao().insertOrUpdate(UserStats(userId = firebaseUid))
                 }
-            }
-
-            // Ensure we have demo data for the "Decks" page
-            val targetUserId = if (currentUserId != -1L) currentUserId else 1L
-            val existingDecks = db.deckDao().getDecksByUser(targetUserId).first() 
-            
-            if (existingDecks.isEmpty()) {
-                Log.i(TAG, "Inserting default demo decks and flashcard for user $targetUserId")
-                val deck1 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Everyday isiZulu", language = Language.ZU, cardCount = 40))
-                val deck2 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Afrikaans Basics", language = Language.AF, cardCount = 40))
-                val deck3 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Exam Vocabulary", language = Language.EN, cardCount = 40))
-                val deck4 = db.deckDao().insertDeck(Deck(ownerId = targetUserId, title = "Travel Phrases", language = Language.ZU, cardCount = 40))
-                
-                // Add a sample card to the first deck so review works
-                db.flashcardDao().insertFlashcard(Flashcard(deckId = deck1, frontText = "Sawubona", backText = "Hello"))
             }
         }
 

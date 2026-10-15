@@ -37,6 +37,7 @@
         <item quantity="other">%1$d/%2$d Badges Unlocked</item>
     </plurals>
     <string name="no_category_goal">No Subject Selected</string>
+    <string name="offline_banner_text">Offline Mode – Showing cached data</string>
 
     <!-- Splash/Landing Screen -->
     <string name="tagline">Learn a little, every day.</string>

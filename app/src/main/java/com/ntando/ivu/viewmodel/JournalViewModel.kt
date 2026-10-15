@@ -4,13 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ntando.ivu.data.entity.Badge
+import com.ntando.ivu.data.entity.Deck
+import com.ntando.ivu.data.entity.JournalEntry
 import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.data.repository.JournalRepository
-import com.ntando.ivu.network.Deck
-import com.ntando.ivu.network.JournalEntry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 /**
@@ -42,16 +43,18 @@ sealed class JournalUiState {
 }
 
 /**
- * ViewModel managing journal entry fetching, creating entries linked to decks, and handling unlocked badges.
+ * ViewModel managing offline-first journal entry fetching, creating entries linked to decks, and handling unlocked badges.
  *
  * Coordinates data operations between [JournalRepository] and [DeckRepository].
  *
  * @property repository Repository for journal entry operations.
  * @property deckRepository Repository for deck retrieval operations.
+ * @property ownerUserId Firebase UID string of user.
  */
 class JournalViewModel(
     private val repository: JournalRepository,
-    private val deckRepository: DeckRepository
+    private val deckRepository: DeckRepository,
+    private var ownerUserId: String = ""
 ) : ViewModel() {
 
     companion object {
@@ -67,39 +70,65 @@ class JournalViewModel(
 
     init {
         Log.d(TAG, "JournalViewModel initialized")
-        loadData()
+        observeData()
     }
 
     /**
-     * Concurrently loads journal entries and user decks from repositories.
+     * Updates current user ID and rebinds reactive Room database flows.
+     *
+     * @param userId Firebase UID string.
      */
-    fun loadData() {
-        Log.d(TAG, "loadData initiated")
-        _uiState.value = JournalUiState.Loading
-        viewModelScope.launch {
-            val journalResult = repository.fetchEntries()
-            val decksResult = deckRepository.fetchDecks()
-
-            if (journalResult.isSuccess && decksResult.isSuccess) {
-                val entries = journalResult.getOrDefault(emptyList())
-                val decks = decksResult.getOrDefault(emptyList())
-                Log.i(TAG, "loadData succeeded: fetched ${entries.size} entries and ${decks.size} decks")
-                _uiState.value = JournalUiState.Success(
-                    entries = entries,
-                    decks = decks
-                )
-            } else {
-                val journalError = journalResult.exceptionOrNull()?.message
-                val decksError = decksResult.exceptionOrNull()?.message
-                val errorMsg = journalError ?: decksError ?: "Failed to load data"
-                Log.e(TAG, "loadData failed: journalError=$journalError, decksError=$decksError")
-                _uiState.value = JournalUiState.Error(errorMsg)
-            }
+    fun setOwnerUserId(userId: String) {
+        if (ownerUserId != userId) {
+            Log.d(TAG, "setOwnerUserId updated from '$ownerUserId' to '$userId'")
+            ownerUserId = userId
+            observeData()
         }
     }
 
     /**
-     * Creates a new journal entry and updates UI state with unlocked achievement badges.
+     * Observes local Room database Flows for journal entries and user decks.
+     */
+    private fun observeData() {
+        viewModelScope.launch {
+            combine(
+                repository.getJournalEntries(ownerUserId),
+                deckRepository.getDecks(ownerUserId)
+            ) { entries, decks ->
+                Log.d(TAG, "Observed updated Room data - entries count=${entries.size}, decks count=${decks.size}")
+                val currentBadges = (_uiState.value as? JournalUiState.Success)?.newlyUnlockedBadges ?: emptyList()
+                JournalUiState.Success(
+                    entries = entries,
+                    newlyUnlockedBadges = currentBadges,
+                    decks = decks
+                )
+            }.collect { state ->
+                _uiState.value = state
+            }
+        }
+        refreshData()
+    }
+
+    /**
+     * Concurrently triggers background network refresh for journal entries and decks when online.
+     */
+    fun refreshData() {
+        Log.d(TAG, "refreshData initiated for ownerUserId='$ownerUserId'")
+        viewModelScope.launch {
+            repository.refreshEntries(ownerUserId)
+            deckRepository.refreshDecks(ownerUserId)
+        }
+    }
+
+    /**
+     * Legacy loadData trigger.
+     */
+    fun loadData() {
+        refreshData()
+    }
+
+    /**
+     * Creates a new journal entry locally in Room and updates UI state with unlocked achievement badges.
      *
      * @param date Timestamp or formatted date string of the entry.
      * @param mood Recorded user mood value.
@@ -114,12 +143,11 @@ class JournalViewModel(
         linkedDeckId: String?,
         onResult: (Boolean, List<Badge>) -> Unit
     ) {
-        Log.i(TAG, "createEntry requested for date: $date, mood: $mood, linkedDeckId: $linkedDeckId")
+        Log.i(TAG, "createEntry requested for date: $date, mood: $mood, linkedDeckId: $linkedDeckId, ownerUserId: $ownerUserId")
         viewModelScope.launch {
-            val result = repository.createEntry(date, mood, text, linkedDeckId)
+            val result = repository.createEntry(date, mood, text, linkedDeckId, ownerUserId)
             result.onSuccess { (entry, unlockedBadges) ->
-                Log.i(TAG, "createEntry succeeded for entryId: ${entry.entryId}, unlocked ${unlockedBadges.size} badges")
-                loadData()
+                Log.i(TAG, "createEntry succeeded locally for entryId: ${entry.entryId}, unlocked ${unlockedBadges.size} badges")
                 val currentState = _uiState.value
                 if (currentState is JournalUiState.Success) {
                     _uiState.value = currentState.copy(newlyUnlockedBadges = unlockedBadges)

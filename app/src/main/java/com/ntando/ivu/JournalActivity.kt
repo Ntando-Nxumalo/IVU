@@ -10,26 +10,18 @@ import androidx.compose.runtime.*
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AchievementRepository
-import com.ntando.ivu.data.repository.JournalRepository
 import com.ntando.ivu.data.repository.DeckRepository
+import com.ntando.ivu.data.repository.JournalRepository
 import com.ntando.ivu.ui.journal.JournalCalendarScreen
 import com.ntando.ivu.ui.journal.NewJournalEntryScreen
 import com.ntando.ivu.ui.theme.IVUTheme
-import com.ntando.ivu.viewmodel.JournalViewModel
 import com.ntando.ivu.viewmodel.JournalUiState
+import com.ntando.ivu.viewmodel.JournalViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
 import java.util.*
 
 /**
  * [JournalActivity] manages the user's reflection and learning journal entries.
- *
- * Intent Extras:
- * - `action` (String?): If set to `"NEW_ENTRY"`, immediately opens the new entry creation dialog upon start.
- *
- * Features:
- * - Displays a interactive journal calendar using [JournalCalendarScreen].
- * - Displays a pop-up dialog ([NewJournalEntryScreen]) for adding entries with mood, text, and optional deck links.
- * - Handles navigation routing across IVU tabs.
  */
 class JournalActivity : ComponentActivity() {
 
@@ -45,15 +37,11 @@ class JournalActivity : ComponentActivity() {
             db.userStatsDao(),
             db.journalDao()
         )
-        ViewModelFactory(JournalRepository(achievementRepository, firebaseUid) to DeckRepository())
+        ViewModelFactory(
+            JournalRepository(achievementRepository, firebaseUid, this) to DeckRepository(this)
+        )
     }
 
-    /**
-     * Called when the activity is starting. Checks user session credentials, parses intent actions,
-     * and sets up Compose UI components.
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: Starting JournalActivity")
@@ -69,6 +57,8 @@ class JournalActivity : ComponentActivity() {
             finish()
             return
         }
+
+        viewModel.setOwnerUserId(firebaseUid)
 
         // Extract action parameter
         val action = intent.getStringExtra("action")
@@ -134,17 +124,11 @@ class JournalActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Called when the activity becomes visible.
-     */
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "onStart: JournalActivity visible")
     }
 
-    /**
-     * Called before the activity is destroyed.
-     */
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: JournalActivity destroyed")

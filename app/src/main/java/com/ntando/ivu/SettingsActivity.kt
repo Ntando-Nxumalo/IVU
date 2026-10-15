@@ -6,6 +6,9 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.ntando.ivu.data.prefs.PreferenceManager
@@ -56,7 +59,15 @@ class SettingsActivity : ComponentActivity() {
                         finish()
                     },
                     onSignOut = {
-                        Log.i(TAG, "Sign Out action triggered. Clearing preferences session keys...")
+                        Log.i(TAG, "Sign Out action triggered. Clearing Room database and preferences session keys...")
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                com.ntando.ivu.data.database.DatabaseProvider.getDatabase(this@SettingsActivity).clearAllTables()
+                                Log.i(TAG, "Room database tables cleared on sign out.")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to clear Room database on sign out", e)
+                            }
+                        }
                         val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
                         with(sharedPref.edit()) {
                             remove("current_user_id")

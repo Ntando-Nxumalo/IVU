@@ -68,13 +68,23 @@ fun AchievementScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            contentPadding = PaddingValues(20.dp)
+                .fillMaxSize()
         ) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val networkMonitor = remember(context) { com.ntando.ivu.network.NetworkMonitor(context) }
+            val isOnline by networkMonitor.isOnline.collectAsState(initial = networkMonitor.isCurrentlyConnected())
+            com.ntando.ivu.ui.components.OfflineBanner(isOffline = !isOnline)
+
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(20.dp)
+            ) {
             item {
                 Text(
                     text = stringResource(R.string.title_progress),
@@ -241,6 +251,7 @@ fun AchievementScreen(
             }
         )
     }
+}
 }
 
 /**

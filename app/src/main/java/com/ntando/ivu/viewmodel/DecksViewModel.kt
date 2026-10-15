@@ -3,22 +3,22 @@ package com.ntando.ivu.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ntando.ivu.data.entity.Deck
 import com.ntando.ivu.data.repository.DeckRepository
-import com.ntando.ivu.network.Deck
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Represents the UI state for flashcard deck collection operations.
+ * UI state representing flashcard deck collection operations.
  */
 sealed class DecksUiState {
     /** State indicating deck data is actively loading. */
     object Loading : DecksUiState()
 
     /**
-     * State representing successful deck retrieval.
+     * State representing successful deck retrieval from local Room storage.
      *
      * @property decks The list of user flashcard decks.
      */
@@ -27,7 +27,7 @@ sealed class DecksUiState {
     /**
      * State representing a failure during deck operation.
      *
-     * @property message Detailed error message describing the failure cause.
+     * @property message Detailed error message describing failure cause.
      */
     data class Error(val message: String) : DecksUiState()
 }
@@ -35,11 +35,15 @@ sealed class DecksUiState {
 /**
  * ViewModel managing deck list fetching, creation, and deletion operations.
  *
- * Interacts with [DeckRepository] and exposes state via [DecksUiState].
+ * Observes local Room database flows from [DeckRepository] for offline-first display.
  *
  * @property repository The repository providing deck management operations.
+ * @property ownerUserId Firebase UID string of user.
  */
-class DecksViewModel(private val repository: DeckRepository) : ViewModel() {
+class DecksViewModel(
+    private val repository: DeckRepository,
+    private var ownerUserId: String = ""
+) : ViewModel() {
 
     companion object {
         private const val TAG = "DecksViewModel"
@@ -54,31 +58,54 @@ class DecksViewModel(private val repository: DeckRepository) : ViewModel() {
 
     init {
         Log.d(TAG, "DecksViewModel initialized")
-        loadDecks()
+        observeDecks()
     }
 
     /**
-     * Fetches all flashcard decks from the repository and updates UI state accordingly.
+     * Updates current user ID and rebinds reactive Room database flows.
+     *
+     * @param userId Firebase UID string.
      */
-    fun loadDecks() {
-        Log.d(TAG, "loadDecks initiated")
-        _uiState.value = DecksUiState.Loading
-        viewModelScope.launch {
-            val result = repository.fetchDecks()
-            if (result.isSuccess) {
-                val decks = result.getOrDefault(emptyList())
-                Log.i(TAG, "loadDecks succeeded: retrieved ${decks.size} decks")
-                _uiState.value = DecksUiState.Success(decks)
-            } else {
-                val errorMsg = result.exceptionOrNull()?.message ?: "Unknown error"
-                Log.e(TAG, "loadDecks failed: $errorMsg", result.exceptionOrNull())
-                _uiState.value = DecksUiState.Error(errorMsg)
-            }
+    fun setOwnerUserId(userId: String) {
+        if (ownerUserId != userId) {
+            Log.d(TAG, "setOwnerUserId updated from '$ownerUserId' to '$userId'")
+            ownerUserId = userId
+            observeDecks()
         }
     }
 
     /**
-     * Creates a new flashcard deck and reloads the deck list upon success.
+     * Observes local Room database Flow for user decks.
+     */
+    private fun observeDecks() {
+        viewModelScope.launch {
+            repository.getDecks(ownerUserId).collect { localDecks ->
+                Log.d(TAG, "Observed Room decks count: ${localDecks.size} for ownerUserId='$ownerUserId'")
+                _uiState.value = DecksUiState.Success(localDecks)
+            }
+        }
+        refreshDecks()
+    }
+
+    /**
+     * Triggers background network refresh for decks when online.
+     */
+    fun refreshDecks() {
+        Log.d(TAG, "refreshDecks requested for ownerUserId='$ownerUserId'")
+        viewModelScope.launch {
+            repository.refreshDecks(ownerUserId)
+        }
+    }
+
+    /**
+     * Legacy loadDecks trigger.
+     */
+    fun loadDecks() {
+        refreshDecks()
+    }
+
+    /**
+     * Creates a new flashcard deck online-only.
      *
      * @param title Title of the deck.
      * @param language Target language for the deck.
@@ -86,19 +113,20 @@ class DecksViewModel(private val repository: DeckRepository) : ViewModel() {
     fun createNewDeck(title: String, language: String) {
         Log.i(TAG, "createNewDeck requested with title: \"$title\", language: \"$language\"")
         viewModelScope.launch {
-            val result = repository.createDeck(title, language)
+            val result = repository.createDeck(title, language, ownerUserId)
             if (result.isSuccess) {
                 Log.i(TAG, "createNewDeck succeeded for title: \"$title\"")
-                loadDecks() // Refresh list on success
+                refreshDecks()
             } else {
                 val errorMsg = result.exceptionOrNull()?.message ?: "Unknown error"
                 Log.e(TAG, "createNewDeck failed for title: \"$title\": $errorMsg", result.exceptionOrNull())
+                _uiState.value = DecksUiState.Error(errorMsg)
             }
         }
     }
 
     /**
-     * Deletes a flashcard deck by ID and reloads the deck list upon success.
+     * Deletes a flashcard deck online-only.
      *
      * @param deckId Identifier of the deck to delete.
      */
@@ -108,7 +136,7 @@ class DecksViewModel(private val repository: DeckRepository) : ViewModel() {
             val result = repository.deleteDeck(deckId)
             if (result.isSuccess) {
                 Log.i(TAG, "deleteDeck succeeded for deckId: $deckId")
-                loadDecks()
+                refreshDecks()
             } else {
                 val errorMsg = result.exceptionOrNull()?.message ?: "Unknown error"
                 Log.e(TAG, "deleteDeck failed for deckId: $deckId: $errorMsg", result.exceptionOrNull())

@@ -109,6 +109,20 @@ class IVU : AppCompatActivity() {
             }
         }
 
+        // Trigger sync on app start
+        com.ntando.ivu.sync.SyncManager.enqueueSync(this)
+
+        // Observe network monitor: trigger sync when connectivity returns
+        val networkMonitor = com.ntando.ivu.network.NetworkMonitor(this)
+        lifecycleScope.launch {
+            networkMonitor.isOnline.collect { isOnline ->
+                if (isOnline) {
+                    Log.d("IVU_SYNC", "Connectivity restored -> Enqueuing SyncWorker")
+                    com.ntando.ivu.sync.SyncManager.enqueueSync(this@IVU)
+                }
+            }
+        }
+
         setupUI()
         setupNavigation()
     }

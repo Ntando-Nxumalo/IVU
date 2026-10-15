@@ -6,6 +6,7 @@
     <string name="nav_achievements">Ek</string>
     <string name="nav_profile">Ek</string>
     <string name="nav_report">Ek</string>
+    <string name="offline_banner_text">Vanlynmodus – Wys geaagterste data</string>
 
     <string name="welcome_back">Welkom terug</string>
     <string name="welcome_subtitle">Sawubona! Goed om jou te sien.</string>
