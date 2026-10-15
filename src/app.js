@@ -6,6 +6,7 @@ const deckRoutes = require("./routes/decks");
 const flashcardRoutes = require("./routes/flashcards");
 const journalRoutes = require("./routes/journal");
 const aiRoutes = require("./routes/ai");
+const notificationRoutes = require("./routes/notifications");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/decks", deckRoutes);
 app.use("/decks", flashcardRoutes); // nested under /decks/:deckId/cards
 app.use("/journal", journalRoutes);
 app.use("/ai", aiRoutes);
+app.use("/notifications", notificationRoutes);
 
 // Catch-all 404
 app.use((req, res) => {
