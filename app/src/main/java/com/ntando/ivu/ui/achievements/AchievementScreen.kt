@@ -47,10 +47,13 @@ private const val TAG = "AchievementScreen"
 @Composable
 fun AchievementScreen(
     viewModel: AchievementViewModel,
+    initialBadgeName: String? = null,
     onNavigate: (String) -> Unit
 ) {
     val stats by viewModel.userStats.collectAsState()
-    var selectedBadge by remember { mutableStateOf<Badge?>(null) }
+    var selectedBadge by remember(initialBadgeName) {
+        mutableStateOf<Badge?>(Badge.ALL.find { it.displayName == initialBadgeName || it.id == initialBadgeName })
+    }
 
     LaunchedEffect(stats) {
         Log.d(TAG, "AchievementScreen observed userStats update: streak=${stats?.currentStreak}, level=${stats?.level}, xp=${stats?.xp}, badges=${stats?.badges}")

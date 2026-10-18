@@ -1,12 +1,17 @@
 package com.ntando.ivu
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -20,6 +25,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.User
 import com.ntando.ivu.data.repository.AuthRepository
+import com.ntando.ivu.network.FcmTokenManager
 import com.ntando.ivu.ui.auth.LoginScreen
 import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.LoginViewModel
@@ -28,12 +34,6 @@ import kotlinx.coroutines.launch
 
 /**
  * [MainActivity] serves as the Login screen for the IVU application.
- *
- * Responsibilities:
- * - Manages user authentication using email/password and Google Sign-In via Android [CredentialManager].
- * - Synchronizes authenticated user state with the local Room database (`User` entity).
- * - Saves active user session keys (`current_user_id` and `firebase_uid`) in [android.content.SharedPreferences].
- * - Redirects successfully authenticated users to [IVU] home dashboard.
  */
 class MainActivity : ComponentActivity() {
 
@@ -46,12 +46,13 @@ class MainActivity : ComponentActivity() {
         ViewModelFactory(authRepository)
     }
 
-    /**
-     * Called when the activity is starting. Initializes FirebaseAuth, CredentialManager,
-     * and displays the Jetpack Compose [LoginScreen].
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        Log.i(tag, "POST_NOTIFICATIONS permission result: isGranted=$isGranted")
+        navigateToHome()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag, "onCreate: Initializing MainActivity (Login)")
@@ -79,27 +80,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Called when the activity becomes visible.
-     */
     override fun onStart() {
         super.onStart()
         Log.d(tag, "onStart: MainActivity visible")
     }
 
-    /**
-     * Called before the activity is destroyed.
-     */
     override fun onDestroy() {
         super.onDestroy()
         Log.d(tag, "onDestroy: MainActivity destroyed")
     }
 
-    /**
-     * Handles post-authentication sync upon successful login.
-     * Checks local Room database for user profile matching [firebaseUser.email], creates a record if missing,
-     * updates [android.content.SharedPreferences] session data, and redirects to [IVU].
-     */
     private fun handleSuccessfulAuth() {
         val firebaseUser = auth.currentUser
         if (firebaseUser == null) {
@@ -138,13 +128,13 @@ class MainActivity : ComponentActivity() {
                         putString("firebase_uid", firebaseUser.uid)
                         commit()
                     }
-                    Log.i(tag, "Session saved successfully: $isSaved. Redirecting to Home (IVU)...")
+                    Log.i(tag, "Session saved successfully: $isSaved.")
+
+                    // Fetch & register FCM push token (non-fatal)
+                    FcmTokenManager(this@MainActivity).registerCurrentToken()
+
                     Toast.makeText(this@MainActivity, "Welcome, ${it.name}!", Toast.LENGTH_SHORT).show()
-                    
-                    val intent = Intent(this@MainActivity, IVU::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
+                    checkPermissionAndProceed()
                 }
             } catch (e: Exception) {
                 Log.e(tag, "Failed to sync user with local database", e)
@@ -154,9 +144,26 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Initiates Google Sign-In using Android [CredentialManager] and [GetGoogleIdOption].
-     */
+    private fun checkPermissionAndProceed() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(tag, "Requesting POST_NOTIFICATIONS permission on Android 13+")
+                Toast.makeText(this, getString(R.string.notification_permission_explanation), Toast.LENGTH_LONG).show()
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return
+            }
+        }
+        navigateToHome()
+    }
+
+    private fun navigateToHome() {
+        Log.i(tag, "Redirecting to Home (IVU)...")
+        val intent = Intent(this@MainActivity, IVU::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
     private fun signInWithGoogle() {
         Log.d(tag, "signInWithGoogle: Building GetGoogleIdOption request")
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
@@ -184,12 +191,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Processes the [androidx.credentials.Credential] returned by [CredentialManager], extracts Google ID Token,
-     * and signs in to [FirebaseAuth] using [GoogleAuthProvider].
-     *
-     * @param credential The credential returned from Google Sign-In flow.
-     */
     private fun handleGoogleSignInResult(credential: androidx.credentials.Credential) {
         Log.d(tag, "handleGoogleSignInResult: Credential Type = ${credential.type}")
         

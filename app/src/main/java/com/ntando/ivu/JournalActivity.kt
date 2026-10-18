@@ -35,7 +35,8 @@ class JournalActivity : ComponentActivity() {
         val db = DatabaseProvider.getDatabase(this)
         val achievementRepository = AchievementRepository(
             db.userStatsDao(),
-            db.journalDao()
+            db.journalDao(),
+            applicationContext
         )
         ViewModelFactory(
             JournalRepository(achievementRepository, firebaseUid, this) to DeckRepository(this)

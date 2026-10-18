@@ -1,6 +1,7 @@
 package com.ntando.ivu.ui.theme
 
 import android.app.Activity
+import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -10,12 +11,18 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.ntando.ivu.data.prefs.PreferenceManager
+import java.util.Locale
 
 private const val TAG = "IVUTheme"
 
@@ -58,25 +65,36 @@ fun IVUTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val preferenceManager = remember(context) { PreferenceManager(context.applicationContext) }
+    val appLanguage by preferenceManager.appLanguage.collectAsState(initial = "en")
+
+    val localizedContext = remember(context, appLanguage) {
+        val locale = Locale(appLanguage)
+        Locale.setDefault(locale)
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        context.createConfigurationContext(config)
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            Log.d(TAG, "Using Android 12+ dynamic color scheme (darkTheme=$darkTheme)")
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            Log.d(TAG, "Using Android 12+ dynamic color scheme (darkTheme=$darkTheme, lang=$appLanguage)")
+            if (darkTheme) dynamicDarkColorScheme(localizedContext) else dynamicLightColorScheme(localizedContext)
         }
 
         darkTheme -> {
-            Log.d(TAG, "Applying custom DarkColorScheme")
+            Log.d(TAG, "Applying custom DarkColorScheme (lang=$appLanguage)")
             DarkColorScheme
         }
         else -> {
-            Log.d(TAG, "Applying custom LightColorScheme")
+            Log.d(TAG, "Applying custom LightColorScheme (lang=$appLanguage)")
             LightColorScheme
         }
     }
 
     val view = LocalView.current
-    if (!view.isInEditMode) {
+    if (!view.isInEditMode && view.context is Activity) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
@@ -85,8 +103,12 @@ fun IVUTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalContext provides localizedContext
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            content = content
+        )
+    }
 }

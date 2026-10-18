@@ -41,7 +41,7 @@ object SyncManager {
 
         WorkManager.getInstance(context.applicationContext).enqueueUniqueWork(
             UNIQUE_WORK_NAME,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.REPLACE,
             syncRequest
         )
         Log.i(TAG, "SyncManager: Enqueued unique SyncWorker task with CONNECTED constraint")

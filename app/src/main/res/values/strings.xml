@@ -38,6 +38,43 @@
     </plurals>
     <string name="no_category_goal">No Subject Selected</string>
     <string name="offline_banner_text">Offline Mode – Showing cached data</string>
+    <string name="notification_permission_title">Enable Study Reminders</string>
+    <string name="notification_permission_explanation">Allow IVU to send daily study reminders and streak alerts.</string>
+    <string name="label_reminder_hour">Reminder time</string>
+    <string name="btn_test_notification">Send test notification</string>
+    <string name="toast_test_notification_sent">Notification coming in 10 seconds - lock your phone</string>
+    <string name="toast_test_notification_offline">You are offline. Test notification requires network connection.</string>
+    <string name="title_badge_unlocked">🎉 Badge Unlocked!</string>
+    <string name="body_badge_unlocked">Badge unlocked: %s</string>
+    <string name="btn_test_badge_notification">Test badge notification</string>
+
+    <!-- Quiz Mode Strings -->
+    <string name="title_quiz_mode">Quiz Mode</string>
+    <string name="label_mode_multiple_choice">Multiple choice</string>
+    <string name="label_mode_type_answer">Type answer</string>
+    <string name="label_mode_mixed">Mixed</string>
+    <string name="label_direction_front_to_back">Front to Back</string>
+    <string name="label_direction_back_to_front">Back to Front</string>
+    <string name="label_quiz_length">Questions</string>
+    <string name="label_length_all">All (%d)</string>
+    <string name="mc_disabled_explanation">Multiple choice requires at least 4 cards in the deck.</string>
+    <string name="empty_quiz_deck">This deck has no cards yet. Add cards to start a quiz!</string>
+    <string name="btn_start_quiz">Start Quiz</string>
+    <string name="btn_check_answer">Check</string>
+    <string name="btn_next_question">Next</string>
+    <string name="btn_retry_missed">Retry Missed</string>
+    <string name="btn_play_again">Play Again</string>
+    <string name="btn_back_to_deck">Back to Deck</string>
+    <string name="dialog_leave_quiz_title">Leave Quiz?</string>
+    <string name="dialog_leave_quiz_message">Your quiz progress will be lost.</string>
+    <string name="btn_leave">Leave</string>
+    <string name="label_quiz_completed">Quiz Completed!</string>
+    <string name="label_correct">Correct!</string>
+    <string name="label_incorrect">Incorrect</string>
+    <string name="label_correct_answer_is">Correct answer: %s</string>
+    <string name="label_your_answer">Your answer: %s</string>
+    <string name="label_missed_questions">Missed Questions</string>
+    <string name="label_xp_earned">+%d XP Earned!</string>
 
     <!-- Splash/Landing Screen -->
     <string name="tagline">Learn a little, every day.</string>
@@ -170,6 +207,15 @@
     <string name="btn_create_account">Create account</string>
     <string name="already_have_account_login">Already have an account? Log in</string>
     <string name="content_desc_back">Back</string>
+
+    <!-- TTS Strings -->
+    <string name="content_desc_speak">Pronounce text</string>
+    <string name="tts_lang_not_installed">This language\'s voice is not installed on your phone</string>
+    <string name="btn_tts_settings">Settings</string>
+    <string name="label_autoplay_tts">Auto-play pronunciation</string>
+    <string name="label_speech_rate">Speech rate</string>
+    <string name="label_speech_slow">Slow</string>
+    <string name="label_speech_normal">Normal</string>
 
     <!-- Settings Screen -->
     <string name="title_settings">Settings</string>

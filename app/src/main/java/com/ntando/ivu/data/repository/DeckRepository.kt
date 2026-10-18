@@ -8,8 +8,8 @@ import com.ntando.ivu.data.entity.Deck
 import com.ntando.ivu.data.entity.Language
 import com.ntando.ivu.data.entity.SyncState
 import com.ntando.ivu.network.ApiClient
-import com.ntando.ivu.network.CreateDeckRequest
 import com.ntando.ivu.network.NetworkMonitor
+import com.ntando.ivu.sync.SyncManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -17,14 +17,15 @@ import kotlinx.coroutines.flow.flowOf
  * Offline-first repository responsible for flashcard deck management.
  *
  * Reads: Streamed directly from local Room database ([DeckDao]).
- * Writes: Online-only operations for creation and deletion; refresh upserts server data to Room.
+ * Writes: Instant local Room updates; background WorkManager handles server sync.
  */
 class DeckRepository(
     private var deckDao: DeckDao? = null,
     private var networkMonitor: NetworkMonitor? = null,
-    context: Context? = null
+    private val context: Context? = null
 ) {
     private val TAG = "DeckRepository"
+    private val appContext: Context? = context
 
     constructor(context: Context) : this(
         deckDao = DatabaseProvider.getDatabase(context).deckDao(),
@@ -33,12 +34,12 @@ class DeckRepository(
     )
 
     init {
-        if (context != null) {
+        if (appContext != null) {
             if (deckDao == null) {
-                deckDao = DatabaseProvider.getDatabase(context).deckDao()
+                deckDao = DatabaseProvider.getDatabase(appContext).deckDao()
             }
             if (networkMonitor == null) {
-                networkMonitor = NetworkMonitor(context)
+                networkMonitor = NetworkMonitor(appContext)
             }
         }
     }
@@ -144,71 +145,45 @@ class DeckRepository(
     }
 
     /**
-     * Creates a new deck online-only.
+     * Creates a new deck in local Room storage immediately with PENDING_CREATE.
+     * Enqueues background sync asynchronously.
      */
     suspend fun createDeck(title: String, language: String, ownerUserId: String = ""): Result<com.ntando.ivu.network.Deck> {
-        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
-        if (!isOnline) {
-            Log.w(TAG, "createDeck rejected: Device is offline")
-            return Result.failure(IllegalStateException("You are offline. Creating decks requires an active internet connection."))
-        }
+        val dDao = deckDao ?: return Result.failure(IllegalStateException("DeckDao not initialized"))
+        val langEnum = parseLanguage(language)
+        val localDeck = Deck(
+            ownerUserId = ownerUserId,
+            title = title,
+            language = langEnum,
+            cardCount = 0,
+            syncState = SyncState.PENDING_CREATE,
+            updatedAt = System.currentTimeMillis()
+        )
+        val newDeckId = dDao.insertDeck(localDeck)
+        val insertedDeck = localDeck.copy(deckId = newDeckId)
 
-        Log.d(TAG, "createDeck: Requesting online creation for title='$title', language='$language'")
-        return try {
-            val request = CreateDeckRequest(title, language)
-            val response = ApiClient.apiService.createDeck(request)
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.success == true && body.data != null) {
-                    val remote = body.data
-                    val localDeck = Deck(
-                        remoteId = remote.deckId,
-                        ownerUserId = ownerUserId,
-                        title = remote.title,
-                        language = parseLanguage(remote.language),
-                        cardCount = remote.cardCount,
-                        syncState = SyncState.SYNCED,
-                        updatedAt = System.currentTimeMillis()
-                    )
-                    deckDao?.insertDeck(localDeck)
-                    Result.success(remote)
-                } else {
-                    Result.failure(Exception(body?.error ?: "Failed to create deck"))
-                }
-            } else {
-                Result.failure(Exception("Network error: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "createDeck: Exception thrown creating deck", e)
-            Result.failure(e)
-        }
+        // Enqueue background WorkManager sync
+        appContext?.let { SyncManager.enqueueSync(it) }
+
+        val netDeck = com.ntando.ivu.network.Deck(
+            deckId = insertedDeck.deckId.toString(),
+            title = insertedDeck.title,
+            language = insertedDeck.language.name.lowercase(),
+            cardCount = 0
+        )
+        return Result.success(netDeck)
     }
 
     /**
-     * Deletes a flashcard deck online-only.
+     * Deletes a flashcard deck from local Room DB immediately and enqueues background sync.
      */
     suspend fun deleteDeck(deckId: String): Result<Unit> {
-        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
-        if (!isOnline) {
-            Log.w(TAG, "deleteDeck rejected: Device is offline")
-            return Result.failure(IllegalStateException("You are offline. Deleting decks requires an active internet connection."))
+        val deckLocalId = deckId.toLongOrNull()
+        if (deckLocalId != null) {
+            deckDao?.deleteDeckById(deckLocalId)
         }
-
-        return try {
-            val response = ApiClient.apiService.deleteDeck(deckId)
-            if (response.isSuccessful && response.body()?.success == true) {
-                val deckLocalId = deckId.toLongOrNull()
-                if (deckLocalId != null) {
-                    deckDao?.deleteDeckById(deckLocalId)
-                }
-                Result.success(Unit)
-            } else {
-                Result.failure(Exception("Failed to delete deck on server"))
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "deleteDeck: Exception thrown deleting deck", e)
-            Result.failure(e)
-        }
+        appContext?.let { SyncManager.enqueueSync(it) }
+        return Result.success(Unit)
     }
 
     private fun parseLanguage(code: String): Language {

@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
 import com.ntando.ivu.data.entity.Flashcard
+import com.ntando.ivu.ui.components.PronunciationButton
+import com.ntando.ivu.util.SpeechManager
 import com.ntando.ivu.viewmodel.FlashcardListUiState
 import com.ntando.ivu.viewmodel.FlashcardListViewModel
 import java.text.SimpleDateFormat
@@ -51,6 +53,14 @@ fun FlashcardListScreen(
         Log.d(TAG, "Observed FlashcardListUiState: $uiState")
     }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val speechManager = remember { SpeechManager(context) }
+    DisposableEffect(Unit) {
+        onDispose {
+            speechManager.shutdown()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -64,6 +74,24 @@ fun FlashcardListScreen(
                     }
                 },
                 actions = {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    TextButton(
+                        onClick = {
+                            val parsedDeckId = deckId.toLongOrNull() ?: -1L
+                            Log.i(TAG, "Quiz button clicked in FlashcardListScreen for deckId: $parsedDeckId")
+                            val intent = android.content.Intent(context, com.ntando.ivu.QuizActivity::class.java).apply {
+                                putExtra("deck_id", parsedDeckId)
+                                putExtra("deck_title", deckTitle)
+                            }
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.title_quiz_mode),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Options")
@@ -117,6 +145,7 @@ fun FlashcardListScreen(
                                 items(state.cards) { card ->
                                     FlashcardListItem(
                                         card = card,
+                                        speechManager = speechManager,
                                         onDelete = { 
                                             Log.w(TAG, "Deleting card with id: ${card.cardId} from deckId: $deckId")
                                             viewModel.deleteCard(deckId, card.cardId.toString())
@@ -136,7 +165,11 @@ fun FlashcardListScreen(
  * Card component rendering front and back text of a single flashcard alongside its due status tag and a delete action button.
  */
 @Composable
-fun FlashcardListItem(card: Flashcard, onDelete: () -> Unit) {
+fun FlashcardListItem(
+    card: Flashcard,
+    speechManager: SpeechManager? = null,
+    onDelete: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -148,8 +181,28 @@ fun FlashcardListItem(card: Flashcard, onDelete: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = card.frontText, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
-                Text(text = card.backText, fontSize = 14.sp, color = Color(0xFFE88A68), modifier = Modifier.padding(top = 4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = card.frontText, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+                    if (speechManager != null) {
+                        PronunciationButton(
+                            speechManager = speechManager,
+                            textToSpeak = card.frontText,
+                            languageCode = "en",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = card.backText, fontSize = 14.sp, color = Color(0xFFE88A68), modifier = Modifier.padding(top = 4.dp))
+                    if (speechManager != null) {
+                        PronunciationButton(
+                            speechManager = speechManager,
+                            textToSpeak = card.backText,
+                            languageCode = "en",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 

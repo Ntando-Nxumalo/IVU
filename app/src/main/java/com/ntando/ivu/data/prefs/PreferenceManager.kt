@@ -30,6 +30,14 @@ class PreferenceManager(private val context: Context) {
         val LANGUAGE_KEY = stringPreferencesKey("app_language")
         /** Preference key for study reminders setting boolean. */
         val REMINDERS_KEY = booleanPreferencesKey("study_reminders")
+        /** Preference key for FCM device token string. */
+        val FCM_TOKEN_KEY = stringPreferencesKey("fcm_token")
+        /** Preference key for daily study reminder hour (0-23). */
+        val REMINDER_HOUR_KEY = intPreferencesKey("reminder_hour")
+        /** Preference key for auto-play pronunciation toggle. */
+        val AUTOPLAY_TTS_KEY = booleanPreferencesKey("autoplay_tts")
+        /** Preference key for TTS speech playback rate. */
+        val SPEECH_RATE_KEY = floatPreferencesKey("speech_rate")
     }
 
     /**
@@ -66,6 +74,47 @@ class PreferenceManager(private val context: Context) {
         }
 
     /**
+     * Flow emitting the cached FCM push notification token.
+     */
+    val fcmToken: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[FCM_TOKEN_KEY]
+        }
+
+    /**
+     * Flow emitting the daily study reminder hour (0-23). Defaults to `18` (6:00 PM).
+     */
+    val reminderHour: Flow<Int> = context.dataStore.data
+        .map { preferences ->
+            preferences[REMINDER_HOUR_KEY] ?: 18
+        }
+        .onEach { hour ->
+            Log.d(TAG, "reminderHour preference emitted: $hour")
+        }
+
+    /**
+     * Flow emitting auto-play pronunciation preference boolean. Defaults to `false`.
+     */
+    val isAutoplayTts: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[AUTOPLAY_TTS_KEY] ?: false
+        }
+        .onEach { autoplay ->
+            Log.d(TAG, "isAutoplayTts preference emitted: $autoplay")
+        }
+
+    /**
+     * Flow emitting TTS speech playback rate multiplier. Defaults to `1.0f` (Normal).
+     */
+    val speechRate: Flow<Float> = context.dataStore.data
+        .map { preferences ->
+            preferences[SPEECH_RATE_KEY] ?: 1.0f
+        }
+        .onEach { rate ->
+            Log.d(TAG, "speechRate preference emitted: $rate")
+        }
+
+    /**
      * Asynchronously updates dark theme setting in DataStore.
      *
      * @param isDark `true` to enable dark theme, `false` for light theme.
@@ -98,6 +147,54 @@ class PreferenceManager(private val context: Context) {
         Log.d(TAG, "Updating reminders preference: enabled = $enabled")
         context.dataStore.edit { preferences ->
             preferences[REMINDERS_KEY] = enabled
+        }
+    }
+
+    /**
+     * Asynchronously updates the FCM device push notification token in DataStore.
+     *
+     * @param token FCM token string.
+     */
+    suspend fun setFcmToken(token: String) {
+        Log.d(TAG, "Updating FCM token preference in DataStore")
+        context.dataStore.edit { preferences ->
+            preferences[FCM_TOKEN_KEY] = token
+        }
+    }
+
+    /**
+     * Asynchronously updates the daily study reminder hour setting in DataStore.
+     *
+     * @param hour Target hour integer between 0 and 23.
+     */
+    suspend fun setReminderHour(hour: Int) {
+        Log.d(TAG, "Updating reminder hour preference: hour = $hour")
+        context.dataStore.edit { preferences ->
+            preferences[REMINDER_HOUR_KEY] = hour
+        }
+    }
+
+    /**
+     * Asynchronously updates auto-play pronunciation preference in DataStore.
+     *
+     * @param enabled `true` to auto-play card front text on card change.
+     */
+    suspend fun setAutoplayTts(enabled: Boolean) {
+        Log.d(TAG, "Updating autoplay TTS preference: enabled = $enabled")
+        context.dataStore.edit { preferences ->
+            preferences[AUTOPLAY_TTS_KEY] = enabled
+        }
+    }
+
+    /**
+     * Asynchronously updates TTS speech rate in DataStore.
+     *
+     * @param rate Speech rate multiplier float (0.75f or 1.0f).
+     */
+    suspend fun setSpeechRate(rate: Float) {
+        Log.d(TAG, "Updating speech rate preference: rate = $rate")
+        context.dataStore.edit { preferences ->
+            preferences[SPEECH_RATE_KEY] = rate
         }
     }
 }

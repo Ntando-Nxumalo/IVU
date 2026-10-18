@@ -48,6 +48,9 @@ interface FlashcardDao {
     @Query("SELECT COUNT(*) FROM flashcards WHERE ownerUserId = :ownerUserId AND (syncState = 'PENDING_CREATE' OR syncState = 'PENDING_UPDATE')")
     fun getPendingFlashcardCountFlow(ownerUserId: String): Flow<Int>
 
+    @Query("SELECT * FROM flashcards WHERE ownerUserId = :ownerUserId AND syncState = 'PENDING_CREATE'")
+    suspend fun getPendingFlashcards(ownerUserId: String): List<Flashcard>
+
     @Query("DELETE FROM flashcards WHERE deckId = :deckId AND ownerUserId = :ownerUserId AND syncState = 'SYNCED' AND remoteId NOT IN (:serverRemoteIds)")
     suspend fun deleteSyncedFlashcardsNotIn(deckId: Long, serverRemoteIds: List<String>, ownerUserId: String)
 }

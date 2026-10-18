@@ -1,9 +1,11 @@
 package com.ntando.ivu.data.repository
 
+import android.content.Context
 import android.util.Log
 import com.ntando.ivu.data.dao.*
 import com.ntando.ivu.data.entity.Badge
 import com.ntando.ivu.data.entity.UserStats
+import com.ntando.ivu.util.NotificationHelper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
@@ -17,10 +19,12 @@ import java.util.*
  *
  * @property userStatsDao DAO for accessing and updating [UserStats].
  * @property journalDao DAO for querying user journal entries for achievement verification.
+ * @property context Optional [Context] for displaying local notifications on badge unlock.
  */
-class AchievementRepository(
+class AchievementRepository @JvmOverloads constructor(
     private val userStatsDao: UserStatsDao,
-    private val journalDao: JournalDao
+    private val journalDao: JournalDao,
+    private val context: Context? = null
 ) {
     private val TAG = "AchievementRepository"
 
@@ -55,6 +59,20 @@ class AchievementRepository(
     suspend fun recordJournalEntry(userId: String): List<Badge> {
         Log.d(TAG, "recordJournalEntry: Recording journal entry for userId=$userId")
         return recordActivity(userId, ActivityType.JOURNAL_ENTRY)
+    }
+
+    /**
+     * Records a completed quiz session, awarding 5 XP per correct answer plus 20 XP bonus for perfect score,
+     * updating study streak, and evaluating quiz achievement badges (such as QUIZ_WHIZ).
+     *
+     * @param userId Unique identifier of user.
+     * @param correct Count of questions correctly answered.
+     * @param total Total questions in the completed quiz session.
+     * @return List of newly unlocked [Badge] items.
+     */
+    suspend fun recordQuizCompleted(userId: String, correct: Int, total: Int): List<Badge> {
+        Log.d(TAG, "recordQuizCompleted: Recording quiz result ($correct / $total) for userId=$userId")
+        return recordQuizActivity(userId, correct, total)
     }
 
     /**
@@ -130,9 +148,12 @@ class AchievementRepository(
         newlyUnlockedBadgeIds.forEach { badgeId ->
             if (!finalBadges.contains(badgeId)) {
                 finalBadges.add(badgeId)
-                Badge.ALL.find { it.id == badgeId }?.let {
-                    badgesToReturn.add(it)
+                Badge.ALL.find { it.id == badgeId }?.let { badge ->
+                    badgesToReturn.add(badge)
                     Log.i(TAG, "recordActivity: Unlocked new badge '$badgeId' for userId=$userId")
+                    context?.let { ctx ->
+                        NotificationHelper.showBadgeUnlockedNotification(ctx, badge.displayName)
+                    }
                 }
             }
         }
@@ -247,6 +268,70 @@ class AchievementRepository(
         }
         
         Log.d(TAG, "checkAndUnlockBadges: Evaluated unlocked badge IDs: $unlockedIds")
+        return unlockedIds
+    }
+
+    private suspend fun recordQuizActivity(userId: String, correct: Int, total: Int): List<Badge> {
+        val currentTime = System.currentTimeMillis()
+        val stats = try {
+            userStatsDao.getUserStats(userId).first() ?: UserStats(userId)
+        } catch (e: Exception) {
+            Log.e(TAG, "recordQuizActivity: Error reading user stats for userId=$userId", e)
+            UserStats(userId)
+        }
+
+        val xpToAdd = (correct * 5) + if (correct == total && total > 0) 20 else 0
+        val newXp = stats.xp + xpToAdd
+        val newLevel = (newXp / 100).coerceAtLeast(1)
+
+        val newStreak = calculateStreak(stats, currentTime)
+        val newLongestStreak = if (newStreak > stats.longestStreak) newStreak else stats.longestStreak
+
+        val updatedStats = stats.copy(
+            xp = newXp,
+            level = newLevel,
+            currentStreak = newStreak,
+            longestStreak = newLongestStreak,
+            lastActiveDate = currentTime
+        )
+
+        val unlockedBadgeIds = checkAndUnlockQuizBadges(updatedStats, correct, total)
+        val finalBadges = stats.badges.toMutableList()
+        val badgesToReturn = mutableListOf<Badge>()
+
+        unlockedBadgeIds.forEach { badgeId ->
+            if (!finalBadges.contains(badgeId)) {
+                finalBadges.add(badgeId)
+                Badge.ALL.find { it.id == badgeId }?.let { badge ->
+                    badgesToReturn.add(badge)
+                    Log.i(TAG, "recordQuizActivity: Unlocked new badge '$badgeId' for userId=$userId")
+                    context?.let { ctx ->
+                        NotificationHelper.showBadgeUnlockedNotification(ctx, badge.displayName)
+                    }
+                }
+            }
+        }
+
+        try {
+            userStatsDao.insertOrUpdate(updatedStats.copy(badges = finalBadges))
+        } catch (e: Exception) {
+            Log.e(TAG, "recordQuizActivity: Failed to save updated stats", e)
+        }
+
+        return badgesToReturn
+    }
+
+    private fun checkAndUnlockQuizBadges(stats: UserStats, correct: Int, total: Int): List<String> {
+        val unlockedIds = mutableListOf<String>()
+
+        if (stats.currentStreak >= 7) unlockedIds.add(Badge.STREAK_7.id)
+        if (stats.currentStreak >= 30) unlockedIds.add(Badge.STREAK_30.id)
+        if (stats.totalReviews >= 50) unlockedIds.add(Badge.CARDS_50.id)
+
+        if (correct == total && total >= 5) {
+            unlockedIds.add(Badge.QUIZ_WHIZ.id)
+        }
+
         return unlockedIds
     }
 }

@@ -7,6 +7,52 @@
     <string name="nav_profile">Ek</string>
     <string name="nav_report">Ek</string>
     <string name="offline_banner_text">Vanlynmodus – Wys geaagterste data</string>
+    <string name="notification_permission_title">Aktiveer studie-herinneringe</string>
+    <string name="notification_permission_explanation">Laat IVU toe om daaglikse herinneringe en reeks-kennisgewings te stuur.</string>
+    <string name="label_reminder_hour">Herinneringstyd</string>
+    <string name="btn_test_notification">Stuur toets-kennisgewing</string>
+    <string name="toast_test_notification_sent">Kennisgewing kom oor 10 sekondes - sluit jou foon</string>
+    <string name="toast_test_notification_offline">Jy is vanlyn. Toets-kennisgewing vereis \'n netwerkverbinding.</string>
+    <string name="title_badge_unlocked">🎉 Kenteken Oopgesluit!</string>
+    <string name="body_badge_unlocked">Kenteken oopgesluit: %s</string>
+    <string name="btn_test_badge_notification">Toets kenteken-kennisgewing</string>
+
+    <!-- Quiz Mode Strings (Afrikaans) -->
+    <!-- AUTO-TRANSLATED --> <string name="title_quiz_mode">Vasvra Modus</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_mode_multiple_choice">Meervoudige keuse</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_mode_type_answer">Tik antwoord</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_mode_mixed">Gemengd</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_direction_front_to_back">Voor na agter</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_direction_back_to_front">Agter na voor</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_quiz_length">Vrae</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_length_all">Alles (%d)</string>
+    <!-- AUTO-TRANSLATED --> <string name="mc_disabled_explanation">Meervoudige keuse vereis minstens 4 kaarte in die dek.</string>
+    <!-- AUTO-TRANSLATED --> <string name="empty_quiz_deck">Hierdie dek het nog geen kaarte nie. Voeg kaarte by om \'n vasvra te begin!</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_start_quiz">Begin Vasvra</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_check_answer">Kontroleer</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_next_question">Volgende</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_retry_missed">Probeer gemiste weer</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_play_again">Speel Weer</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_back_to_deck">Terug na Dek</string>
+    <!-- AUTO-TRANSLATED --> <string name="dialog_leave_quiz_title">Verlaat Vasvra?</string>
+    <!-- AUTO-TRANSLATED --> <string name="dialog_leave_quiz_message">Jou vasvra-vordering sal verlore gaan.</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_leave">Verlaat</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_quiz_completed">Vasvra Voltooi!</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_correct">Korrek!</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_incorrect">Verkeerd</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_correct_answer_is">Korrekte antwoord: %s</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_your_answer">Jou antwoord: %s</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_missed_questions">Gemiste Vrae</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_xp_earned">+%d XP Verwerf!</string>
+
+    <!-- TTS Strings (Afrikaans) -->
+    <!-- AUTO-TRANSLATED --> <string name="content_desc_speak">Spreek teks uit</string>
+    <!-- AUTO-TRANSLATED --> <string name="tts_lang_not_installed">Hierdie taal se stem is nie op jou foon geïnstalleer nie</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_tts_settings">Instellings</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_autoplay_tts">Outomatiese uitspraak</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_speech_rate">Praatspoed</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_speech_slow">Stadig</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_speech_normal">Normaal</string>
 
     <string name="welcome_back">Welkom terug</string>
     <string name="welcome_subtitle">Sawubona! Goed om jou te sien.</string>

@@ -157,3 +157,25 @@ data class AiRequest(
 data class AiReplyResponse(
     val reply: String
 )
+
+/**
+ * Request payload for registering an FCM push notification token.
+ *
+ * @property token Firebase Cloud Messaging token string.
+ * @property reminderEnabled Indicates whether study reminders are enabled.
+ * @property reminderHour Target hour (0-23) for daily study reminders.
+ */
+data class RegisterTokenRequest(
+    val token: String,
+    val reminderEnabled: Boolean,
+    val reminderHour: Int
+)
+
+/**
+ * Request payload for triggering a delayed test push notification.
+ *
+ * @property delaySeconds Delay in seconds before sending the test notification.
+ */
+data class TestNotificationRequest(
+    val delaySeconds: Int = 10
+)

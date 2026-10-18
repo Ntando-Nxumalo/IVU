@@ -138,4 +138,35 @@ interface IvuApiService {
      */
     @POST("ai/ask")
     suspend fun askAI(@Body request: AiRequest): Response<ApiResponse<AiReplyResponse>>
+
+    // --------- Notifications ---------
+
+    /**
+     * Registers an FCM push notification device token and reminder settings.
+     * Endpoint: `POST notifications/register-token`
+     *
+     * @param request [RegisterTokenRequest] payload.
+     * @return [Response] containing [ApiResponse].
+     */
+    @POST("notifications/register-token")
+    suspend fun registerNotificationToken(@Body request: RegisterTokenRequest): Response<ApiResponse<Any>>
+
+    /**
+     * Unregisters/deletes the FCM push notification device token on sign out.
+     * Endpoint: `DELETE notifications/token`
+     *
+     * @return [Response] containing [ApiResponse].
+     */
+    @DELETE("notifications/token")
+    suspend fun deleteNotificationToken(): Response<ApiResponse<Any>>
+
+    /**
+     * Triggers a test FCM push notification scheduled after specified delay.
+     * Endpoint: `POST notifications/test`
+     *
+     * @param request [TestNotificationRequest] payload.
+     * @return [Response] containing [ApiResponse].
+     */
+    @POST("notifications/test")
+    suspend fun sendTestNotification(@Body request: TestNotificationRequest): Response<ApiResponse<Any>>
 }

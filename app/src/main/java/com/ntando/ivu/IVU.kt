@@ -43,15 +43,20 @@ class IVU : AppCompatActivity() {
     private val tag = "IVU"
     private var currentUserId: Long = -1
 
-    /**
-     * Called when the activity is starting. Configures app theme, language locale,
-     * validates user authentication, inflates the layout, and initializes dashboard widgets.
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        Log.i(tag, "POST_NOTIFICATIONS permission result on IVU launch: isGranted=$isGranted")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag, "onCreate: Initializing Home screen")
+
+        // Create notification channel and schedule study reminders
+        com.ntando.ivu.util.NotificationHelper.createNotificationChannel(this)
+        com.ntando.ivu.util.StudyReminderScheduler.scheduleDailyReminder(this)
+        checkNotificationPermission()
         
         // Observe and apply theme preferences
         val preferenceManager = PreferenceManager(this)
@@ -125,6 +130,19 @@ class IVU : AppCompatActivity() {
 
         setupUI()
         setupNavigation()
+    }
+
+    private fun checkNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.d(tag, "Prompting for POST_NOTIFICATIONS permission on home screen")
+                requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     /**

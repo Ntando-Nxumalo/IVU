@@ -7,6 +7,52 @@
     <string name="nav_profile">Mina</string>
     <string name="nav_report">Mina</string>
     <string name="offline_banner_text">Imodi engaxhunyiwe ku-inthanethi – Ibonisa idatha egciniwe</string>
+    <string name="notification_permission_title">Vula izikhumbuzi zokufunda</string>
+    <string name="notification_permission_explanation">Vumela i-IVU ukuthi ithumele izikhumbuzi zokufunda zansuku zonke nezaziso zochungechunge.</string>
+    <string name="label_reminder_hour">Isikhathi sesikhumbuzi</string>
+    <string name="btn_test_notification">Thumela isaziso sokuhlola</string>
+    <string name="toast_test_notification_sent">Isaziso siyeza emasekhondini ayi-10 - khiya ucingo lwakho</string>
+    <string name="toast_test_notification_offline">Awuqumelekile. Isaziso sokuhlola sidinga uxhumano lwenethiwekhi.</string>
+    <string name="title_badge_unlocked">🎉 Ibheji Livuliwe!</string>
+    <string name="body_badge_unlocked">Ibheji livuliwe: %s</string>
+    <string name="btn_test_badge_notification">Hlola isaziso sebheji</string>
+
+    <!-- Quiz Mode Strings (Zulu) -->
+    <!-- AUTO-TRANSLATED --> <string name="title_quiz_mode">Imodi Ye-Khowizi</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_mode_multiple_choice">Izinketho eziningi</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_mode_type_answer">Thayipha impendulo</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_mode_mixed">Kuhlanganisiwe</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_direction_front_to_back">Ngaphambili ukuya ngemuva</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_direction_back_to_front">Ngemuva ukuya ngaphambili</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_quiz_length">Imibuzo</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_length_all">Kokonke (%d)</string>
+    <!-- AUTO-TRANSLATED --> <string name="mc_disabled_explanation">Izinketho eziningi zidinga okungenani amakhadi ayi-4 edekhini.</string>
+    <!-- AUTO-TRANSLATED --> <string name="empty_quiz_deck">Idekhi hle ayina makhadi. Engeza amakhadi ukuze uqale ikhowizi!</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_start_quiz">Qala Ikhowizi</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_check_answer">Hlola</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_next_question">Okulandelayo</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_retry_missed">Phinda ezingaphumelelanga</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_play_again">Dlala Futhi</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_back_to_deck">Emuva eDekhini</string>
+    <!-- AUTO-TRANSLATED --> <string name="dialog_leave_quiz_title">Ufuna ukuphuma ekhowizini?</string>
+    <!-- AUTO-TRANSLATED --> <string name="dialog_leave_quiz_message">Inqubekelaphambili yakho yekhowizi izolahleka.</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_leave">Phuma</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_quiz_completed">Ikhowizi Iqediwe!</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_correct">Kuyalungisa!</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_incorrect">Akulungile</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_correct_answer_is">Impendulo eyanele: %s</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_your_answer">Impendulo yakho: %s</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_missed_questions">Imibuzo ezingaphumelelanga</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_xp_earned">+%d XP Utholakele!</string>
+
+    <!-- TTS Strings (Zulu) -->
+    <!-- AUTO-TRANSLATED --> <string name="content_desc_speak">Framula umbhalo</string>
+    <!-- AUTO-TRANSLATED --> <string name="tts_lang_not_installed">Izwi lalolu limi alifakiwe ocingweni lwakho</string>
+    <!-- AUTO-TRANSLATED --> <string name="btn_tts_settings">Izilungiselelo</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_autoplay_tts">Khipha igama ngokuzenzakalelayo</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_speech_rate">Ijubane lokukhuluma</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_speech_slow">Kancane</string>
+    <!-- AUTO-TRANSLATED --> <string name="label_speech_normal">Kwesijwayelekile</string>
 
     <string name="welcome_back">Wamukelekile futhi</string>
     <string name="welcome_subtitle">Sawubona! Kuhle ukukubona.</string>

@@ -11,6 +11,8 @@ import com.ntando.ivu.data.repository.DeckRepository
 import com.ntando.ivu.data.repository.FlashcardRepository
 import com.ntando.ivu.data.repository.JournalRepository
 import com.ntando.ivu.network.ApiClient
+import com.ntando.ivu.network.CreateDeckRequest
+import com.ntando.ivu.network.CreateFlashcardRequest
 import com.ntando.ivu.network.CreateJournalRequest
 import com.ntando.ivu.network.ReviewRequest
 import retrofit2.HttpException
@@ -57,7 +59,78 @@ class SyncWorker(
 
         try {
             // ----------------------------------------------------
-            // 1. Process Pending Journal Entries
+            // 1a. Process Pending Decks
+            // ----------------------------------------------------
+            val pendingDecks = deckDao.getPendingDecks(ownerUserId)
+            Log.d(TAG, "Found ${pendingDecks.size} pending decks to sync for ownerUserId='$ownerUserId'")
+
+            for (deck in pendingDecks) {
+                try {
+                    val request = CreateDeckRequest(
+                        title = deck.title,
+                        language = deck.language.name.lowercase()
+                    )
+                    Log.d(TAG, "Posting pending deck localId=${deck.deckId}, title='${deck.title}'")
+                    val response = ApiClient.apiService.createDeck(request)
+
+                    if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                        val serverData = response.body()!!.data!!
+                        val updatedDeck = deck.copy(
+                            remoteId = serverData.deckId,
+                            syncState = SyncState.SYNCED,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                        deckDao.updateDeck(updatedDeck)
+                        Log.i(TAG, "Deck localId=${deck.deckId} synced successfully. Assigned remoteId='${serverData.deckId}'")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to sync pending deck localId=${deck.deckId}", e)
+                }
+            }
+
+            // ----------------------------------------------------
+            // 1b. Process Pending Flashcards
+            // ----------------------------------------------------
+            val pendingFlashcards = flashcardDao.getPendingFlashcards(ownerUserId)
+            Log.d(TAG, "Found ${pendingFlashcards.size} pending flashcards to sync for ownerUserId='$ownerUserId'")
+
+            for (card in pendingFlashcards) {
+                try {
+                    val parentDeck = deckDao.getDeckById(card.deckId)
+                    val deckRemoteId = parentDeck?.remoteId
+
+                    if (deckRemoteId.isNullOrBlank()) {
+                        Log.w(TAG, "Pending flashcard cardId=${card.cardId} skipped: parent deck has no remoteId yet")
+                        continue
+                    }
+
+                    val request = CreateFlashcardRequest(
+                        frontText = card.frontText,
+                        backText = card.backText
+                    )
+                    Log.d(TAG, "Posting pending flashcard cardId=${card.cardId} for deckRemoteId='$deckRemoteId'")
+                    val response = ApiClient.apiService.createCard(
+                        deckId = deckRemoteId,
+                        request = request
+                    )
+
+                    if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                        val serverData = response.body()!!.data!!
+                        val updatedCard = card.copy(
+                            remoteId = serverData.cardId,
+                            syncState = SyncState.SYNCED,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                        flashcardDao.updateFlashcard(updatedCard)
+                        Log.i(TAG, "Flashcard cardId=${card.cardId} synced successfully. Assigned remoteId='${serverData.cardId}'")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to sync pending flashcard cardId=${card.cardId}", e)
+                }
+            }
+
+            // ----------------------------------------------------
+            // 1c. Process Pending Journal Entries
             // ----------------------------------------------------
             val pendingJournalEntries = journalDao.getPendingJournalEntries(ownerUserId)
             Log.d(TAG, "Found ${pendingJournalEntries.size} pending journal entries to sync for ownerUserId='$ownerUserId'")

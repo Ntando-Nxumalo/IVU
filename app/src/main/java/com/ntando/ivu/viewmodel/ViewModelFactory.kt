@@ -88,6 +88,16 @@ class ViewModelFactory(private val repository: Any) : ViewModelProvider.Factory 
                 SettingsViewModel(params.first, params.second) as T
             }
 
+            modelClass.isAssignableFrom(QuizViewModel::class.java) -> {
+                Log.d(TAG, "Instantiating QuizViewModel")
+                if (repository is Pair<*, *>) {
+                    val params = repository as Pair<FlashcardRepository, AchievementRepository?>
+                    QuizViewModel(params.first, params.second) as T
+                } else {
+                    QuizViewModel(repository as FlashcardRepository) as T
+                }
+            }
+
             else -> {
                 Log.e(TAG, "Failed to instantiate ViewModel: Unknown class ${modelClass.name}")
                 throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

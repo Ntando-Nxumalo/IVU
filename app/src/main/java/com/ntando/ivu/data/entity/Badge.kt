@@ -50,9 +50,16 @@ sealed class Badge(
         description = "Wrote your first journal entry"
     )
 
+    /** Badge awarded when the user scores 100% on a quiz of at least 5 questions. */
+    object QUIZ_WHIZ : Badge(
+        id = "QUIZ_WHIZ",
+        displayName = "Quiz Whiz",
+        description = "Scored 100% on a quiz of 5+ questions"
+    )
+
     companion object {
         /** Lazy-initialized list containing all defined [Badge] object instances. */
-        val ALL by lazy { listOf(FIRST_REVIEW, STREAK_7, STREAK_30, CARDS_50, FIRST_JOURNAL) }
+        val ALL by lazy { listOf(FIRST_REVIEW, STREAK_7, STREAK_30, CARDS_50, FIRST_JOURNAL, QUIZ_WHIZ) }
 
         /**
          * Resolves a [Badge] object matching the provided [id] string.

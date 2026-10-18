@@ -228,7 +228,7 @@ class FlashcardRepository(
     }
 
     /**
-     * Creates a new flashcard in Room locally with `PENDING_CREATE`. Attempts online creation if connected.
+     * Creates a new flashcard in Room locally with `PENDING_CREATE`. Triggers background sync asynchronously.
      */
     suspend fun createCard(
         deckLocalId: Long,
@@ -252,35 +252,14 @@ class FlashcardRepository(
         localCard = localCard.copy(cardId = newCardId)
         dDao.updateCardCount(deckLocalId)
 
-        // Enqueue background sync worker
+        // Enqueue background sync worker asynchronously
         appContext?.let { SyncManager.enqueueSync(it) }
-
-        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
-        if (isOnline && deckRemoteId != null) {
-            try {
-                val response = ApiClient.apiService.createCard(
-                    deckId = deckRemoteId,
-                    request = CreateFlashcardRequest(frontText = front, backText = back)
-                )
-                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
-                    val serverData = response.body()!!.data!!
-                    localCard = localCard.copy(
-                        remoteId = serverData.cardId,
-                        syncState = SyncState.SYNCED,
-                        updatedAt = System.currentTimeMillis()
-                    )
-                    fDao.updateFlashcard(localCard)
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "createCard: Online card creation failed, card kept as PENDING_CREATE locally", e)
-            }
-        }
 
         return Result.success(localCard)
     }
 
     /**
-     * Deletes a flashcard from local Room DB and attempts server deletion if online.
+     * Deletes a flashcard from local Room DB immediately and enqueues background sync worker.
      */
     suspend fun deleteCard(
         cardLocalId: Long,
@@ -289,17 +268,12 @@ class FlashcardRepository(
         deckRemoteId: String?,
         ownerUserId: String
     ): Result<Unit> {
-        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
-        if (isOnline && cardRemoteId != null && deckRemoteId != null) {
-            try {
-                ApiClient.apiService.deleteCard(deckRemoteId, cardRemoteId)
-            } catch (e: Exception) {
-                Log.w(TAG, "deleteCard: Server delete failed for cardRemoteId=$cardRemoteId", e)
-            }
-        }
-
         flashcardDao?.deleteFlashcardById(cardLocalId)
         deckDao?.updateCardCount(deckLocalId)
+
+        // Enqueue background sync worker asynchronously
+        appContext?.let { SyncManager.enqueueSync(it) }
+
         return Result.success(Unit)
     }
 
@@ -363,7 +337,10 @@ class FlashcardRepository(
 
     suspend fun createCard(deckId: String, front: String, back: String, ownerUserId: String = ""): Result<com.ntando.ivu.network.Flashcard> {
         val deckLocalId = deckId.toLongOrNull() ?: 0L
-        val result = createCard(deckLocalId, deckId, front, back, ownerUserId)
+        val deck = deckDao?.getDeckById(deckLocalId)
+        val actualOwnerUserId = if (ownerUserId.isNotBlank()) ownerUserId else (deck?.ownerUserId ?: ownerUserId)
+        val deckRemoteId = deck?.remoteId
+        val result = createCard(deckLocalId, deckRemoteId, front, back, actualOwnerUserId)
         return if (result.isSuccess) {
             val localCard = result.getOrThrow()
             val netCard = com.ntando.ivu.network.Flashcard(

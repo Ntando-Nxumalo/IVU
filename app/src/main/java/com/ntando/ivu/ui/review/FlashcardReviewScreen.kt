@@ -21,6 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ntando.ivu.R
+import com.ntando.ivu.data.prefs.PreferenceManager
+import com.ntando.ivu.ui.components.PronunciationButton
+import com.ntando.ivu.util.SpeechManager
 import com.ntando.ivu.viewmodel.FlashcardReviewUiState
 import com.ntando.ivu.viewmodel.FlashcardReviewViewModel
 
@@ -257,7 +260,30 @@ fun ReviewContent(
     onFlip: () -> Unit,
     onRate: (String) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val speechManager = remember { SpeechManager(context) }
+    DisposableEffect(Unit) {
+        onDispose {
+            speechManager.shutdown()
+        }
+    }
+
+    val preferenceManager = remember(context) { PreferenceManager(context.applicationContext) }
+    val isAutoplayTts by preferenceManager.isAutoplayTts.collectAsState(initial = false)
+    val speechRate by preferenceManager.speechRate.collectAsState(initial = 1.0f)
+
     val card = cards[currentIndex]
+
+    val isReady by speechManager.isReady.collectAsState()
+
+    LaunchedEffect(card.cardId, isReady) {
+        if (isReady) {
+            speechManager.setSpeechRate(speechRate)
+            if (isAutoplayTts) {
+                speechManager.speak(card.frontText, "en")
+            }
+        }
+    }
     
     val rotation by animateFloatAsState(
         targetValue = if (isFlipped) 180f else 0f,
@@ -295,30 +321,42 @@ fun ReviewContent(
             ) {
                 if (rotation <= 90f) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = card.frontText,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            color = Color(0xFF3D2B1F)
-                        )
-                        Text(
-                            text = "(isiZulu)", // Should ideally be dynamic
-                            fontSize = 16.sp,
-                            color = Color.LightGray,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = card.frontText,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                color = Color(0xFF3D2B1F)
+                            )
+                            PronunciationButton(
+                                speechManager = speechManager,
+                                textToSpeak = card.frontText,
+                                languageCode = "en",
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
                 } else {
                     // Back Text (Rotated 180)
-                    Text(
-                        text = card.backText,
+                    Row(
                         modifier = Modifier.graphicsLayer { rotationY = 180f },
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        color = Color(0xFFE88A68)
-                    )
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = card.backText,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFFE88A68)
+                        )
+                        PronunciationButton(
+                            speechManager = speechManager,
+                            textToSpeak = card.backText,
+                            languageCode = "en",
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 }
             }
         }

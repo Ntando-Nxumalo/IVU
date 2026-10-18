@@ -39,6 +39,7 @@ fun DecksScreen(
     flashcardViewModel: FlashcardViewModel,
     onDeckClick: (String) -> Unit,
     onViewCards: (String, String) -> Unit,
+    onStartQuiz: (Long, String) -> Unit = { _, _ -> },
     onNavigate: (String) -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -146,6 +147,10 @@ fun DecksScreen(
                                             Log.d(TAG, "View cards button clicked for deckId: ${deck.deckId}, title: ${deck.title}")
                                             onViewCards(deck.deckId.toString(), deck.title)
                                         },
+                                        onStartQuiz = {
+                                            Log.d(TAG, "Start quiz button clicked for deckId: ${deck.deckId}, title: ${deck.title}")
+                                            onStartQuiz(deck.deckId, deck.title)
+                                        },
                                         onDelete = {
                                             Log.d(TAG, "Delete deck action triggered for deck: ${deck.title}")
                                             deckToDelete = deck
@@ -241,6 +246,7 @@ fun DeckItem(
     onClick: () -> Unit,
     onAddCard: () -> Unit,
     onViewCards: () -> Unit,
+    onStartQuiz: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -309,12 +315,30 @@ fun DeckItem(
                 trackColor = Color(0xFFEEEEEE)
             )
 
-            Text(
-                text = stringResource(R.string.cards_mastered_format, 0, deck.cardCount),
-                fontSize = 12.sp,
-                color = Color.LightGray,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.cards_mastered_format, 0, deck.cardCount),
+                    fontSize = 12.sp,
+                    color = Color.LightGray
+                )
+                OutlinedButton(
+                    onClick = onStartQuiz,
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.title_quiz_mode),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }

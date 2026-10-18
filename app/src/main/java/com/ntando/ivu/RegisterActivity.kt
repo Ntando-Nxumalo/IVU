@@ -1,12 +1,17 @@
 package com.ntando.ivu
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -21,6 +26,7 @@ import com.ntando.ivu.data.database.DatabaseProvider
 import com.ntando.ivu.data.entity.Achievement
 import com.ntando.ivu.data.entity.User
 import com.ntando.ivu.data.repository.AuthRepository
+import com.ntando.ivu.network.FcmTokenManager
 import com.ntando.ivu.ui.auth.RegisterScreen
 import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.RegisterViewModel
@@ -29,12 +35,6 @@ import kotlinx.coroutines.launch
 
 /**
  * [RegisterActivity] handles the creation of new user accounts for IVU.
- *
- * Responsibilities:
- * - Presents the account registration UI ([RegisterScreen]) in Jetpack Compose.
- * - Supports email/password registration and Google Sign-In authentication via [CredentialManager].
- * - Seeds default user achievements into Room database upon initial profile creation.
- * - Stores active user session details in [android.content.SharedPreferences] and navigates to [IVU] home.
  */
 class RegisterActivity : ComponentActivity() {
 
@@ -47,11 +47,13 @@ class RegisterActivity : ComponentActivity() {
         ViewModelFactory(authRepository)
     }
 
-    /**
-     * Initializes activity lifecycle, FirebaseAuth, CredentialManager, and Compose content view.
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        Log.i(tag, "POST_NOTIFICATIONS permission result: isGranted=$isGranted")
+        navigateToHome()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(tag, "onCreate: Starting RegisterActivity")
@@ -80,27 +82,16 @@ class RegisterActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Called when the activity becomes visible.
-     */
     override fun onStart() {
         super.onStart()
         Log.d(tag, "onStart: RegisterActivity visible")
     }
 
-    /**
-     * Called before the activity is destroyed.
-     */
     override fun onDestroy() {
         super.onDestroy()
         Log.d(tag, "onDestroy: RegisterActivity destroyed")
     }
 
-    /**
-     * Completes post-registration user creation logic.
-     * Creates local database records (`User` and initial [Achievement] items) if not present,
-     * updates session preferences, and routes user to [IVU].
-     */
     private fun handleSuccessfulRegistration() {
         val firebaseUser = auth.currentUser
         if (firebaseUser == null) {
@@ -118,7 +109,6 @@ class RegisterActivity : ComponentActivity() {
             try {
                 val db = DatabaseProvider.getDatabase(this@RegisterActivity)
                 
-                // Check if local user already exists
                 val existingUser = db.userDao().getUserByEmail(email)
                 val userId = if (existingUser == null) {
                     Log.i(tag, "Creating new local user record and initial achievements for: $email")
@@ -126,7 +116,6 @@ class RegisterActivity : ComponentActivity() {
                         User(name = name, email = email, password = "")
                     )
                     
-                    // Initialize achievements for new user
                     val firebaseUid = firebaseUser.uid
                     val initialAchievements = listOf(
                         Achievement(userId = firebaseUid, title = "Quick Starter", description = "Create your first study deck", icon = "bolt"),
@@ -142,19 +131,18 @@ class RegisterActivity : ComponentActivity() {
                     existingUser.id
                 }
 
-                // Save session preferences
                 val sharedPref = getSharedPreferences("IVUPrefs", MODE_PRIVATE)
                 val isSaved = with(sharedPref.edit()) {
                     putLong("current_user_id", userId)
                     putString("firebase_uid", firebaseUser.uid)
                     commit()
                 }
-                Log.i(tag, "Registration session saved successfully: $isSaved. Redirecting to IVU Home...")
-                
-                val intent = Intent(this@RegisterActivity, IVU::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
+                Log.i(tag, "Registration session saved successfully: $isSaved.")
+
+                // Register FCM token (non-fatal)
+                FcmTokenManager(this@RegisterActivity).registerCurrentToken()
+
+                checkPermissionAndProceed()
             } catch (e: Exception) {
                 Log.e(tag, "Failed to complete local registration and achievement seeding", e)
                 Toast.makeText(this@RegisterActivity, "Account created, but local sync failed. Please log in.", Toast.LENGTH_LONG).show()
@@ -164,9 +152,26 @@ class RegisterActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Initiates Google Sign-In request flow via [CredentialManager].
-     */
+    private fun checkPermissionAndProceed() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(tag, "Requesting POST_NOTIFICATIONS permission on Android 13+")
+                Toast.makeText(this, getString(R.string.notification_permission_explanation), Toast.LENGTH_LONG).show()
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return
+            }
+        }
+        navigateToHome()
+    }
+
+    private fun navigateToHome() {
+        Log.i(tag, "Redirecting to IVU Home...")
+        val intent = Intent(this@RegisterActivity, IVU::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
     private fun signInWithGoogle() {
         Log.d(tag, "signInWithGoogle: Building Google ID credential request")
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
@@ -193,11 +198,6 @@ class RegisterActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Processes Google credential result and authenticates with Firebase Auth.
-     *
-     * @param credential The credential returned from Google Sign-In flow.
-     */
     private fun handleGoogleSignInResult(credential: androidx.credentials.Credential) {
         Log.d(tag, "handleGoogleSignInResult: credential type = ${credential.type}")
         val googleIdTokenCredential = try {

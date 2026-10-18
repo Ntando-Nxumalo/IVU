@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -70,6 +72,10 @@
             android:name="com.ntando.ivu.AchievementsActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name="com.ntando.ivu.QuizActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -80,6 +86,23 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <service
+            android:name="com.ntando.ivu.service.IvuMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="com.ntando.ivu.util.StudyReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.ntando.ivu.ACTION_DAILY_STUDY_REMINDER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

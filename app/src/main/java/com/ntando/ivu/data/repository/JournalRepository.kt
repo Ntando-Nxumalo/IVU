@@ -171,35 +171,10 @@ class JournalRepository(
         localEntry = localEntry.copy(entryId = newId)
         Log.i(TAG, "createEntry: Inserted journal entry locally in Room with entryId=$newId, syncState=PENDING_CREATE")
 
-        // Trigger SyncWorker
+        // Trigger SyncWorker asynchronously
         appContext?.let { SyncManager.enqueueSync(it) }
 
         val unlockedBadges = achievementRepository?.recordJournalEntry(ownerUserId) ?: emptyList()
-
-        val isOnline = networkMonitor?.isCurrentlyConnected() ?: true
-        if (isOnline) {
-            try {
-                val request = CreateJournalRequest(
-                    date = date,
-                    mood = mood,
-                    text = text,
-                    linkedDeckId = linkedDeckId
-                )
-                val response = ApiClient.apiService.createJournalEntry(request)
-                if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
-                    val serverData = response.body()!!.data!!
-                    localEntry = localEntry.copy(
-                        remoteId = serverData.entryId,
-                        syncState = SyncState.SYNCED,
-                        updatedAt = System.currentTimeMillis()
-                    )
-                    dao.updateEntry(localEntry)
-                    Log.i(TAG, "createEntry: Immediate online creation succeeded with remoteId=${serverData.entryId}")
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "createEntry: Immediate online sync failed. Kept entry as PENDING_CREATE locally.", e)
-            }
-        }
 
         return Result.success(Pair(localEntry, unlockedBadges))
     }

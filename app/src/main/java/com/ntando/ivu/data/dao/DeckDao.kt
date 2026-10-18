@@ -42,6 +42,9 @@ interface DeckDao {
     @Query("SELECT COUNT(*) FROM decks WHERE ownerUserId = :ownerUserId AND (syncState = 'PENDING_CREATE' OR syncState = 'PENDING_UPDATE')")
     fun getPendingDeckCountFlow(ownerUserId: String): Flow<Int>
 
+    @Query("SELECT * FROM decks WHERE ownerUserId = :ownerUserId AND syncState = 'PENDING_CREATE'")
+    suspend fun getPendingDecks(ownerUserId: String): List<Deck>
+
     @Query("DELETE FROM decks WHERE ownerUserId = :ownerUserId AND syncState = 'SYNCED' AND remoteId NOT IN (:serverRemoteIds)")
     suspend fun deleteSyncedDecksNotIn(serverRemoteIds: List<String>, ownerUserId: String)
 

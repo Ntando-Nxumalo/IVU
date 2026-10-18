@@ -59,6 +59,18 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
         Log.d(TAG, "FlashcardViewModel initialized")
     }
 
+    private var ownerUserId: String = ""
+
+    /**
+     * Updates current user ID.
+     */
+    fun setOwnerUserId(userId: String) {
+        if (ownerUserId != userId) {
+            Log.d(TAG, "setOwnerUserId updated to '$userId'")
+            ownerUserId = userId
+        }
+    }
+
     /**
      * Creates a new flashcard with front and back text content in the given deck.
      *
@@ -68,10 +80,17 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
      * @param onResult Callback returning true if creation succeeded, false otherwise.
      */
     fun createFlashcard(deckId: String, front: String, back: String, onResult: (Boolean) -> Unit) {
-        Log.i(TAG, "createFlashcard requested for deckId: $deckId, front: \"$front\", back: \"$back\"")
+        createFlashcard(deckId, front, back, ownerUserId, onResult)
+    }
+
+    /**
+     * Creates a new flashcard with front and back text content in the given deck for [ownerUserId].
+     */
+    fun createFlashcard(deckId: String, front: String, back: String, ownerUserId: String, onResult: (Boolean) -> Unit) {
+        Log.i(TAG, "createFlashcard requested for deckId: $deckId, front: \"$front\", back: \"$back\", ownerUserId: '$ownerUserId'")
         _uiState.value = FlashcardUiState.Loading
         viewModelScope.launch {
-            val result = repository.createCard(deckId, front, back)
+            val result = repository.createCard(deckId, front, back, ownerUserId)
             if (result.isSuccess) {
                 val createdCard = result.getOrThrow()
                 Log.i(TAG, "createFlashcard succeeded: cardId ${createdCard.cardId}")

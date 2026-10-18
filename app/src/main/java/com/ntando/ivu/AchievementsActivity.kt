@@ -57,13 +57,16 @@ class AchievementsActivity : ComponentActivity() {
         val db = DatabaseProvider.getDatabase(this)
         val repository = AchievementRepository(
             db.userStatsDao(),
-            db.journalDao()
+            db.journalDao(),
+            applicationContext
         )
 
         // Instantiate ViewModel using custom Factory with parameter binding
         val viewModel: AchievementViewModel by viewModels {
             ViewModelFactory(repository to firebaseUid)
         }
+
+        val unlockedBadgeName = intent.getStringExtra("UNLOCKED_BADGE_NAME")
 
         // Set up Jetpack Compose UI layout
         setContent {
@@ -73,6 +76,7 @@ class AchievementsActivity : ComponentActivity() {
             IVUTheme(darkTheme = isDarkTheme) {
                 AchievementScreen(
                     viewModel = viewModel,
+                    initialBadgeName = unlockedBadgeName,
                     onNavigate = { screen ->
                         Log.i(TAG, "Navigation requested to screen: '$screen'")
                         when (screen) {

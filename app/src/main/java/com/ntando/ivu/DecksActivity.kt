@@ -38,7 +38,8 @@ class DecksActivity : ComponentActivity() {
         val db = DatabaseProvider.getDatabase(this)
         val achievementRepository = AchievementRepository(
             db.userStatsDao(),
-            db.journalDao()
+            db.journalDao(),
+            applicationContext
         )
         ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid, this))
     }
@@ -60,6 +61,7 @@ class DecksActivity : ComponentActivity() {
         }
 
         viewModel.setOwnerUserId(firebaseUid)
+        flashcardViewModel.setOwnerUserId(firebaseUid)
 
         setContent {
             val preferenceManager = PreferenceManager(this)
@@ -79,6 +81,14 @@ class DecksActivity : ComponentActivity() {
                     onViewCards = { deckId, deckTitle ->
                         Log.i(TAG, "View cards requested - deckId: $deckId, deckTitle: $deckTitle")
                         val intent = Intent(this, FlashcardListActivity::class.java).apply {
+                            putExtra("deck_id", deckId)
+                            putExtra("deck_title", deckTitle)
+                        }
+                        startActivity(intent)
+                    },
+                    onStartQuiz = { deckId, deckTitle ->
+                        Log.i(TAG, "Start quiz requested - deckId: $deckId, deckTitle: $deckTitle")
+                        val intent = Intent(this, QuizActivity::class.java).apply {
                             putExtra("deck_id", deckId)
                             putExtra("deck_title", deckTitle)
                         }

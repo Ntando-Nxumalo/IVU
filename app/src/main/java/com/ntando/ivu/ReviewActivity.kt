@@ -31,7 +31,8 @@ class ReviewActivity : ComponentActivity() {
         val db = DatabaseProvider.getDatabase(this)
         val achievementRepository = AchievementRepository(
             db.userStatsDao(),
-            db.journalDao()
+            db.journalDao(),
+            applicationContext
         )
         ViewModelFactory(FlashcardRepository(achievementRepository, firebaseUid, this))
     }

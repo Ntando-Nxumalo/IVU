@@ -5,27 +5,22 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.lifecycleScope
 import com.ntando.ivu.data.prefs.PreferenceManager
 import com.ntando.ivu.data.repository.AuthRepository
 import com.ntando.ivu.ui.settings.SettingsScreen
 import com.ntando.ivu.ui.theme.IVUTheme
 import com.ntando.ivu.viewmodel.SettingsViewModel
 import com.ntando.ivu.viewmodel.ViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * [SettingsActivity] allows users to configure application preferences.
- *
- * Features:
- * - Theme selection (Dark Mode vs Light Mode).
- * - Application language selection.
- * - Sign Out operation clearing local user sessions in [SharedPreferences] and Firebase.
- * - Navigation routing across IVU tabs.
  */
 class SettingsActivity : ComponentActivity() {
 
@@ -38,14 +33,17 @@ class SettingsActivity : ComponentActivity() {
         ViewModelFactory(authRepository to PreferenceManager(this))
     }
 
-    /**
-     * Called when the activity is starting. Configures ViewModel and sets up Compose UI.
-     *
-     * @param savedInstanceState Saved instance bundle.
-     */
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        Log.i(TAG, "POST_NOTIFICATIONS permission result on Settings: isGranted=$isGranted")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: Starting SettingsActivity")
+
+        checkNotificationPermission()
 
         setContent {
             val preferenceManager = PreferenceManager(this)
@@ -59,9 +57,10 @@ class SettingsActivity : ComponentActivity() {
                         finish()
                     },
                     onSignOut = {
-                        Log.i(TAG, "Sign Out action triggered. Clearing Room database and preferences session keys...")
+                        Log.i(TAG, "Sign Out action triggered. Deleting token, clearing Room database and preferences session keys...")
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
+                                com.ntando.ivu.network.FcmTokenManager(this@SettingsActivity).deleteTokenOnSignOut()
                                 com.ntando.ivu.data.database.DatabaseProvider.getDatabase(this@SettingsActivity).clearAllTables()
                                 Log.i(TAG, "Room database tables cleared on sign out.")
                             } catch (e: Exception) {
@@ -94,17 +93,24 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Called when the activity becomes visible.
-     */
+    private fun checkNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.d(TAG, "Prompting for POST_NOTIFICATIONS permission on Settings screen")
+                requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         Log.d(TAG, "onStart: SettingsActivity visible")
     }
 
-    /**
-     * Called before the activity is destroyed.
-     */
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy: SettingsActivity destroyed")
