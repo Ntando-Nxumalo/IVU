@@ -11,7 +11,6 @@ import com.ntando.ivu.data.entity.Flashcard
 import com.ntando.ivu.data.entity.PendingReview
 import com.ntando.ivu.data.entity.SyncState
 import com.ntando.ivu.network.ApiClient
-import com.ntando.ivu.network.CreateFlashcardRequest
 import com.ntando.ivu.network.NetworkMonitor
 import com.ntando.ivu.network.ReviewRequest
 import com.ntando.ivu.sync.SyncManager

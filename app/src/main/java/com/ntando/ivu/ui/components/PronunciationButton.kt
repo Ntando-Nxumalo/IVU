@@ -6,14 +6,16 @@ import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.ntando.ivu.R
 import com.ntando.ivu.util.SpeechManager
 import com.ntando.ivu.util.SpeechResult
@@ -21,6 +23,46 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 private const val TAG = "IVU_TTS"
+
+/** Custom Material Volume Up / Speaker icon vector. */
+val VolumeUpIcon: ImageVector
+    get() {
+        if (_volumeUp != null) return _volumeUp!!
+        _volumeUp = ImageVector.Builder(
+            name = "VolumeUp",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(3f, 9f)
+                verticalLineToRelative(6f)
+                horizontalLineToRelative(4f)
+                lineTo(12f, 20f)
+                verticalLineTo(4f)
+                lineTo(7f, 9f)
+                horizontalLineTo(3f)
+                close()
+                moveTo(16.5f, 12f)
+                curveTo(16.5f, 10.23f, 15.48f, 8.71f, 14f, 7.97f)
+                verticalLineToRelative(8.05f)
+                curveTo(15.48f, 15.29f, 16.5f, 13.77f, 16.5f, 12f)
+                close()
+                moveTo(14f, 3.23f)
+                verticalLineToRelative(2.06f)
+                curveTo(16.89f, 6.15f, 19f, 8.83f, 19f, 12f)
+                curveTo(19f, 15.17f, 16.89f, 17.85f, 14f, 18.71f)
+                verticalLineToRelative(2.06f)
+                curveTo(18.01f, 19.86f, 21f, 16.28f, 21f, 12f)
+                curveTo(21f, 7.72f, 18.01f, 4.14f, 14f, 3.23f)
+                close()
+            }
+        }.build()
+        return _volumeUp!!
+    }
+
+private var _volumeUp: ImageVector? = null
 
 /**
  * Safely launches the system TTS settings screen with fallbacks.
@@ -96,7 +138,7 @@ fun PronunciationButton(
     ) {
         val activeColor = if (isSpeaking && isThisButtonSpeaking) MaterialTheme.colorScheme.tertiary else tint
         Icon(
-            imageVector = Icons.Default.Info,
+            imageVector = VolumeUpIcon,
             contentDescription = stringResource(R.string.content_desc_speak),
             tint = activeColor
         )

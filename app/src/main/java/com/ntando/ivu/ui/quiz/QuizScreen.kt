@@ -1,17 +1,19 @@
 package com.ntando.ivu.ui.quiz
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
@@ -35,8 +37,6 @@ import com.ntando.ivu.util.SpeechManager
 import com.ntando.ivu.viewmodel.MissedQuestion
 import com.ntando.ivu.viewmodel.QuizUiState
 import com.ntando.ivu.viewmodel.QuizViewModel
-
-private const val TAG = "IVU_QUIZ"
 
 /**
  * Main Composable layout for Quiz Mode hosting setup, active questions, and results views.
@@ -204,6 +204,7 @@ private fun QuizEmptyView(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun QuizSetupView(
     state: QuizUiState.Setup,
@@ -217,6 +218,7 @@ private fun QuizSetupView(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
         Text(
@@ -229,14 +231,18 @@ private fun QuizSetupView(
 
         // Question Type Selector
         Text(
-            text = stringResource(R.string.label_theme),
+            text = stringResource(R.string.preferences),
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             val isMcAvailable = state.isMultipleChoiceAvailable
 
             FilterChip(
@@ -248,8 +254,7 @@ private fun QuizSetupView(
                     }
                 },
                 enabled = isMcAvailable,
-                label = { Text(stringResource(R.string.label_mode_multiple_choice)) },
-                modifier = Modifier.padding(end = 8.dp)
+                label = { Text(stringResource(R.string.label_mode_multiple_choice)) }
             )
             FilterChip(
                 selected = mode == QuizMode.TYPE_ANSWER,
@@ -257,8 +262,7 @@ private fun QuizSetupView(
                     mode = QuizMode.TYPE_ANSWER
                     onUpdateSetup(mode, direction, length)
                 },
-                label = { Text(stringResource(R.string.label_mode_type_answer)) },
-                modifier = Modifier.padding(end = 8.dp)
+                label = { Text(stringResource(R.string.label_mode_type_answer)) }
             )
             FilterChip(
                 selected = mode == QuizMode.MIXED,
@@ -290,15 +294,18 @@ private fun QuizSetupView(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             FilterChip(
                 selected = direction == QuizDirection.FRONT_TO_BACK,
                 onClick = {
                     direction = QuizDirection.FRONT_TO_BACK
                     onUpdateSetup(mode, direction, length)
                 },
-                label = { Text(stringResource(R.string.label_direction_front_to_back)) },
-                modifier = Modifier.padding(end = 8.dp)
+                label = { Text(stringResource(R.string.label_direction_front_to_back)) }
             )
             FilterChip(
                 selected = direction == QuizDirection.BACK_TO_FRONT,
@@ -321,7 +328,11 @@ private fun QuizSetupView(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             val maxCards = state.cardCount
             val lengths = listOf(5, 10, maxCards).distinct().sorted()
 
@@ -333,13 +344,12 @@ private fun QuizSetupView(
                         length = l
                         onUpdateSetup(mode, direction, length)
                     },
-                    label = { Text(labelText) },
-                    modifier = Modifier.padding(end = 8.dp)
+                    label = { Text(labelText) }
                 )
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = onStartQuiz,
@@ -448,8 +458,10 @@ private fun QuizQuestionView(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Question Answers
+        val isDark = isSystemInDarkTheme()
+
         if (question.questionType == QuizQuestionType.MULTIPLE_CHOICE) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 question.options.forEach { option ->
                     val isSelected = state.userAnswer == option
                     val normOption = option.trim().lowercase()
@@ -458,18 +470,26 @@ private fun QuizQuestionView(
 
                     val bgColor = when {
                         !state.isChecked -> if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
-                        isSelected && state.isCorrect -> Color(0xFFD3F2E6)
-                        isSelected && !state.isCorrect -> Color(0xFFF2D3D3)
-                        isOptionCorrect -> Color(0xFFD3F2E6)
+                        isSelected && state.isCorrect -> if (isDark) Color(0xFF1B4D2E) else Color(0xFFD3F2E6)
+                        isSelected && !state.isCorrect -> if (isDark) Color(0xFF4D1B1B) else Color(0xFFF2D3D3)
+                        isOptionCorrect -> if (isDark) Color(0xFF1B4D2E) else Color(0xFFD3F2E6)
                         else -> MaterialTheme.colorScheme.surface
                     }
 
                     val borderColor = when {
                         !state.isChecked -> if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-                        isSelected && state.isCorrect -> Color(0xFF2E7D32)
-                        isSelected && !state.isCorrect -> Color(0xFFC62828)
-                        isOptionCorrect -> Color(0xFF2E7D32)
+                        isSelected && state.isCorrect -> if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)
+                        isSelected && !state.isCorrect -> if (isDark) Color(0xFFE57373) else Color(0xFFC62828)
+                        isOptionCorrect -> if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)
                         else -> Color.Transparent
+                    }
+
+                    val optionTextColor = when {
+                        !state.isChecked -> MaterialTheme.colorScheme.onSurface
+                        isSelected && state.isCorrect -> if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
+                        isSelected && !state.isCorrect -> if (isDark) Color(0xFFE57373) else Color(0xFFB71C1C)
+                        isOptionCorrect -> if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
+                        else -> MaterialTheme.colorScheme.onSurface
                     }
 
                     Card(
@@ -490,13 +510,13 @@ private fun QuizQuestionView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = optionTextColor
                         )
                     }
                 }
             }
         } else {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 OutlinedTextField(
                     value = state.userAnswer,
                     onValueChange = onAnswerChanged,
@@ -514,7 +534,11 @@ private fun QuizQuestionView(
 
                 AnimatedVisibility(visible = state.isChecked) {
                     Column(modifier = Modifier.padding(top = 16.dp)) {
-                        val bannerColor = if (state.isCorrect) Color(0xFF2E7D32) else Color(0xFFC62828)
+                        val bannerColor = if (state.isCorrect) {
+                            if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)
+                        } else {
+                            if (isDark) Color(0xFFE57373) else Color(0xFFC62828)
+                        }
                         val bannerText = if (state.isCorrect) stringResource(R.string.label_correct) else stringResource(R.string.label_incorrect)
 
                         Text(
@@ -657,6 +681,10 @@ private fun QuizResultsView(
                 modifier = Modifier.weight(1f)
             ) {
                 items(state.missedQuestions) { missed ->
+                    val isDark = isSystemInDarkTheme()
+                    val correctColor = if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)
+                    val wrongColor = if (isDark) Color(0xFFE57373) else Color(0xFFC62828)
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -680,7 +708,7 @@ private fun QuizResultsView(
                                 Text(
                                     text = stringResource(R.string.label_correct_answer_is, missed.question.correctAnswer),
                                     fontSize = 14.sp,
-                                    color = Color(0xFF2E7D32),
+                                    color = correctColor,
                                     modifier = Modifier.weight(1f)
                                 )
                                 PronunciationButton(
@@ -694,7 +722,7 @@ private fun QuizResultsView(
                                 Text(
                                     text = stringResource(R.string.label_your_answer, missed.userAnswer),
                                     fontSize = 14.sp,
-                                    color = Color(0xFFC62828)
+                                    color = wrongColor
                                 )
                             }
                         }

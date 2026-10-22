@@ -9,7 +9,6 @@ import com.ntando.ivu.data.entity.JournalEntry
 import com.ntando.ivu.data.entity.Mood
 import com.ntando.ivu.data.entity.SyncState
 import com.ntando.ivu.network.ApiClient
-import com.ntando.ivu.network.CreateJournalRequest
 import com.ntando.ivu.network.NetworkMonitor
 import com.ntando.ivu.sync.SyncManager
 import kotlinx.coroutines.flow.Flow
