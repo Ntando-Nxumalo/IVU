@@ -196,7 +196,7 @@ All generated code was manually reviewed, adapted to project requirements, and v
 
 ## 📹 Video Walkthrough
 
-🎥 **YouTube Demonstration Video:** [https://youtu.be/hkaKmRr35_4](https://youtu.be/hkaKmRr35_4)
+🎥 **YouTube Demonstration Video:** [https://youtu.be/GoDcTTftLCU](https://youtu.be/GoDcTTftLCU))
 
 ---
 
