@@ -102,7 +102,7 @@ class RegisterActivity : ComponentActivity() {
 
         val email = firebaseUser.email ?: ""
         val name = firebaseUser.displayName ?: "IVU Learner"
-        Log.d(tag, "handleSuccessfulRegistration started for email: $email, name: $name")
+        Log.d(tag, "handleSuccessfulRegistration started for UID: ${firebaseUser.uid}")
         Toast.makeText(this, "Creating your profile...", Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch {
@@ -111,7 +111,7 @@ class RegisterActivity : ComponentActivity() {
                 
                 val existingUser = db.userDao().getUserByEmail(email)
                 val userId = if (existingUser == null) {
-                    Log.i(tag, "Creating new local user record and initial achievements for: $email")
+                    Log.i(tag, "Creating new local user record and initial achievements")
                     val newId = db.userDao().insertUser(
                         User(name = name, email = email, password = "")
                     )

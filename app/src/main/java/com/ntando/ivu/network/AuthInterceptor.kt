@@ -32,11 +32,11 @@ class AuthInterceptor : Interceptor {
                 // Force refresh the token to ensure it's valid
                 runBlocking {
                     val result = user.getIdToken(true).await()
-                    Log.d(TAG, "Successfully fetched fresh token for user: ${user.email}")
+                    Log.d(TAG, "Successfully fetched fresh token for authenticated user")
                     result.token
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch Firebase ID token for user: ${user.email}", e)
+                Log.e(TAG, "Failed to fetch Firebase ID token", e)
                 null
             }
         } else {
@@ -45,7 +45,7 @@ class AuthInterceptor : Interceptor {
         }
 
         val newRequest = if (token != null) {
-            Log.d(TAG, "Attaching Bearer token to request URL: ${originalRequest.url}")
+            Log.d(TAG, "Attaching Authorization header to request URL: ${originalRequest.url}")
             originalRequest.newBuilder()
                 .addHeader("Authorization", "Bearer $token")
                 .build()

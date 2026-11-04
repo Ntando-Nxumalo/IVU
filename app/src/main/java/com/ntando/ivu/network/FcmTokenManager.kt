@@ -37,7 +37,7 @@ class FcmTokenManager(private val context: Context) {
         try {
             Log.d(TAG, "Fetching FCM token from FirebaseMessaging.getInstance().token...")
             val token = FirebaseMessaging.getInstance().token.await()
-            Log.d(TAG, "Fetched FCM token: $token")
+            Log.d(TAG, "Fetched FCM token successfully")
             preferenceManager.setFcmToken(token)
 
             val isEnabled = reminderEnabled ?: preferenceManager.isRemindersEnabled.first()

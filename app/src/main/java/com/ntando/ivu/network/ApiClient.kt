@@ -19,12 +19,16 @@ object ApiClient {
     private const val BASE_URL = "https://ivu.onrender.com/"
 
     /**
-     * HTTP Logging interceptor configured to log full request and response bodies.
+     * HTTP Logging interceptor configured to log full request and response bodies in debug mode only.
      */
     private val loggingInterceptor = HttpLoggingInterceptor { message ->
         Log.d("OkHttp", message)
     }.apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (com.ntando.ivu.BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
     }
 
     /**

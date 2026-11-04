@@ -1,42 +1,63 @@
 # IVU — Your Multilingual Study Companion
 
-**A warm, intelligent flashcard, journal & study companion.**
+**A warm, intelligent flashcard, quiz, journal & study companion.**
 
-IVU ("It's For You") is a modern Android application designed to turn language learning into a sustainable daily habit. By combining the scientifically proven **SM-2 Spaced Repetition (SRS)** algorithm with reflective journaling and real-time AI assistance, IVU provides a holistic environment for mastering English, isiZulu, and Afrikaans.
+IVU ("It's For You") is a modern, offline-first Android application designed to turn language learning into a sustainable daily habit. By combining the scientifically proven **SM-2 Spaced Repetition (SRS)** algorithm with interactive **Quiz Mode**, **Text-to-Speech (TTS) pronunciation**, reflective journaling, push notifications, and real-time AI assistance, IVU provides a holistic environment for mastering English, isiZulu, and Afrikaans.
 
-Built for the **Open Source Coding (Intermediate)** module (OPSC6312) at The Independent Institute of Education.
+Built for the **Open Source Coding (Intermediate)** module (OPSC6312 / POE Part 3) at The Independent Institute of Education.
 
-📦 **Backend Repository:** [ivu-api](https://github.com/Ntando-Nxumalo/ivu-api)
-      or just switch from master to main 
-      
-🌐 **Live API:** Hosted on Render
+📦 **Backend Repository:** [ivu-api](https://github.com/Ntando-Nxumalo/ivu-api)  
+🌐 **Live API:** Hosted on Render (`https://ivu.onrender.com/`)
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### 🧠 Intelligent Learning
-- **SM-2 Spaced Repetition:** Flashcard reviews are scheduled based on your memory performance, ensuring long-term retention.
-- **Dynamic Decks:** Create, manage, and delete study decks for different languages with real-time card counting and progress tracking.
+### 🧠 Intelligent Learning & Spaced Repetition
+- **SM-2 Spaced Repetition Algorithm:** Flashcard review schedules adapt to memory performance (Ease Factor, Interval, Repetitions), ensuring optimal long-term retention.
+- **Dynamic Deck Management:** Create, manage, and delete study decks for different target languages (English, isiZulu, Afrikaans) with real-time card counts.
+- **Offline-First Architecture:** Flashcards and decks write locally to Room DB instantly (< 5ms) and synchronize asynchronously in the background via WorkManager.
+
+### 🎯 Quiz Mode
+- **Flexible Question Types:**
+  - **Multiple Choice:** Generates 1 correct answer plus 3 distinct distractors selected from other cards in the deck. Automatically disables if a deck has fewer than 4 cards to prevent duplicate choices.
+  - **Type Answer:** Tests exact recall with intelligent normalization (`QuizAnswerChecker`).
+  - **Mixed Mode:** Alternates between Multiple Choice and Type Answer questions.
+- **Direction Toggle:** Practice Front-to-Back or Back-to-Front (reverse prompt and answer).
+- **Smart Answer Validation:** Normalizes input by removing accents/diacritics, stripping surrounding punctuation, collapsing repeated spaces, and ignoring case sensitivity.
+- **Missed Question Review:** Summary screen displays score percentage, XP earned, and allows retrying missed questions in a focused session.
+- **Responsive Layouts:** Uses `FlowRow` layouts to ensure text never overlaps or clips across long translated strings in English, isiZulu, or Afrikaans.
+
+### 🔊 Text-to-Speech (TTS) Pronunciation
+- **Native South African Voices:** Integrates Android's built-in `TextToSpeech` engine mapping language codes to `en-ZA` (with `en-US` fallback), `zu-ZA` (isiZulu), and `af-ZA` (Afrikaans).
+- **Pervasive Audio Controls:** Speaker icon buttons on flashcard review cards, card list rows, quiz question prompts, and missed quiz results.
+- **Auto-Play Pronunciation:** Optional setting in Preferences automatically speaks card prompt text as each new card appears during review.
+- **Speed Adjustment:** Configurable speech rate (Slow `0.75x` / Normal `1.0x`).
+- **System Settings Fallback:** Non-crashing fallback launcher opens system TTS settings if a language voice pack is missing on the device.
+
+### 🔔 Notifications & Reminders
+- **Firebase Cloud Messaging (FCM):** Receive remote study reminder notifications and test push messages from the server.
+- **Daily Local Reminders:** Android `AlarmManager` (`StudyReminderScheduler`) triggers daily local study reminders at your preferred reminder hour (0–23), even when offline.
+- **Deep-Linking Badge Alerts:** Celebratory notifications for unlocked badges open directly to `AchievementsActivity` with an animated unlock popup.
 
 ### 📓 Reflective Journaling
-- **Paginated Calendar:** A full-screen interactive calendar with **swipe-to-navigate** month views to track your study history.
-- **Mood Tracking:** Tag study sessions with moods (Great, Okay, Tough) to correlate emotional state with learning progress.
-- **Contextual Linking:** Link specific journal entries to the deck you studied that day.
+- **Interactive Calendar:** Full-screen calendar view to track learning history and journal entries.
+- **Mood Tracking:** Tag study sessions with moods (Great, Okay, Tough) to correlate emotional states with learning consistency.
+- **Contextual Deck Linking:** Link reflection entries to specific study decks.
 
 ### 🤖 IVU AI Assist (Powered by Groq)
-- **Instant Assistance:** A high-speed conversational study helper using the `openai/gpt-oss-120b` model via Groq for near-zero latency.
-- **Smart Quizzing:** Ask IVU to quiz you on your cards, explain complex grammar, or provide cultural context for new words.
+- **High-Speed AI Study Buddy:** Conversational helper using the `openai/gpt-oss-120b` model via Groq API for near-zero latency responses.
+- **Contextual Prompts:** Ask IVU AI to quiz you, explain grammar, or give cultural context for South African vocabulary.
 
-### 🔥 Gamification & Progress
-- **Daily Goals:** A 10-card daily review target designed for fast leveling and consistent engagement.
-- **Progression System:** Earn XP, level up (e.g., "Level 5 · Wordsmith"), and maintain daily study streaks.
-- **Badge Framework:** Unlock 5 unique milestone badges (First Review, 7-Day Streak, Monthly Master, etc.) with real-time unlock notifications.
+### 🔥 Gamification & Achievements
+- **Daily Goals & Streaks:** Maintain study streaks with daily activity tracking.
+- **Progression & XP:** Earn 5 XP per correct quiz answer, 20 XP perfect quiz bonus, 10 XP per flashcard review, and 5 XP per journal entry.
+- **Badge Framework:** Unlock milestone badges including **First Steps**, **Week Warrior**, **Monthly Master**, **Half Century**, **Reflective**, and **Quiz Whiz**.
 
-### 🎨 Premium UI/UX
-- **Warm Terracotta Theme:** A custom color palette designed to reduce "study anxiety" and provide a comfortable learning environment.
-- **Full Localization:** Complete UI synchronization in **English, isiZulu, and Afrikaans**.
-- **Dynamic Theming:** Seamless support for **Dark Mode** and **Warm Light Mode** across all screens.
+### 🎨 Premium Accessibility & Theming
+- **Target API 36 (Android 16 Ready):** Built against Android 16 (API 36) with predictive back handling (`BackHandler` / `OnBackPressedDispatcher`).
+- **Multilingual Localization:** Complete localized UI strings in **English**, **isiZulu** (`values-zu/`), and **Afrikaans** (`values-af/`).
+- **Dynamic Theming:** Seamless support for **Dark Mode** and **Warm Terracotta Light Mode**.
 
 ---
 
@@ -44,16 +65,20 @@ Built for the **Open Source Coding (Intermediate)** module (OPSC6312) at The Ind
 
 | Layer | Technology |
 |---|---|
-| **Language** | Kotlin |
-| **UI Framework** | Jetpack Compose (Material 3) |
-| **Architecture** | MVVM (Model-View-ViewModel) |
-| **Local Persistence** | Room Database (SQLite) |
-| **Authentication** | Firebase Auth (Email/Pass + Google SSO) |
-| **Remote Database** | Google Cloud Firestore |
+| **Language** | Kotlin (100%) |
+| **UI Framework** | Jetpack Compose (Material Design 3) |
+| **Target SDK** | Android 16 (API Level 36) |
+| **Architecture** | MVVM (Model-View-ViewModel) + Offline-First Room |
+| **Local Database** | Room Database (SQLite) |
+| **Background Sync** | Android WorkManager (`SyncWorker`) |
+| **Scheduled Alarms** | Android `AlarmManager` |
+| **Audio Engine** | Android `TextToSpeech` (`SpeechManager`) |
+| **Notifications** | Firebase Cloud Messaging (FCM) |
+| **Authentication** | Firebase Auth (Email/Password + Google SSO) |
 | **Networking** | Retrofit 2 + OkHttp 4 |
-| **Backend** | Node.js + Express (Hosted on Render) |
+| **Backend API** | Node.js + Express (Hosted on Render) |
 | **AI Engine** | Groq API (GPT-OSS-120B Model) |
-| **CI/CD** | GitHub Actions (Automated Unit Testing & Builds) |
+| **Code Shrinking** | R8 Minification + Resource Shrinking |
 
 ---
 
@@ -62,71 +87,126 @@ Built for the **Open Source Coding (Intermediate)** module (OPSC6312) at The Ind
 ```text
 app/src/main/java/com/ntando/ivu/
 ├── data/
-│   ├── database/       # Room database & TypeConverters
-│   ├── dao/            # Data Access Objects for local sync
-│   ├── entity/         # UserStats, Badges, and User entities
-│   ├── prefs/          # DataStore for Theme & Language persistence
-│   └── repository/     # Repositories bridging Firestore + Local Room
+│   ├── dao/          # Room DAOs (Deck, Flashcard, Journal, UserStats, Pending)
+│   ├── database/     # AppDatabase configuration & TypeConverters
+│   ├── entity/       # Room Entities (Deck, Flashcard, JournalEntry, UserStats, Badge)
+│   ├── model/        # Quiz Models, QuizGenerator, QuizAnswerChecker
+│   ├── prefs/        # DataStore Preferences (Theme, Language, Reminders, TTS)
+│   └── repository/   # Offline-first repositories bridging Room & REST API
+├── network/          # ApiClient, Retrofit Services, AuthInterceptor, FcmTokenManager
+├── service/          # IvuMessagingService for FCM push notifications
+├── sync/             # SyncManager, SyncWorker for background WorkManager sync
 ├── ui/
-│   ├── components/     # Shared UI (Synced Bottom Navigation)
-│   ├── theme/          # Material 3 Color schemes & Typography
-│   ├── auth/           # Bolder, accessible Login & Register screens
-│   ├── journal/        # Paginated Calendar & Entry screens
-│   └── achievements/   # Unified scrolling Progress & Badge grid
-└── viewmodel/          # State management for all core features
+│   ├── achievements/ # Achievements & Badge progress screen
+│   ├── auth/         # Login & Registration Compose screens
+│   ├── chat/         # IVU AI Assistant chat screen
+│   ├── components/   # BottomNav, OfflineBanner, PronunciationButton
+│   ├── decks/        # Decks overview & Flashcard list screens
+│   ├── journal/      # Calendar & New Journal entry screens
+│   ├── quiz/         # Quiz Setup, Question, and Results screens
+│   ├── review/       # Flashcard SRS Review screen
+│   ├── settings/     # Preference controls, TTS settings, and language selectors
+│   └── theme/        # Material 3 Color schemes, Typography, and Locale providers
+├── util/             # NotificationHelper, SpeechManager, StudyReminderScheduler
+└── viewmodel/        # ViewModels for all features and ViewModelFactory
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 How to Install and Use
 
-1. **Clone the repository:**
+### Prerequisites
+- **Android Device or Emulator:** Running Android 7.0 (API Level 24) or higher.
+- **Android Studio:** Android Studio Ladybug / MECL or newer.
+- **JDK:** Java 17 toolchain.
+
+### Installation Steps
+
+1. **Clone the Repository:**
    ```bash
    git clone https://github.com/Ntando-Nxumalo/IVU.git
+   cd IVU
    ```
-2. **Setup Firebase:** Add your `google-services.json` to the `app/` directory.
-3. **Environment:** Ensure the `ivu-api` is running and the `BASE_URL` in `ApiClient.kt` is updated.
-4. **Build:** Run `./gradlew assembleDebug` or open in Android Studio.
+
+2. **Add Firebase Configuration:**
+   - Download `google-services.json` from your Firebase project.
+   - Place `google-services.json` inside the `app/` root directory.
+
+3. **Build Debug APK:**
+   ```bash
+   ./gradlew assembleDebug
+   ```
+
+4. **Build Release APK (with R8 Minification):**
+   ```bash
+   ./gradlew assembleRelease
+   ```
+
+5. **Run Unit Tests:**
+   ```bash
+   ./gradlew testDebugUnitTest
+   ```
 
 ---
 
-## 📋 Project Status
+## 📱 How to Use IVU
 
-- [x] **Part 1:** Research, Planning & Design
-- [x] **Part 2:** Prototype Development (Current)
-- [ ] **Final PoE:** Play Store Prep & Offline Sync Optimization
+1. **Authentication:**
+   - Open IVU, register an account with email/password or tap **"Continue with Google"**.
+2. **Managing Decks & Flashcards:**
+   - On the **Decks** screen, tap **"Add Deck"** to create a deck (e.g. "isiZulu Basics").
+   - Tap **"Add Card"** on a deck to add vocabulary front/back pairs.
+3. **Flashcard Review (SRS):**
+   - Tap a deck card to start a Spaced Repetition review session.
+   - Tap the card to flip between front and back.
+   - Tap the **Speaker icon** to hear pronunciation.
+   - Rate card difficulty (**Again**, **Hard**, **Good**, **Easy**) to schedule the next review.
+4. **Quiz Mode:**
+   - Tap **"Quiz"** on any deck card or from the Flashcard List top bar.
+   - Choose your **Mode** (Multiple Choice, Type Answer, Mixed), **Direction**, and **Question Count**.
+   - Tap **"Start Quiz"**, answer questions, and view your final score, XP earned, and missed question review.
+5. **Reflective Journaling:**
+   - Navigate to **Today's Journal** to record daily study reflections, log your mood, and link entries to study decks.
+6. **IVU AI Assist:**
+   - Tap **"Ask IVU AI"** to ask grammar questions or request vocabulary quizzes from the AI assistant.
+7. **Settings & Preferences:**
+   - Customize **App Language** (English, isiZulu, Afrikaans), toggle **Dark Theme**, configure **Daily Reminders**, enable **Auto-play Pronunciation**, or adjust **Speech Rate**.
+
+---
+
+## 📋 Project Status (POE Part 3 Completed)
+
+- [x] **Part 1:** Research, Architecture Planning & Design
+- [x] **Part 2:** Prototype Development & Core Module Integration
+- [x] **Part 3:** Final POE Submission — Quiz Mode, TTS Pronunciation, FCM Push Notifications, Offline WorkManager Sync, Target API 36, Multilingual Localization, and Release Optimization
 
 ---
 
 ## 🤖 AI Usage Disclosure
 
-During the development of IVU, AI tools (specifically Google Gemini and Claude via Android Studio’s integrated AI assistance) were strategically employed to enhance productivity and resolve complex technical hurdles. The use of these tools was categorized into three primary areas: architectural scaffolding, debugging, and cross-platform bridge logic.
+During the development of IVU, AI assistance (Google Gemini and Claude via Android Studio’s integrated assistant) was utilized for architectural scaffolding, debugging, and offline-first refactoring.
 
-**Architectural Scaffolding:** AI was used to generate initial boilerplate code for Jetpack Compose screens and MVVM components (ViewModels and Repositories). This allowed for rapid prototyping of the "terracotta" design system, ensuring consistent padding, typography, and state management across all study modules. By providing high-level UI descriptions, the AI generated the foundational Kotlin code which was then manually refined to implement the SM-2 Spaced Repetition logic and custom gamification triggers.
+- **Architectural Scaffolding:** AI generated initial layout boilerplate for Jetpack Compose screens, MVVM ViewModels, and Room DAOs.
+- **Offline Sync & Performance:** AI assisted in structuring `SyncWorker` and WorkManager policies to decouple synchronous network calls from local Room writes.
+- **TTS & Predictive Back:** AI assisted in configuring locale mapping logic for South African voices and applying Android 16 predictive back handlers (`BackHandler`).
 
-**Debugging & Troubleshooting:** AI proved invaluable for interpreting complex Gradle build errors and Proguard/R8 obfuscation issues encountered during the build-release cycle. It assisted in identifying a recurring route-registration conflict during the transition to a unified Firebase UID system, saving significant research time. Furthermore, AI tools were used to simulate edge-case scenarios, helping to harden the application’s error handling for network timeouts and database synchronization failures.
-
-**Backend & AI Integration:** The most critical application of AI was the integration of the conversational study assistant. Initially developed using the Gemini API, the backend was later migrated to Groq’s high-performance API to achieve near-zero latency. AI assistance was used to draft the secure proxy logic in Node.js, ensuring that sensitive API keys remained server-side while providing the Android client with an authenticated `/ai/ask` endpoint. 
-
-Every snippet generated by AI was rigorously reviewed, manually adjusted for project-specific constraints, and verified through unit testing (JUnit/MockK) and manual device logs (Logcat). This collaborative approach ensured that while AI accelerated the development pace, the final product strictly adheres to the unique educational objectives and technical standards of the OPSC6312 module.
+All generated code was manually reviewed, adapted to project requirements, and verified via JUnit unit tests and device Logcat logs.
 
 ---
 
-**YOUTUBE URL VIDEO**
-https://youtu.be/hkaKmRr35_4
----
-## 👤 Author
+## 📹 Video Walkthrough
 
-**Ntando Nxumalo**  
-Student Number: St10456704
---
-**Ayanda Maseko**
-Student Number:St10443093 
---
-**Njabulo Fushane**
-Student Number: St10450253
---
+🎥 **YouTube Demonstration Video:** [https://youtu.be/hkaKmRr35_4](https://youtu.be/hkaKmRr35_4)
+
+---
+
+## 👤 Authors
+
+**Ntando Nxumalo** — Student Number: `ST10456704`  
+**Ayanda Maseko** — Student Number: `ST10443093`  
+**Njabulo Fushane** — Student Number: `ST10450253`  
+
 ---
 
 ## 📄 License
-This project was created for academic purposes as part of The Independent Institute of Education's OPSC6312 module.
+Created as part of the **Open Source Coding (Intermediate)** module (OPSC6312) at The Independent Institute of Education.

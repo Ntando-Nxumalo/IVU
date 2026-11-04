@@ -100,7 +100,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val email = firebaseUser.email ?: ""
-        Log.d(tag, "handleSuccessfulAuth started for email: $email, UID: ${firebaseUser.uid}")
+        Log.d(tag, "handleSuccessfulAuth started for UID: ${firebaseUser.uid}")
         Toast.makeText(this, "Syncing your profile...", Toast.LENGTH_SHORT).show()
         
         lifecycleScope.launch {
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                 var user = db.userDao().getUserByEmail(email)
                 
                 if (user == null) {
-                    Log.i(tag, "User $email not found in local DB. Creating new profile record...")
+                    Log.i(tag, "User not found in local DB. Creating new profile record...")
                     val newUserId = db.userDao().insertUser(
                         User(
                             name = firebaseUser.displayName ?: "IVU Learner",

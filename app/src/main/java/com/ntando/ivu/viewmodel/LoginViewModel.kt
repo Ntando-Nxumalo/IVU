@@ -61,16 +61,16 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
      * @param password Password corresponding to the user account.
      */
     fun loginWithEmail(email: String, password: String) {
-        Log.i(TAG, "loginWithEmail initiated for email: $email")
+        Log.i(TAG, "loginWithEmail initiated")
         _uiState.value = LoginUiState.Loading
         viewModelScope.launch {
             val result = authRepository.loginUser(email, password)
             if (result.isSuccess) {
-                Log.i(TAG, "loginWithEmail succeeded for email: $email")
+                Log.i(TAG, "loginWithEmail succeeded")
                 _uiState.value = LoginUiState.Success
             } else {
                 val errorMsg = result.exceptionOrNull()?.message ?: "Login failed"
-                Log.w(TAG, "loginWithEmail failed for email $email: $errorMsg", result.exceptionOrNull())
+                Log.w(TAG, "loginWithEmail failed: $errorMsg", result.exceptionOrNull())
                 _uiState.value = LoginUiState.Error(errorMsg)
             }
         }

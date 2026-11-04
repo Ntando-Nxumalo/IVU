@@ -62,16 +62,16 @@ class RegisterViewModel(private val authRepository: AuthRepository) : ViewModel(
      * @param password Desired account password.
      */
     fun registerUser(displayName: String, email: String, password: String) {
-        Log.i(TAG, "registerUser initiated for displayName: $displayName, email: $email")
+        Log.i(TAG, "registerUser initiated for displayName: $displayName")
         _uiState.value = RegisterUiState.Loading
         viewModelScope.launch {
             val result = authRepository.registerUser(displayName, email, password)
             if (result.isSuccess) {
-                Log.i(TAG, "registerUser succeeded for email: $email")
+                Log.i(TAG, "registerUser succeeded")
                 _uiState.value = RegisterUiState.Success
             } else {
                 val errorMsg = result.exceptionOrNull()?.message ?: "Registration failed"
-                Log.w(TAG, "registerUser failed for email $email: $errorMsg", result.exceptionOrNull())
+                Log.w(TAG, "registerUser failed: $errorMsg", result.exceptionOrNull())
                 _uiState.value = RegisterUiState.Error(errorMsg)
             }
         }

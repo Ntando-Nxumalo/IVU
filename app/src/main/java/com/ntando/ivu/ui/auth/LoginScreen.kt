@@ -173,7 +173,7 @@ fun LoginScreen(
                 Button(
                     onClick = { 
                         if (email.isNotBlank() && password.isNotBlank()) {
-                            Log.i(TAG, "Attempting email login for: $email")
+                            Log.i(TAG, "Attempting email login")
                             viewModel.loginWithEmail(email, password)
                         } else {
                             Log.w(TAG, "Login attempted with blank email or password")

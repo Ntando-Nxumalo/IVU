@@ -25,7 +25,7 @@ class AuthRepository {
      * @return [Result] wrapping the Firebase user ID string on success, or an [Exception] with user-friendly error message on failure.
      */
     suspend fun registerUser(displayName: String, email: String, password: String): Result<String> {
-        Log.d(tag, "registerUser: Attempting registration for email='$email', displayName='$displayName'")
+        Log.d(tag, "registerUser: Attempting registration for displayName='$displayName'")
         return try {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
             val user = result.user
@@ -43,7 +43,7 @@ class AuthRepository {
             }
         } catch (e: Exception) {
             val mappedErrorMessage = mapError(e)
-            Log.e(tag, "registerUser: Exception during registration for email='$email': $mappedErrorMessage", e)
+            Log.e(tag, "registerUser: Exception during registration: $mappedErrorMessage", e)
             Result.failure(Exception(mappedErrorMessage))
         }
     }
@@ -56,7 +56,7 @@ class AuthRepository {
      * @return [Result] containing the user UID on successful login, or an [Exception] on error.
      */
     suspend fun loginUser(email: String, password: String): Result<String> {
-        Log.d(tag, "loginUser: Attempting login for email='$email'")
+        Log.d(tag, "loginUser: Attempting login")
         return try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val user = result.user
@@ -69,7 +69,7 @@ class AuthRepository {
             }
         } catch (e: Exception) {
             val mappedErrorMessage = mapError(e)
-            Log.e(tag, "loginUser: Exception during login for email='$email': $mappedErrorMessage", e)
+            Log.e(tag, "loginUser: Exception during login: $mappedErrorMessage", e)
             Result.failure(Exception(mappedErrorMessage))
         }
     }
@@ -82,7 +82,7 @@ class AuthRepository {
     fun getCurrentUser(): FirebaseUser? {
         val user = auth.currentUser
         if (user != null) {
-            Log.d(tag, "getCurrentUser: Active session found for UID=${user.uid}, email=${user.email}")
+            Log.d(tag, "getCurrentUser: Active session found for UID=${user.uid}")
         } else {
             Log.d(tag, "getCurrentUser: No active authenticated user session found")
         }

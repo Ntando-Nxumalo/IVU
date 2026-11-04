@@ -31,7 +31,7 @@ class UserRepository(private val userDao: UserDao) {
      * @param user The [User] entity to insert.
      */
     suspend fun insertUser(user: User) {
-        Log.d(TAG, "insertUser: Inserting user with id=${user.id}, email=${user.email}")
+        Log.d(TAG, "insertUser: Inserting user with id=${user.id}")
         try {
             userDao.insertUser(user)
             Log.i(TAG, "insertUser: User successfully inserted into DB with id=${user.id}")

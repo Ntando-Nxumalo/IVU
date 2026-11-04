@@ -23,7 +23,7 @@ class IvuMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "onNewToken received: token=$token")
+        Log.d(TAG, "onNewToken received")
 
         val preferenceManager = PreferenceManager(applicationContext)
         CoroutineScope(Dispatchers.IO).launch {

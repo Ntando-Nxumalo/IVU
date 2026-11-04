@@ -43,7 +43,7 @@ class SettingsViewModel(
     val userName = firebaseUser?.displayName ?: "IVU Learner"
 
     init {
-        Log.d(TAG, "SettingsViewModel initialized for user: $userName ($userEmail)")
+        Log.d(TAG, "SettingsViewModel initialized for user: $userName")
     }
 
     /**
@@ -239,7 +239,7 @@ class SettingsViewModel(
      * Signs out the current user session via [AuthRepository].
      */
     fun signOut() {
-        Log.i(TAG, "signOut initiated for user: $userEmail")
+        Log.i(TAG, "signOut initiated")
         authRepository.signOut()
     }
 }

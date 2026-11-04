@@ -68,14 +68,14 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() {
      * @param password Account password.
      */
     fun registerUser(name: String, email: String, password: String) {
-        Log.i(TAG, "registerUser started for name: $name, email: $email")
+        Log.i(TAG, "registerUser started")
         viewModelScope.launch {
             try {
                 val newUser = User(name = name, email = email, password = password)
                 repository.insertUser(newUser)
-                Log.i(TAG, "registerUser succeeded for email: $email")
+                Log.i(TAG, "registerUser succeeded")
             } catch (e: Exception) {
-                Log.e(TAG, "registerUser failed for email: $email", e)
+                Log.e(TAG, "registerUser failed", e)
             }
         }
     }

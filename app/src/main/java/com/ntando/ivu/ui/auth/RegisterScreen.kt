@@ -232,7 +232,7 @@ fun RegisterScreen(
                         if (!isPasswordValid) passwordError = passwordLengthErr
                         
                         if (isNameValid && isEmailValid && isPasswordValid) {
-                            Log.i(TAG, "Submitting registration request for name: $name, email: $email")
+                            Log.i(TAG, "Submitting registration request")
                             viewModel.registerUser(name, email, password)
                         } else {
                             Log.w(TAG, "Registration validation failed: nameValid=$isNameValid, emailValid=$isEmailValid, passwordValid=$isPasswordValid")

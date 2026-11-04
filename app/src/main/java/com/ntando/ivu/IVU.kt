@@ -93,7 +93,7 @@ class IVU : AppCompatActivity() {
         if (currentUserId == -1L) {
             val firebaseUser = FirebaseAuth.getInstance().currentUser
             if (firebaseUser != null) {
-                Log.i(tag, "Local session missing, attempting recovery for email: ${firebaseUser.email}")
+                Log.i(tag, "Local session missing, attempting session recovery")
                 recoverSession(firebaseUser.email ?: "")
             } else {
                 Log.w(tag, "Unauthenticated user detected in IVU home. Redirecting to MainActivity.")
@@ -167,7 +167,7 @@ class IVU : AppCompatActivity() {
      * @param email User email address obtained from Firebase Auth.
      */
     private fun recoverSession(email: String) {
-        Log.d(tag, "recoverSession: Looking up user by email $email")
+        Log.d(tag, "recoverSession: Looking up user profile")
         lifecycleScope.launch {
             val db = DatabaseProvider.getDatabase(this@IVU)
             val user = db.userDao().getUserByEmail(email)
@@ -180,11 +180,11 @@ class IVU : AppCompatActivity() {
                     firebaseUser?.let { putString("firebase_uid", it.uid) }
                     commit()
                 }
-                Log.i(tag, "Successfully recovered session for $email (userId: $currentUserId)")
+                Log.i(tag, "Successfully recovered session (userId: $currentUserId)")
                 setupUI()
                 setupNavigation()
             } else {
-                Log.e(tag, "Session recovery failed: No user found in local DB for email $email. Signing out.")
+                Log.e(tag, "Session recovery failed: No user found in local DB. Signing out.")
                 FirebaseAuth.getInstance().signOut()
                 startActivity(Intent(this@IVU, MainActivity::class.java))
                 finish()
